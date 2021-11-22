@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head> <script data-ad-client="ca-pub-2393111531899119" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script> 
+	<meta charset="utf-8">
+	<title>intercloudzone</title>
+	<meta name="description" content="">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<meta property="og:image" content="path/to/image.jpg">
+<!-- favicon -->
+<link rel="shortcut icon" href="img/favicon/favicon.ico" type="image/x-icon">
+<link rel="apple-touch-icon" href="img/favicon/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="72x72" href="img/favicon/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="114x114" href="img/favicon/apple-touch-icon-114x114.png">
+<!-- favicon -->
+<!-- build:css -->
+<link rel="stylesheet" href="css/libs/bootstrap.min.css">
+<link rel="stylesheet" href="css/libs/font-awesome.min.css">
+<link rel="stylesheet" href="css/libs/animate.min.css">
+<link rel="stylesheet" href="css/libs/slick.css">
+<link rel="stylesheet" href="css/libs/magnific-popup.css">
+
+<link rel="stylesheet" href="css/main.css">
+<link rel="stylesheet" href="css/media.css">
+<!-- endbuild -->
+	<!-- Chrome, Firefox OS and Opera -->
+	<meta name="theme-color" content="#000">
+	<!-- Windows Phone -->
+	<meta name="msapplication-navbutton-color" content="#000">
+	<!-- iOS Safari -->
+	<meta name="apple-mobile-web-app-status-bar-style" content="#000">
+	<!-- <style>body { opacity:s 0; overflow-x: hidden; } html { background-color: #fff; }</style> -->
+</head>
+<body data-spy="scroll" data-target=".navbar" data-offset="50" class="loaded" link="blue">
+<!-- Preloader -->
+<div class="preloader">
+	<div class="cssload-spinner">
+		<div class="cssload-ball cssload-ball-1"></div>
+		<div class="cssload-ball cssload-ball-2"></div>
+		<div class="cssload-ball cssload-ball-3"></div>
+		<div class="cssload-ball cssload-ball-4"></div>
+	</div>
+</div>
+<!-- Preloader -->
+<div class="site-content">
+	<!-- Naviigation -->
+	<div class="navbar-wrap">
+		<div class="navbar">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-12">
+						<nav class="navbar-menu">
+							<div class="navbar-header">
+								<button class="collapsed navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-example-js-navbar-scrollspy">
+									<span class="icon-bar"></span>
+									<span class="icon-bar"></span>
+									<span class="icon-bar"></span>
+								</button>
+							</div>
+							 
+							<div class="navbar-full">
+								<div class="collapse bs-example-js-navbar-scrollspy">
+									<ul class="nav navbar-nav">
+										<li style="display: none;"><a></a></li>
+										<li><a href="http://www.linkedin.com/in/baburajkallarakkal">About Me</a></li>
+										<li><a href="http://padmavyuha.blogspot.com/">Blog</a></li>
+										<li><a href="https://sourceforge.net/projects/oraclerman/">Projects</a></li>
+										<li><a href="https://hub.docker.com/u/baburaj/">Docker</a></li>
+										<li><a href="mailto:raj.anju@gmail.com">Contact Me</a></li>
+										<li>
+										</li>
+									</ul>
+									<!-- btn -->
+									<div class="nav-button main-button">
+										<a href="#" class="btn btn-nav btn-block" role="button">
+											Site is in Beta!
+										</a>
+									</div>
+									<!-- btn -->
+								</div>
+							</div>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Naviigation -->
+<!-- Header -->
+	<div class="menu-sticky"></div>
+
+ 
+
+	<!-- Screen-one -->
+	<div class="screen-one">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="screen-one-title">
+						<h2>Reference/Hints</h2>
+					</div>
+				</div>
+			</div>
+		</div>
+	 
+		<div class="container">
+					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0s">
+						<span>01.</span>
+						<div class="screen-one-item-container">
+							<h3>Heading1</h3>
+							<p> Content1 </p>
+							<p> </p>
+<pre>
+http://www.binarytides.com/linux-ss-command/
+
+yum install iproute2-doc
+
+
+--ss examples
+ss -t4 src 192.168.2.0/24 dst 192.168.1.0/24 '( sport = :ssh or dport \> :4000 )'
+
+
+--Find memory used by a single process
+ps aux --sort -rss
+
+https://stackoverflow.com/questions/7880784/what-is-rss-and-vsz-in-linux-memory-management
+https://techtalk.intersec.com/2013/07/memory-part-2-understanding-process-memory/
+
+
+
+--CPU Overloaded in last minute
+   
+[root@lab125a yum.repos.d]# cat /proc/cpuinfo  |grep processor
+processor : 0
+
+[root@lab125a yum.repos.d]# stress --cpu 2 --timeout 60
+stress: info: [3764] dispatching hogs: 2 cpu, 0 io, 0 vm, 0 hdd
+stress: info: [3764] successful run completed in 60s
+
+[root@lab125a yum.repos.d]# uptime
+14:19:58 up  4:21,  2 users,  load average: 1.24, 0.40, 0.17
+
+
+--Load CPU via stress 
+
+[root@lab125a yum.repos.d]# stress --cpu 1 --timeout 5
+stress: info: [3761] dispatching hogs: 1 cpu, 0 io, 0 vm, 0 hdd
+
+[root@lab125a ~]# dstat -cmdnt
+----total-cpu-usage---- ------memory-usage----- -dsk/total- -net/total- ----system----
+usr sys idl wai hiq siq| used  buff  cach  free| read  writ| recv  send|     time
+  0   0  99   0   0   0| 192M  952k  278M  522M|  11k 9864B|   0     0 |22-09 14:18:10
+  0   0 100   0   0   0| 192M  952k  278M  522M|   0     0 | 170B  102B|22-09 14:18:11
+  0   0 100   0   0   0| 192M  952k  278M  522M|   0     0 |  66B  166B|22-09 14:18:12
+  0   0 100   0   0   0| 192M  952k  278M  522M|   0     0 | 170B  118B|22-09 14:18:13
+  0   0 100   0   0   0| 192M  952k  278M  522M|   0     0 |  66B  118B|22-09 14:18:14
+ 32   0  68   0   0   0| 192M  952k  278M  522M|   0     0 | 170B  118B|22-09 14:18:15
+100   0   0   0   0   0| 192M  952k  278M  522M|   0     0 |  66B  118B|22-09 14:18:16
+100   0   0   0   0   0| 192M  952k  278M  522M|   0     0 | 170B  118B|22-09 14:18:17
+100   0   0   0   0   0| 192M  952k  278M  522M|   0     0 |  66B  118B|22-09 14:18:18
+100   0   0   0   0   0| 192M  952k  278M  522M|   0     0 | 170B  102B|22-09 14:18:19
+ 66   0  34   0   0   0| 192M  952k  278M  522M|   0     0 |  66B  102B|22-09 14:18:20
+  0   0 100   0   0   0| 192M  952k  278M  522M|   0     0 | 170B  118B|22-09 14:18:21
+  0   0 100   0   0   0| 192M  952k  278M  522M|   0     0 |  66B  134B|22-09 14:18:22^C
+
+
+--More granular
+
+dstat -cmdn ( c = cpu, m = memory, d= disk, n = network)
+dstat -gyprs ( g = paging, y = system stats, p = process stats, r = read/write stats, s = swap stats)
+
+
+-- Memory details (flag = htm )
+
+[root@lab125a yum.repos.d]# free -htm
+        total        used        free      shared  buff/cache   available
+Mem:           993M         62M        852M        1.4M         78M        822M
+Swap:          511M         98M        413M
+Total:         1.5G        161M        1.2G
+
+[root@lab125a yum.repos.d]# cat /proc/sys/vm/drop_caches
+0
+
+[root@lab125a yum.repos.d]# echo 3 > /proc/sys/vm/drop_caches
+
+[root@lab125a yum.repos.d]# cat /proc/sys/vm/drop_caches
+3
+
+--Notice the buff/cache drop afer the flush!
+
+[root@lab125a yum.repos.d]# free -htm
+        total        used        free      shared  buff/cache   available
+Mem:           993M         61M        876M        1.4M         55M        835M
+Swap:          511M         98M        413M
+Total:         1.5G        160M        1.3G
+
+
+[root@lab125a yum.repos.d]# swapoff -a
+
+[root@lab125a yum.repos.d]# free -htm
+        total        used        free      shared  buff/cache   available
+Mem:           993M        127M        801M        7.2M         63M        762M
+Swap:            0B          0B          0B
+Total:         993M        127M        801M
+
+
+--To free pagecache:
+# echo 1 > /proc/sys/vm/drop_caches
+
+To free dentries and inodes:
+# echo 2 > /proc/sys/vm/drop_caches
+
+To free pagecache, dentries and inodes:
+# echo 3 > /proc/sys/vm/drop_caches
+
+--ss syntax
+
+[root@rhce1 samba]# ss -nt sport \< :1024
+State      Recv-Q Send-Q                  Local Address:Port                                 Peer Address:Port
+ESTAB      0      0                      192.168.122.10:22                                  192.168.122.1:60664
+
+--Stress-ng example
+[root@lab125a ~]# stress-ng -c 2 --cpu-ops 10000 -t 10 --metrics
+stress-ng: info:  [2744] dispatching hogs: 2 cpu
+stress-ng: info:  [2744] successful run completed in 10.01s
+
+
+
+</pre>
+						</div>
+				</div>
+
+<!-- Contact -->
+<a class="anchor" id="contact"></a>
+
+<section class="contact">
+		<div class="contact-wrap">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-12 __web-inspector-hide-shortcut__">
+						<div class="contact-title">
+							<h2></h2>
+							<p> 
+								<br class="disable"></p>
+						</div>
+						<!-- /.contact-title -->
+					</div>
+					<!-- /.col-md-12 -->
+					
+					<!-- /.col-md-10 -->
+				</div>
+				<!-- /.row -->
+			</div>
+			<!-- /.container -->
+		</div>
+		<!-- /.directions-wrap -->
+	</section>
+
+</div>
+<!-- Site content -->
+
+<!-- Footer -->
+<a class="anchor" id="footer"></a>
+<footer class="footer" style="background-image: url(img/footer-bg.jpg); background-position:center; background-size: cover; background-repeat:no-repeat;">
+	<div class="footer-wrap">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="footer-title">
+						<h2>www.intercloudzone.com</h2>
+						<ul class="footer-icons">
+						<script src="//platform.linkedin.com/in.js" type="text/javascript"> lang: en_US</script>
+						<script type="IN/Share" data-url="http://www.intercloudzone.com/performance.html"></script>
+						</ul>
+						<p> </p>
+					</div>
+					<!-- /.footer-title -->
+				</div>
+				<!-- /.col-md-12 -->
+			</div>
+			<!-- /.row -->
+		</div>
+		<!-- /.container -->
+	</div>
+	<!-- /.directions-wrap -->
+</footer>
+<!-- Footer -->
+
+
+
+<!-- links -->
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?key=AIzaSyDDuC8pr6YqiBr9wqfhNIJ56AqwzWKhiQo"></script>
+<!-- build:js -->
+
+ 
+
+<script src="js/libs/jquery.min.js"></script>
+<script type="text/javascript" src="js/libs/bootstrap.min.js"></script>
+<script type="text/javascript" src="js/libs/waypoints.min.js"></script>
+<script type="text/javascript" src="js/libs/slick.min.js"></script>
+<script type="text/javascript" src="js/libs/magnific-popup.min.js"></script>
+
+<script type="text/javascript" src="js/common.js"></script>
+<!-- endbuild -->
+<!-- links -->
+</body>
+</html>

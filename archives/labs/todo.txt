@@ -1,0 +1,9 @@
+
+
+1. RHSCA
+
+2. Create Docker Containers for configuring DNS servers
+	
+3. Create Docker containers for multiple Apache Servers
+
+4. Install Saltstack master/minion configurations.

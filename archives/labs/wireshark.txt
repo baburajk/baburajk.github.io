@@ -1,0 +1,89 @@
+WIRESHARK
+=========
+Created Tuesday 25 November 2014
+
+REFERENCE
+http://www.packetlevel.ch/html/tcpdumpf.html
+http://www.wains.be/pub/networking/tcpdump_advanced_filters.txt
+
+Wireshark supports Name Resolution in three layers:
+
+    Layer 2: by resolving the first part of the MAC addresses to the vendor name. For example, 14:da:e9 will be presented as AsusTeckC (ASUSTeK Computer Inc.).
+    Layer 3: by resolving IP addresses to the DNS names. For example, 157.166.226.46 will be resolved to www.edition.cnn.com.
+    Layer 4: by resolving TCP/UDP port numbers to port names. For example, port 80 will be resolved as HTTP, and port 53 as DNS.
+
+LAYER 2 FILTERS
+
+    ether host <Ethernet host>: To get the Ethernet address
+    ether dst <Ethernet host>: To get the Ethernet destination address
+    ether src <Ethernet host>: To get the Ethernet source address
+    ether broadcast: To capture all Ethernet broadcast packets
+    ether multicast: To capture all Ethernet multicast packets
+    ether proto <protocol>: To filter only the protocol type indicated in the protocol identifier
+    vlan <vlan_id>: To pass only packets from a specific VLAN that is indicated in the identifier field
+
+
+LAYER 3 FILTERS
+
+    ip multicast: IP multicast packets
+    ip broadcast: IP broadcast packets
+    ip[2:2] == <number>: IP packet size
+    ip[8] == <number>: TTL (Time To Live) value
+    ip[9] == <number>: Protocol value
+    (ip[12:4] = ip[16:4]): IP source equal to IP destination address
+    ip[2:2]==<number>: Total length or IP packet
+    ip[9] == <number>: Protocol identifier
+
+LAYER 4 FILTERS
+tcp dst portrange p1-p2
+To capture the start (SYN flag) and end (FIN flag) packets of all TCP connections, configure 
+tcp[tcpflags] & (tcp-syn|tcp-fin) != 0.
+For filtering destination TCP ports between 50 and 100, configure 
+(tcp[2:2] > 50 and tcp[2:2] < 100).
+
+
+BASIC CAPTURE FILTERS
+type : host, net, port
+dir  : src, dest 		
+proto: tcp,udp,ether,arp
+
+
+Capture all SYN packets:
+# tcpdump 'tcp[13] & 2 != 0'
+Capture all ACK packets:
+# tcpdump 'tcp[13] & 16 != 0'
+Capture all SYN-ACK packets:
+# tcpdump 'tcp[13] = 18'
+Capture all FIN packets:
+# tcpdump 'tcp[13] & 1 != 0'
+Capture all URG packets:
+# tcpdump 'tcp[13] & 32 != 0'
+Capture all PSH packets:
+# tcpdump 'tcp[13] & 8 != 0'
+Capture all RST packets:
+# tcpdump 'tcp[13] & 4 != 0'
+Capture all ICMP requests
+# tcpdump -p -X -s0 -vvv -e ip proto 1
+
+    To display only ARP requests, use arp.opcode == 1
+    To display only ARP responses, use arp.opcode == 2
+
+example
+tcpdump -p -X -s0 -vvv -e ether src host 08:00:27:92:5C:88 and dst port 22 -w ws_ftpdns
+tcpdump -p -X -s0 -vvv -e ether dst host 08:00:27:CB:B5:03 and dst port 22 or ether dst host 08:00:27:98:38:54 and dst port 22 -w ws_ftpdns
+tcpdump -pXi eth0  -s0 ether host 08:00:27:98:38:54 tcp [2:2] > 50
+
+tcpdump -p -vvv -X -s0 -e ip multicast -i eth1
+
+
+
+Appendix
+Some problematic scenarios (mostly attacks…) are:
+
+    tcp[13] & 0x00 = 0: No flags set (null scan)
+    tcp[13] & 0x01 = 1: FIN set and ACK not set
+    tcp[13] & 0x03 = 3: SYN set and FIN set
+    tcp[13] & 0x05 = 5: RST set and FIN set
+    tcp[13] & 0x06 = 6: SYN set and RST set
+    tcp[13] & 0x08 = 8: PSH set and ACK not set
+

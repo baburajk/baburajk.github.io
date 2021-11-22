@@ -1,0 +1,1249 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="Generator" content="EditPlus®">
+  <meta name="Author" content="">
+  <meta name="Keywords" content="">
+  <meta name="Description" content="">
+  <title>Notes</title>
+ <link rel="stylesheet" href="css/stylesheet1.css">
+ <link rel="stylesheet" href="css/stylesheet2.css">
+ <link rel="stylesheet" href="css/w3.css">
+
+ <style type="text/css" >
+	  
+ </style>
+<script Language="Javascript">
+function toggle() {
+    var x = document.getElementById('contents');
+    if (x.style.display === 'none') {
+		document.getElementById("togglelink").text = "hide"
+        x.style.display = 'block';
+    } else {
+        x.style.display = 'none';
+		document.getElementById("togglelink").text = "show"
+    }
+}
+</script>
+
+
+ </head>
+	<body> 
+		<div id="nav">
+			<div id="jumplinks"> Quick notes </div>
+		</div>
+    
+		<div id="body">
+			<div id="content" class="mw-body" role="main">
+ 				<div id="toc" class="toc"><div id="toctitle"><h2>Contents</h2><span class="toctoggle">&nbsp;[<a href="javascript:toggle()" id="togglelink">hide</a>]&nbsp;</span></div>
+					<div id="contents">
+						<ul>
+							<li> <a href="#Norway">	 <span class="tocnumber">	1 </span> <span class="toctext"> Norway 	</span></a> </li>
+							<li> <a href="#Sweden">  <span class="tocnumber">	2 </span> <span class="toctext"> Sweden 	</span></a> </li>
+							<li> <a href="#Denmark"> <span class="tocnumber">	3 </span> <span class="toctext"> Denmark 	</span></a> </li>
+							<li> <a href="#India"> 	 <span class="tocnumber">	4 </span> <span class="toctext"> India  	</span></a> </li>
+						</ul>
+					</div>
+				</div>
+
+				<style>
+					html,body,h1,h2,h3,h4,h5,h6 { font-family: "Comic Sans MS", cursive, sans-serif; }
+				</style>
+ 
+
+
+<div class="w3-container">
+	<h1><span class="mw-headline" id="Kerberos"> Kerberos </h1>	
+<p>
+Kerberos
+	
+</p>
+
+<pre> 
+
+--Update Host file Note (If DNS is not being used, make sure the FQDN is right after the IP in /etc/hosts)
+
+192.168.122.10 rhce1.intercloudzone.com rhce1
+192.168.122.20 rhce2.intercloudzone.com rhce2
+
+--Install Packages (On the Server)
+yum install -y krb5-server krb5-workstation pam_krb5
+
+
+Note: Without pam_krb5 module, the authconfig will fail
+[root@rhce2 ~]# authconfig --enablekrb5 --update
+authconfig: Authentication module /usr/lib64/security/pam_krb5.so is missing. Authentication process might not work correctly.
+
+
+--Edit /etc/krb5.conf to update realm
+
+--Update KDC configuration files with the FQDN (REALM)
+
+[root@rhce1 ~]# grep -i intercloudzone /etc/krb5.conf
+ default_realm = INTERCLOUDZONE.COM
+ INTERCLOUDZONE.COM = {
+  kdc = rhce1.intercloudzone.com
+  admin_server = rhce1.intercloudzone.com
+ .intercloudzone.com = INTERCLOUDZONE.COM
+ intercloudzone.com = INTERCLOUDZONE.COM
+
+
+-- Update ACL with the realm.
+[root@rhce1 ~]# sed -i 's/EXAMPLE/INTERCLOUDZONE/g' /var/kerberos/krb5kdc/kadm5.acl
+[root@rhce1 ~]# cat /var/kerberos/krb5kdc/kadm5.acl
+*/admin@INTERCLOUDZONE.COM  *
+
+
+-- Create krb5 DB
+
+[root@rhce1 ~]# kdb5_util create -s
+Loading random data
+Initializing database '/var/kerberos/krb5kdc/principal' for realm 'INTERCLOUDZONE.COM',
+master key name 'K/M@INTERCLOUDZONE.COM'
+You will be prompted for the database Master Password.
+It is important that you NOT FORGET this password.
+Enter KDC database master key:
+
+[root@rhce1 ~]# rpm -ql krb5-server-1.15.1-8.el7.x86_64 |grep systemd
+/usr/lib/systemd/system/kadmin.service
+/usr/lib/systemd/system/kprop.service
+/usr/lib/systemd/system/krb5kdc.service
+
+-Start admin & KDC
+
+For kerberos to work time sync should be working (chrony/ntp)
+systemctl start krb5kdc kadmin
+
+--Add services to firewall
+
+[root@rhce2 ~]# nc -v rhce1.intercloudzone.com 88  
+Ncat: Version 6.40 ( http://nmap.org/ncat )
+libnsock nsi_new2(): nsi_new (IOD #1)
+libnsock nsock_connect_tcp(): TCP connection requested to 192.168.122.10:88 (IOD #1) EID 8
+libnsock nsock_trace_handler_callback(): Callback: CONNECT ERROR [No route to host (113)] for EID 8 [192.168.122.10:88]
+Ncat: No route to host.
+
+--Enable kerberos with firewalld on rhce1 and retry
+
+
+[root@rhce1 icmptypes]# firewall-cmd --permanent --add-service kerberos
+success
+[root@rhce1 icmptypes]# firewall-cmd --permanent --add-service kadmin
+success
+[root@rhce1 icmptypes]# firewall-cmd --reload
+success
+
+
+
+--Create admin & users (to test) and add hosts
+
+kadmin.local:  addprinc root/admin
+kadmin.local:  addprinc kuttu
+kadmin.local: addprinc -randkey host/rhce1.intercloudzone.com
+kadmin.local: addprinc -randkey host/rhce2.intercloudzone.com
+useradd kuttu
+
+systemctl restart krb5kdc kadmin
+
+--Create a local copy stored by default in the /etc/krb5.keytab file:
+kadmin.local:  ktadd host/rhce1.intercloudzone.com
+
+
+--Test KDC on the server itself , add to /etc/ssh/sshd_config followed
+
+GSSAPIAuthentication yes
+GSSAPIDelegateCredentials yes
+
+systemctl reload sshd
+
+
+
+--On Client (Enable these)
+[root@rhce2 ~]# grep yes /etc/ssh/ssh_config
+ 
+   GSSAPIAuthentication yes
+   GSSAPIDelegateCredentials yes
+ 
+ --Test it on the server itself.
+
+
+[kuttu@rhce1 ~]$ kinit
+Password for kuttu@INTERCLOUDZONE.COM:
+[kuttu@rhce1 ~]$ klist
+Ticket cache: KEYRING:persistent:1002:1002
+Default principal: kuttu@INTERCLOUDZONE.COM
+
+Valid starting       Expires              Service principal
+01/19/2018 13:06:41  01/20/2018 13:06:41  krbtgt/INTERCLOUDZONE.COM@INTERCLOUDZONE.COM
+
+[kuttu@rhce1 ~]$ ssh rhce1.intercloudzone.com
+Last login: Fri Jan 19 13:06:39 2018
+
+
+[kuttu@rhce1 ~]$ kdestroy
+[kuttu@rhce1 ~]$ klist
+klist: Credentials cache keyring 'persistent:1002:1002' not found
+[kuttu@rhce1 ~]$ ssh rhce1.intercloudzone.com
+kuttu@rhce1.intercloudzone.com's password:
+
+
+
+--Setup Client
+
+
+#Note: On the Server the firewalls should be open else will encounter below error..
+
+[root@rhce2 ~]# kadmin -p root/admin
+Password for root/admin@INTERCLOUDZONE.COM:
+kadmin: Communication failure with server while initializing kadmin interface
+
+firewall-cmd --add-service kadmin kerberos
+
+
+ktadd -k /etc/krb5.keytab root
+
+Always tail /var/log/krb5kdc.log /var/log/secure /var/log/messages and /var/log/audit/audit.log
+
+Make sure to add root user , run ktadd -k /etc/krb5.keytab and ship the keytab file to client.
+
+Also add nfs/server and nfs/client.
+
+chronync tracking should show offsent close to 0
+
+Change the parameter : /etc/sysconfig/nfs 
+RPCGSSDARGS="-v -v -v "
+
+Restart the services
+systemctl restart nfs rpcbind
+
+
+
+[root@rhce1 exports.d]# klist -k /etc/krb5.keytab
+Keytab name: FILE:/etc/krb5.keytab
+KVNO Principal
+---- --------------------------------------------------------------------------
+   3 usera@INTERCLOUDZONE.COM
+   3 usera@INTERCLOUDZONE.COM
+   2 host/rhce2.intercloudzone.com@INTERCLOUDZONE.COM
+   2 host/rhce2.intercloudzone.com@INTERCLOUDZONE.COM
+   2 host/kerberos.intercloudzone.com@INTERCLOUDZONE.COM
+   2 host/kerberos.intercloudzone.com@INTERCLOUDZONE.COM
+   2 root/admin@INTERCLOUDZONE.COM
+   2 root/admin@INTERCLOUDZONE.COM
+
+[root@rhce2 ~]# yum -y install krb5-workstation pam_krb5
+
+
+--Add client host and principal user.
+
+kadmin -p root/admin
+kadmin: addprinc -randkey host/rhce2.intercloudzone.com
+kadmin: addprinc kannan/rhce2.intercloudzone.com
+
+-While logged in extract principal's key and store it locally in a keytab file called krb5.keytab
+
+kadmin:  ktadd -k /etc/krb5.keytab host/rhce2.intercloudzone.com
+
+authconfig --enablekrb5 --update --test
+authconfig --enablekrb5 --update
+
+--Backup
+kdb5_util dump -verbose /tmp/kdc.dump
+strings /backup/kdc.dump
+
+--Restore
+kdb5_util load /backup/kdc.dump
+
+--Display Keylist (Principals) in a Keytab File
+klist -kt /etc/krb5.keytab
+
+--Remove keylist (Principals) from a keytab file
+ktremove -k /etc/krb5.keytab usera
+
+
+--Troubleshoot
+# export KRB5_TRACE=/dev/stdout
+# kinit
+
+
+[kannan@rhce2 ~]$ ssh rhce2.intercloudzone.com
+kannan@rhce2.intercloudzone.com's password:
+
+[kannan@rhce2 ~]$ ssh rhce2.intercloudzone.com^C
+[kannan@rhce2 ~]$ kinit
+Password for kannan@INTERCLOUDZONE.COM:
+[kannan@rhce2 ~]$ klist
+Ticket cache: KEYRING:persistent:1000:1000
+Default principal: kannan@INTERCLOUDZONE.COM
+
+Valid starting       Expires              Service principal
+01/19/2018 13:15:43  01/20/2018 13:15:43  krbtgt/INTERCLOUDZONE.COM@INTERCLOUDZONE.COM
+[kannan@rhce2 ~]$ ssh rhce2.intercloudzone.com
+Last login: Fri Jan 19 13:15:33 2018 from rhce2.intercloudzone.com
+
+--Debug SSHD
+ /usr/sbin/sshd -d -p99
+ </pre>
+
+</div>
+
+ 	
+	
+<div class="w3-container">
+	<h1><span class="mw-headline" id="NFS"> NFS</h1>	
+<p>
+NFS, Kerberos
+</p>
+
+<pre> 
+ 
+
+--NFS Sharing Details
+
+SHARING FILES
+If you want to share files with multiple domains (Apache, FTP, rsync, Samba), you can set a file context of public_content_t and public_content_rw_t. These context allow any of the above domains to read the content. If you want a particular domain to write to the public_content_rw_t domain, you must set the appropriate boolean.Allow nfsd servers to read the /var/nfsd directory by adding the public_content_t file type to the directory and by restoring the file type.
+semanage fcontext -a -t public_content_t "/var/nfsd(/.*)?" 
+restorecon -F -R -v /var/nfsd
+
+Allow nfsd servers to read and write /var/nfsd/incoming by adding the public_content_rw_t type to the directory and by restoring the file type. You also need to turn on the nfsd_anon_write boolean.
+semanage fcontext -a -t public_content_rw_t "/var/nfsd/incoming(/.*)?" 
+restorecon -F -R -v /var/nfsd/incoming 
+setsebool -P nfsd_anon_write 1
+
+If you want to allow nfs servers to modify public files used for public file transfer services. Files/Directories must be labeled public_content_rw_t., you must turn on the nfsd_anon_write boolean.
+
+setsebool -P nfsd_anon_write 1
+
+
+
+
+
+
+--install
+yum install nfs-utils
+systemctl enable rpcbind nfs nfs-server
+selinux
+firewall
+/etc/fstab ( _netdev)
+
+
+
+
+
+
+--Syntax
+export host1(options1) host2(options2) host3(options3)
+
+--Mounted directories in /var/lib/nfs/etab
+
+--Defaults
+ro,sync,wdelay,root_squash (Squashes power of root)
+
+--all_squash  
+To squash every remote user (including root), use all_squash. To specify the user and group IDs that the NFS server 
+should assign to remote users from a particular host, use the anonuid and anongid options, respectively, as in:
+export host(anonuid=uid,anongid=gid)
+
+--syntax
+/home bob.example.com(rw) 
+/home bob.example.com (rw)
+
+The first line allows only users from bob.example.com read/write access to the /home directory. The second line allows users from 
+bob.example.com to mount the directory as read-only (the default), while the rest of the world can mount it read/write.
+
+--rpcbind
+NFS requires rpcbind, which dynamically assigns ports for RPC services and can cause problems for configuring firewall rules. To allow
+clients to access NFS shares behind a firewall, edit the /etc/sysconfig/nfs file to set which ports the RPC services run on
+
+--Mounts listed
+cat /var/lib/nfs/etab (server) and /etc/mtab (on client)
+
+--NFS configuration
+/etc/sysconfig/nfs
+
+--Firewall
+firewall-cmd add-service nfs --add-service mountd --add-service rpc-bind
+
+--Check from client
+showmount -e rhce1
+
+--SElinux
+getsebool -a | egrep '^nfs|^use_nfs'
+
+Any directory/file to be exported on the network should have public_content_ro_t or public_content_rw_t applied if multiple services
+like FTP, HTTP etc share the same along with NFS.
+
+--nfs-secure-server (Kerberos)
+systemctl start kadmin krb5kdc
+
+
+https://www.certdepot.net/rhel7-use-kerberos-control-access-nfs-network-shares/
+
+
+
+kadmin:  addprinc -randkey nfs/rhce1.intercloudzone.com
+WARNING: no policy specified for nfs/rhce1.intercloudzone.com@INTERCLOUDZONE.COM; defaulting to no policy
+Principal "nfs/rhce1.intercloudzone.com@INTERCLOUDZONE.COM" created.
+
+kadmin:  addprinc -randkey nfs/rhce2.intercloudzone.com
+WARNING: no policy specified for nfs/rhce2.intercloudzone.com@INTERCLOUDZONE.COM; defaulting to no policy
+Principal "nfs/rhce2.intercloudzone.com@INTERCLOUDZONE.COM" created.
+
+[root@rhce1 ~]# systemctl enable nfs-secure
+[root@rhce1 ~]# systemctl start nfs-secure
+
+
+-rw-------. 1 root root 2258 Jan 19 13:10 /etc/krb5.keytab
+[root@rhce2 ~]# kadmin
+Authenticating as principal root/admin@INTERCLOUDZONE.COM with password.
+Password for root/admin@INTERCLOUDZONE.COM:
+kadmin:  ktadd nfs/rhce1.intercloudzone.com
+Entry for principal nfs/rhce1.intercloudzone.com with kvno 2, encryption type aes256-cts-hmac-sha1-96 added to keytab FILE:/etc/krb5.keytab
+..
+...
+Entry for principal nfs/rhce1.intercloudzone.com with kvno 2, encryption type des-cbc-md5 added to keytab FILE:/etc/krb5.keytab.
+kadmin:  quit
+[root@rhce2 ~]# ls -ltr /etc/krb5.keytab
+-rw-------. 1 root root 3002 Feb  1 17:02 /etc/krb5.keytab
+
+--Check the client for mounted directories
+[root@rhce2 ~]# showmount -e rhce1
+Export list for rhce1:
+/nfskrb5  rhce2.intercloudzone.com
+/nfsdata  rhce2.intercloudzone.com
+/nfsrhcsa rhce3.intercloudzone.com
+/common   rhce2.intercloudzone.com
+
+--
+[root@rhce2 ~]# rpcinfo -p rhce1.intercloudzone.com
+
+
+firewall-cmd add-service nfs --add-service mountd --add-service rpc-bind
+
+--Debug NFS
+automountd -f d
+
+--insecure in NFS property to ensure the clients use ports < 1024
+
+
+
+nfsd server process runs on port 2049
+rpcbind runs on both server & client.
+rpc.quotad runs on both the server and client. 
+
+
+--Difference between resize2fs vs xfs_grow is former uses the device and later uses the mountpoint.
+
+
+=> On Server...
+
+--Space on the /etc/exports
+
+/home bob.example.com(rw)
+/home bob.example.com (rw)
+
+The first line allows only users from bob.example.com read/write access to the /home directory. The second line allows users from bob.example.com to mount the directory as read-only (the default), while the rest of the world can mount it read/write.
+
+
+yum install nfs-utils
+systemctl start rpcbind nfs nfs-server
+
+[root@lab125a ~]# cat /etc/exports
+[root@lab125a ~]# cat /var/lib/nfs/etab
+[root@lab125a ~]# cat /proc/fs/nfs/exports
+# Version 1.1
+# Path Client(Flags) # IPs
+/etc/sysconfig/nfs
+
+
+[root@lab125a ~]# cat /etc/exports
+/nfsro	lab125a(r,no_root_squash)
+/nfsrw  lab125a(rw,all_squash)
+
+
+
+[root@lab125a ~]# exportfs -avr
+exporting lab125a:/nfsrw
+exporting lab125a:/nfsro
+
+
+[root@lab125a ~]# vi /etc/exports.d/nfsdummy0.exports
+[root@lab125a ~]# exportfs -avr
+exporting lab125a:/nfsdummy0
+exporting lab125a:/nfsrw
+exporting lab125a:/nfsro
+[root@lab125a ~]# cat /etc/exports.d/nfsdummy0.exports
+/nfsdummy0  lab125a(rw,no_root_squash)
+
+=> Unmount all
+
+[root@lab125a ~]# exportfs -vau
+[root@lab125a ~]# cat /var/lib/nfs/etab
+
+=> Turn selinux context off.
+
+[root@lab125a ~]# setsebool nfs_export_all_ro=0
+[root@lab125a ~]# set -o vi
+[root@lab125a ~]# setsebool nfs_export_all_rw=0
+[root@lab125a ~]# getsebool -a | egrep '^nfs|nfs_use'
+nfs_export_all_ro --> off
+nfs_export_all_rw --> off
+nfsd_anon_write --> off
+
+
+On Client
+systemctl enable rpcbind
+
+
+
+ 
+ Test-1
+
+[root@lab125a network-scripts]# cat /var/lib/nfs/etab
+/nfsdummy0	lab125a(rw,sync,wdelay,hide,nocrossmnt,secure,no_root_squash,no_all_squash,
+no_subtree_check,secure_locks,acl,no_pnfs,anonuid=65534,anongid=65534,sec=sys,rw,secure,no_root_squash,no_all_squash)
+/nfsrw	lab125a(rw,sync,wdelay,hide,nocrossmnt,secure,
+root_squash,all_squash,no_subtree_check,secure_locks,acl,no_pnfs,anonuid=65534,anongid=65534,sec=sys,rw,secure,root_squash,all_squash)
+/nfsro	lab125a(ro,sync,wdelay,hide,nocrossmnt,secure,no_root_squash,
+no_all_squash,no_subtree_check,secure_locks,acl,no_pnfs,anonuid=65534,anongid=65534,sec=sys,ro,secure,no_root_squash,no_all_squash)
+
+[root@lab130a network-scripts]# mount -v -t nfs -o rw 192.168.2.50:/nfsro /dataro
+mount.nfs: timeout set for Mon Aug 21 14:45:53 2017
+mount.nfs: trying text-based options 'vers=4,addr=192.168.2.50,clientaddr=192.168.2.53'
+mount.nfs: mount(2): Permission denied
+mount.nfs: access denied by server while mounting 192.168.2.50:/nfsro
+
+ 
+
+=> Errors.
+https://bugzilla.redhat.com/show_bug.cgi?id=1402427
+
+[root@rhce4 ~]# grep RPC /etc/sysconfig/nfs
+RPCNFSDARGS=""
+#RPCNFSDCOUNT=16
+RPCMOUNTDOPTS=""
+RPCIDMAPDARGS=""
+RPCGSSDARGS="-vvv"
+
+
+SELinux is preventing /usr/sbin/rpc.gssd from using the block_suspend capability.
+May  7 20:37:24 rhce4 dbus[642]: [system] Activating service name='org.fedoraproject.Setroubleshootd' (using servicehelper)
+May  7 20:37:25 rhce4 dbus[642]: [system] Successfully activated service 'org.fedoraproject.Setroubleshootd'
+May  7 20:37:25 rhce4 setroubleshoot: SELinux is preventing /usr/sbin/rpc.gssd from using the block_suspend capability. For complete SELinux messages run: sealert -l 75c702ec-b199-44a5-9a16-705b0ec79cce
+May  7 20:37:25 rhce4 python: SELinux is preventing /usr/sbin/rpc.gssd from using the block_suspend capability.#012#012*****  Plugin catchall (100. confidence) suggests   **************************#012#012If you believe that rpc.gssd should have the block_suspend capability by default.#012Then you should report this as a bug.#012You can generate a local policy module to allow this access.#012Do#012allow this access for now by executing:#012# ausearch -c 'rpc.gssd' --raw | audit2allow -M my-rpcgssd#012# semodule -i my-rpcgssd.pp#012
+
+
+
+[root@lab125a network-scripts]# vi /etc/exports
+
+[root@lab125a network-scripts]# exportfs -vr
+exporting lab125a:/nfsdummy0
+exporting lab125a:/nfsrw
+exporting *:/nfsro
+
+[root@lab125a network-scripts]# touch afile /nfsr
+nfsro/ nfsrw/
+[root@lab125a network-scripts]# touch afile /nfsro/^C
+[root@lab125a network-scripts]# cd /nfsro/
+[root@lab125a nfsro]# touch lab125a-file1
+[root@lab125a nfsro]# cat /etc/exports
+/nfsro	*(ro,no_root_squash)
+/nfsrw  lab125a(rw,all_squash)
+
+[root@lab130a network-scripts]# mount -v -t nfs -o rw 192.168.2.50:/nfsro /dataro
+mount.nfs: timeout set for Mon Aug 21 15:36:10 2017
+mount.nfs: trying text-based options 'vers=4,addr=192.168.2.50,clientaddr=192.168.2.53'
+[root@lab130a network-scripts]# ls -ltr /dataro/
+total 0
+-rw-r--r--. 1 root root 0 Aug 21 15:34 lab125a-file1
+
+[root@lab130a network-scripts]# mount -v -t nfs -o rw 192.168.2.50:/nfsro /dataro
+mount.nfs: timeout set for Mon Aug 21 15:40:07 2017
+mount.nfs: trying text-based options 'vers=4,addr=192.168.2.50,clientaddr=192.168.2.53'
+[root@lab130a network-scripts]# ls -ltr /dataro/
+total 0
+-rw-r--r--. 1 root root 0 Aug 21 15:34 lab125a-file1
+
+The format of the /etc/exports file is very precise, particularly in regards to use of the space character. Remember to always separate exported file systems from hosts and hosts from one another with a space character. However, there should be no other space characters in the file except on comment lines.
+For example, the following two lines do not mean the same thing:
+/home bob.example.com(rw) 
+The first line allows only users from bob.example.com read/write access to the /home directory. 
+
+
+/home bob.example.com (rw)
+The second line allows users from bob.example.com to mount the directory as read-only (the default), while the rest of the world can mount it read/write.
+
+
+Be careful when using wildcards with fully qualified domain names, as they tend to be more exact than expected. For example, the use of *.example.com as a wildcard allows sales.example.com to access an exported file system, but not bob.sales.example.com. To match both possibilities both *.example.com and *.*.example.com must be specified.
+
+
+[root@lab130a data]# cat /proc/fs/nfsfs/servers
+NV SERVER   PORT USE HOSTNAME
+v4 c0a80232  801   1 192.168.2.50
+
+
+
+[root@lab125a ~]# groupadd nfsgroup -g 7777
+[root@lab125a ~]# grep 7777 /etc/group
+nfsgroup:x:7777:
+[root@lab125a ~]# usermod user1 -G nfsgroup
+usermod: user 'user1' does not exist
+[root@lab125a ~]# useradd user1 -G nfsgroup
+[root@lab125a ~]# useradd user2 -G nfsgroup
+[root@lab125a ~]# useradd user3 -G nfsgroup
+[root@lab125a ~]# cat /etc/passwd | grep user
+tss:x:59:59:Account used by the trousers package to sandbox the tcsd daemon:/dev/null:/sbin/nologin
+rpcuser:x:29:29:RPC Service User:/var/lib/nfs:/sbin/nologin
+user1:x:1001:1001::/home/user1:/bin/bash
+user2:x:1002:1002::/home/user2:/bin/bash
+user3:x:1003:1003::/home/user3:/bin/bash
+[root@lab125a ~]# cat /etc/gr
+groff/     group      group-     grub2.cfg  grub.d/
+[root@lab125a ~]# cat /etc/group | grep nfs
+nfsnobody:x:65534:
+nfsgroup:x:7777:user1,user2,user3
+
+[root@lab125a ~]# chown nfsnobody:nfsgroup /nfsexports/data -R
+
+#Enable set gid bit
+
+[root@lab125a ~]# chmod g+s /nfsexports/data/ -v
+mode of ‘/nfsexports/data/’ changed from 0755 (rwxr-xr-x) to 2755 (rwxr-sr-x)
+
+#On Client
+
+[root@lab130a ~]# groupadd -g 7777 nfsgroup
+[root@lab130a ~]# useradd user1; useradd user2; useradd user3
+[root@lab130a ~]# echo oracle | passwd user1 --stdin
+Changing password for user user1.
+
+#Setting ACL's
+
+[root@lab125a nfsexports]# getfacl data/
+# file: data/
+# owner: nfsnobody
+# group: nfsgroup
+# flags: -s-
+user::rwx
+group::rwx
+group:nfsgroup:r--
+mask::rwx
+other::r-x
+
+Client was still able to touch file
+
+[root@lab125a nfsexports]# setfacl -x g:nfsgroup  data
+
+# 2nd try..
+
+[root@lab125a nfsexports]# setfacl -m m:r data/
+[root@lab125a nfsexports]# getfacl -c data/
+user::rwx
+group::rwx			#effective:r--
+mask::r--
+other::r-x
+
+
+[user1@lab130a ~]$ cd /nfsmount/
+-bash: cd: /nfsmount/: Permission denied
+
+
+[root@lab125a nfsexports]# setfacl -x m data
+[root@lab125a nfsexports]# getfacl -c data/
+user::rwx
+group::rwx
+other::r-x
+
+[user1@lab130a ~]$ cd /nfsmount/
+[user1@lab130a nfsmount]$ touch dfile
+touch: cannot touch ‘dfile’: Permission denied
+
+#Autofs mounting
+
+[root@lab130a etc]# tail -2 auto.master
++auto.master
+/-	/etc/auto.direct
+
+[root@lab130a etc]# cat auto.direct
+/autodir 192.168.2.50:/nfsexports/data
+
+
+[root@lab130a etc]# df -hT
+Filesystem              Type      Size  Used Avail Use% Mounted on
+/dev/mapper/vgos-lvroot xfs       5.0G  1.1G  4.0G  22% /
+devtmpfs                devtmpfs  487M     0  487M   0% /dev
+tmpfs                   tmpfs     497M     0  497M   0% /dev/shm
+tmpfs                   tmpfs     497M  6.7M  490M   2% /run
+tmpfs                   tmpfs     497M     0  497M   0% /sys/fs/cgroup
+/dev/mapper/vgos-lvhome xfs       3.0G   33M  3.0G   2% /home
+/dev/vda1               xfs       509M  125M  384M  25% /boot
+tmpfs                   tmpfs     100M     0  100M   0% /run/user/0
+
+
+[root@lab130a etc]# cd /autodir/
+[root@lab130a autodir]# ls -ltr
+total 116
+-rw-rw-r--. 1 user2 nfsgroup      0 Aug 22 15:50 bfile
+-rw-rw-r--. 1 user2 nfsgroup      0 Aug 22 16:06 cfile
+-rw-rw-r--. 1 user4 nfsgroup      0 Aug 22 16:20 user4
+-rw-r--r--. 1 root  nfsgroup      0 Aug 22 19:04 dfile
+-rwxr-xr-x. 1 root  root     117616 Aug 22 20:26 ls
+-rw-rw-r--. 1 user1 nfsgroup      0 Aug 22 20:35 afile
+-rw-r--r--. 1 root  nfsgroup      0 Aug 22 20:35 test
+[root@lab130a autodir]# df -hT
+Filesystem                    Type      Size  Used Avail Use% Mounted on
+/dev/mapper/vgos-lvroot       xfs       5.0G  1.1G  4.0G  22% /
+devtmpfs                      devtmpfs  487M     0  487M   0% /dev
+tmpfs                         tmpfs     497M     0  497M   0% /dev/shm
+tmpfs                         tmpfs     497M  6.7M  490M   2% /run
+tmpfs                         tmpfs     497M     0  497M   0% /sys/fs/cgroup
+/dev/mapper/vgos-lvhome       xfs       3.0G   33M  3.0G   2% /home
+/dev/vda1                     xfs       509M  125M  384M  25% /boot
+tmpfs                         tmpfs     100M     0  100M   0% /run/user/0
+192.168.2.50:/nfsexports/data nfs4      5.0G  1.1G  4.0G  22% /autodir
+
+#Error on server for direct map
+
+Aug 23 20:58:28 lab125a setroubleshoot: failed to retrieve rpm info for /dev/hugepages
+Aug 23 20:58:28 lab125a setroubleshoot: SELinux is preventing /usr/sbin/rpc.mountd from read access on the directory /dev/hugepages. For complete SELinux messages. run sealert -l 1dc88cd4-dadc-4f1d-b124-5c850b707e95
+Aug 23 20:58:28 lab125a python: SELinux is preventing /usr/sbin/rpc.mountd from read access on the directory /dev/hugepages.#012#012*****  Plugin catchall_boolean (89.3 confidence) suggests   ******************#012#012If you want to allow nfs to export all ro#012Then you must tell SELinux about this by enabling the 'nfs_export_all_ro' boolean.#012You can read 'None' man page for more details.#012Do#012setsebool -P nfs_export_all_ro 1#012#012*****  Plugin catchall (11.6 confidence) suggests   **************************#012#012If you believe that rpc.mountd should be allowed read access on the hugepages directory by default.#012Then you should report this as a bug.#012You can generate a local policy module to allow this access.#012Do#012allow this access for now by executing:#012# ausearch -c 'rpc.mountd' --raw | audit2allow -M my-rpcmountd#012# semodule -i my-rpcmountd.pp#012
+Aug 23 21:00:01 lab125a systemd: Started Session 76 of user root.
+Aug 23 21:00:01 lab125a systemd: Starting Session 76 of user root.
+
+[root@lab125a ~]# sealert -l 1dc88cd4-dadc-4f1d-b124-5c850b707e95
+SELinux is preventing /usr/sbin/rpc.mountd from read access on the directory /dev/hugepages.
+
+*****  Plugin catchall_boolean (89.3 confidence) suggests   ******************
+
+If you want to allow nfs to export all ro
+Then you must tell SELinux about this by enabling the 'nfs_export_all_ro' boolean.
+You can read 'None' man page for more details.
+Do
+setsebool -P nfs_export_all_ro 1
+
+*****  Plugin catchall (11.6 confidence) suggests   **************************
+
+If you believe that rpc.mountd should be allowed read access on the hugepages directory by default.
+Then you should report this as a bug.
+You can generate a local policy module to allow this access.
+Do
+allow this access for now by executing:
+# ausearch -c 'rpc.mountd' --raw | audit2allow -M my-rpcmountd
+# semodule -i my-rpcmountd.pp
+
+
+Additional Information:
+Source Context                system_u:system_r:nfsd_t:s0
+Target Context                system_u:object_r:hugetlbfs_t:s0
+Target Objects                /dev/hugepages [ dir ]
+Source                        rpc.mountd
+Source Path                   /usr/sbin/rpc.mountd
+Port                          <Unknown>
+Host                          lab125a
+Source RPM Packages
+Target RPM Packages
+Policy RPM                    selinux-policy-3.13.1-102.el7_3.16.noarch
+Selinux Enabled               True
+Policy Type                   targeted
+Enforcing Mode                Enforcing
+Host Name                     lab125a
+Platform                      Linux lab125a 3.10.0-327.el7.x86_64 #1 SMP Thu Nov
+                              19 22:10:57 UTC 2015 x86_64 x86_64
+Alert Count                   31
+First Seen                    2017-08-22 15:46:57 CDT
+Last Seen                     2017-08-23 20:57:39 CDT
+Local ID                      1dc88cd4-dadc-4f1d-b124-5c850b707e95
+
+Raw Audit Messages
+type=AVC msg=audit(1503539859.586:959): avc:  denied  { read } for  pid=1514 comm="rpc.mountd" name="/" dev="hugetlbfs" ino=11655 scontext=system_u:system_r:nfsd_t:s0 tcontext=system_u:object_r:hugetlbfs_t:s0 tclass=dir
+
+
+Hash: rpc.mountd,nfsd_t,hugetlbfs_t,dir,read
+
+
+=> Auto fs home directory mounting.
+[root@lab125a ~]# exportfs -avr
+exporting 192.168.2.53:/home
+exporting 192.168.2.53:/nfsexports/data
+[root@lab125a ~]# showmount -e
+Export list for lab125a:
+/home            192.168.2.53
+/nfsexports/data 192.168.2.53
+
+
+=>On Client
+[root@lab130a etc]# tail -2 auto.master
+/netfs  auto.home
+
+
+
+=> /etc/mtab
+-hosts /net autofs rw,relatime,fd=13,pgrp=2605,timeout=300,minproto=5,maxproto=5,indirect 0 0
+auto.home /netfs autofs rw,relatime,fd=19,pgrp=2605,timeout=300,minproto=5,maxproto=5,indirect 0 0
+
+
+[root@lab130a kuttu]# pwd
+/netfs/ 
+
+[root@lab130a etc]# cat auto.home
+kuttu	192.168.2.50:/home/kuttu
+kannan	192.168.2.50:/home/kannan
+
+
+[root@lab130a kuttu]# cd kuttu
+
+/var/log/messages 
+
+Aug 24 08:37:37 lab130a automount[2605]: mount_mount: mount(nfs): calling mkdir_path /netfs/kuttu
+Aug 24 08:37:37 lab130a automount[2605]: mount_mount: mount(nfs): calling mount -t nfs 192.168.2.50:/home/kuttu /netfs/kuttu
+Aug 24 08:37:37 lab130a automount[2605]: spawn_mount: mtab link detected, passing -n to mount
+
+ 
+
+</pre>
+
+</div>
+	
+	
+<div class="w3-container">
+	<h1><span class="mw-headline" id="Routing-Bonding-Teaming"> Routing-Bonding-Teaming</h1>
+	
+<p>
+
+</p>
+
+	
+<pre> 
+
+--Things to remember 
+modprobe bonding
+ls -l /usr/share/doc/teamd-1.25/example_configs/
+man nmcli-examples
+nmcli con add help ( to check the different configurations)
+modinfo bonding
+cat /proc/net/bonding/bond1
+
+--Enable IPv4 forwarding.
+sysctl -w net.ipv4.ip_forward=1
+
+Note: Team ports should be down prior to adding to the Team Configuration
+ip link show
+
+
+--Add dummy interface and enforce static route to make it visible from the server.
+
+[root@rhce1 ~]# modprobe dummy
+
+[root@rhce1 ~]# ip link show dummy0
+9: dummy0: <BROADCAST,NOARP> mtu 1500 qdisc noop state DOWN mode DEFAULT qlen 1000
+    link/ether 8e:db:6e:b9:3c:51 brd ff:ff:ff:ff:ff:ff
+[root@rhce1 ~]# ip link set name ethx dev dummy0
+
+[root@rhce1 ~]# ip address add 192.168.123.123/24 dev ethx
+
+[root@rhce1 ~]# ip link set dev ethx up
+
+[root@rhce1 ~]# ip addr show ethx
+9: ethx: <BROADCAST,NOARP,UP,LOWER_UP> mtu 1500 qdisc noqueue state UNKNOWN qlen 1000
+    link/ether 8e:db:6e:b9:3c:51 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.123.123/24 scope global ethx
+       valid_lft forever preferred_lft forever
+    inet6 fe80::8cdb:6eff:feb9:3c51/64 scope link
+       valid_lft forever preferred_lft forever
+
+[root@rhce1 ~]# ping -c 1 192.168.123.123
+PING 192.168.123.123 (192.168.123.123) 56(84) bytes of data.
+64 bytes from 192.168.123.123: icmp_seq=1 ttl=64 time=0.049 ms
+
+--- 192.168.123.123 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 0.049/0.049/0.049/0.000 ms
+
+
+--Before adding the route
+root@mayura:/etc/sysconfig/network-scripts\> ping 192.168.123.123
+PING 192.168.123.123 (192.168.123.123) 56(84) bytes of data.
+^C
+--- 192.168.123.123 ping statistics ---
+4 packets transmitted, 0 received, 100% packet loss, time 2999ms
+
+--Add the route
+root@mayura:/etc/sysconfig/network-scripts\> ip route add 192.168.123.0/24 via 192.168.122.1 dev virbr0
+or 
+root@mayura:/etc/sysconfig/network-scripts\> ip route add 192.168.123.0/24 via 192.168.110.1 dev virbr1
+
+root@mayura:/etc/sysconfig/network-scripts\> ip route show
+default via 192.168.2.1 dev br_fe
+default via 192.168.2.1 dev enp7s0  proto static  metric 100
+192.168.2.0/24 dev br_fe  proto kernel  scope link  src 192.168.2.21
+192.168.2.0/24 dev enp7s0  proto kernel  scope link  src 192.168.2.20  metric 100
+192.168.110.0/24 dev virbr1  proto kernel  scope link  src 192.168.110.1
+192.168.120.0/24 dev virbr2  proto kernel  scope link  src 192.168.120.1
+192.168.122.0/24 dev virbr0  proto kernel  scope link  src 192.168.122.1
+192.168.130.0/24 dev virbr3  proto kernel  scope link  src 192.168.130.1
+192.168.123.0/24 via 192.168.122.1 dev virbr0
+
+root@mayura:/etc/sysconfig/network-scripts\> ping 192.168.123.123
+PING 192.168.123.123 (192.168.123.123) 56(84) bytes of data.
+64 bytes from 192.168.123.123: icmp_seq=1 ttl=64 time=0.185 ms
+
+
+--Two VM's ( modprobe dummy)
+
+Add 192.168.145.100 on rhce2 and 192.168.150.100 on rhce3. What requires to have these two networks talk to each other?
+The common nics on rhce2 and rhce3 are 192.168.122.20 and 192.168.122.30 
+
+#rhce2
+modprobe dummy
+ip addr add 192.168.145.100 dev dummy0
+
+
+#rhce3
+modprobe dummy
+ip addr add 192.168.150.100 dev dummy0
+
+
+#On Mayura/Hypervisor
+root@mayura:~\> ip route add 192.168.145.0/24 via 192.168.122.1
+root@mayura:~\> ip route add 192.168.150.0/24 via 192.168.122.1
+
+192.168.145.0/24 via 192.168.122.1 dev virbr0
+192.168.150.0/24 via 192.168.122.1 dev virbr0
+
+--Ensure ipv4_forward is enabled usually it is for virtalization
+echo "1" > /proc/sys/net/ipv4/ip_forward
+
+net.ipv4.ip_forward = 1 
+
+
+ Syntax: ip options object command parameters
+  
+  Reference: http://homepage.smc.edu/morgan_david/cs70/ip-cref.pdf
+
+  qdisk = Queuing Discpline, noqueue means nothing getting queued on this interface, noop means all packets are discarded (black hole).
+  
+
+root@panchajanya:~\> ip addr show dev enp8s0
+3: enp8s0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast master br_fe state UP qlen 1000
+    link/ether 00:1f:bc:02:01:67 brd ff:ff:ff:ff:ff:ff
+    inet6 fe80::21f:bcff:fe02:167/64 scope link
+       valid_lft forever preferred_lft forever
+	  
+	  
+--Overrun: Total number of receiver overruns resulting in dropped packets. THis means either kernel has issues or machine is too slow
+for the interface. (-s -s => More verbose )
+
+
+
+[root@lab19 ~]# ip -s -s -s link show dev eth0
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP mode DEFAULT qlen 1000
+    link/ether 52:54:00:45:56:5e brd ff:ff:ff:ff:ff:ff
+    RX: bytes  packets  errors  dropped overrun mcast
+    320095     2785     0       0       0       0
+    RX errors: length   crc     frame   fifo    missed
+               0        0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    124242     1232     0       0       0       0
+    TX errors: aborted  fifo   window heartbeat
+               0        0       0       0
+
+--Example of adding virtual host
+
+[root@lab19 ~]# ip addr add 192.168.132.20/24 dev eth3 brd + scope global label eth3:1
+[root@lab19 ~]# ip addr show dev eth3
+5: eth3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 52:54:00:01:bd:9f brd ff:ff:ff:ff:ff:ff
+    inet 192.168.132.19/24 brd 192.168.132.255 scope global eth3
+       valid_lft forever preferred_lft forever
+    inet 192.168.132.20/24 brd 192.168.132.255 scope global secondary eth3:1
+       valid_lft forever preferred_lft forever
+    inet6 fe80::5054:ff:fe01:bd9f/64 scope link
+       valid_lft forever preferred_lft forever
+	   
+--Example of flushing IP addresses on multiple interfaces
+
+ip addr flush label "eth*"
+	   
+-- Null Routes
+
+-Option-1
+
+[root@lab19 ~]# ping www.google.com
+PING www.google.com (172.217.12.68) 56(84) bytes of data.
+64 bytes from dfw28s05-in-f4.1e100.net (172.217.12.68): icmp_seq=1 ttl=53 time=20.9 ms
+
+[root@lab19 ~]# route add 172.217.12.68 gw 127.0.0.1 lo
+[root@lab19 ~]# ip route show
+default via 192.168.2.1 dev eth0  proto static  metric 100
+172.217.12.68 via 127.0.0.1 dev lo  scope link
+
+[root@lab19 ~]# ping 172.217.12.68 -c 1 -w 1
+PING 172.217.12.68 (172.217.12.68) 56(84) bytes of data.
+
+--- 172.217.12.68 ping statistics ---
+2 packets transmitted, 0 received, 100% packet loss, time 999ms
+
+
+-Option-2
+
+[root@lab19 ~]# route add -host 172.217.12.68 reject
+[root@lab19 ~]# ip route show
+default via 192.168.2.1 dev eth0  proto static  metric 100
+unreachable 172.217.12.68  scope host
+
+-Option-3
+
+[root@lab19 ~]# route add -net 17.217.12.0/24 gw 127.0.0.1 lo
+[root@lab19 ~]# ip route get 17.217.12.0/24
+17.217.12.0 dev lo  src 192.168.2.55
+    cache <local>
+[root@lab19 ~]# ip route show
+default via 192.168.2.1 dev eth0  proto static  metric 100
+17.217.12.0/24 via 127.0.0.1 dev lo  scope link
+
+-Option-4 
+
+
+[root@lab19 ~]# ip route add blackhole 172.217.12.68
+
+[root@lab19 ~]# ip route show
+default via 192.168.2.1 dev eth0  proto static  metric 100
+172.217.12.0/24 via 192.168.2.1 dev eth0
+blackhole 172.217.12.68
+192.168.2.0/24 dev eth0  proto kernel  scope link  src 192.168.2.55  metric 100
+
+
+[root@lab19 ~]# ip route get 172.217.12.68
+RTNETLINK answers: Network is unreachable
+[root@lab19 ~]# ping 172.217.12.68 -c 1 -w 1
+connect: Network is unreachable
+
+--Sample net command
+ip route add 17.217.12.0/24 via 192.168.2.0/24 dev eth0
+
+--Add NAT
+ip route add nat 192.168.132.19 via 192.168.134.19
+
+
+-Route change example
+
+[root@lab19 ~]# ip route add blackhole 172.217.12.68
+[root@lab19 ~]# ip route show
+default via 192.168.2.1 dev eth0  proto static  metric 100
+blackhole 172.217.12.68
+
+[root@lab19 ~]# ip route get 172.217.12.68
+RTNETLINK answers: Network is unreachable
+
+[root@lab19 ~]# ip route change 172.217.12.68 dev eth0
+[root@lab19 ~]# ip route get 172.217.12.68
+172.217.12.68 dev eth0  src 192.168.2.55
+    cache
+[root@lab19 ~]# ip route show
+default via 192.168.2.1 dev eth0  proto static  metric 100
+172.217.12.68 dev eth0  scope link
+
+
+
+root@panchajanya:~\> cat /etc/sysconfig/network
+# Created by anaconda
+NOZEROCONF=yes
+
+Different mode of operations 
+
+Round Robin - "mode=balance-rr"
+Active Backup - "mode=active-backup"
+XOR - "mode=balance-xor" ( Uses source and destination ethernet addresses to transfer network traffic)
+Broadcast - "mode=broadcast"  ( Transmits network on all slaves)
+
+
+=> Load driver
+
+[root@server ~]# lsmod |grep bonding
+[root@server ~]# modprobe bonding
+[root@server ~]# lsmod |grep bonding
+bonding               136705  0
+
+=> Generate uuid's (if the interfaces dont' exist already)
+
+uuidgen eth2 
+uuidgen eth3 
+
+=> Create bond0 file.
+
+cd /etc/sysconfig/network-scripts
+vi ifcfg-bond0
+DEVICE=bond0
+NAME=bond0
+TYPE=bond
+BONDING_MASTER=yes
+BONDING_OPTS="mode=balance-rr"
+ONBOOT=yes
+BOOTPROTO=none
+IPADDR=192.1
+
+
+
+
+--Static Route to enable connection from VM2 to VM1 running on a different CIDR.
+
+root@panchajanya:~\> ip route show
+default via 192.168.2.1 dev br_fe
+default via 192.168.2.1 dev enp7s0  proto static  metric 100
+192.168.2.0/24 dev br_fe  proto kernel  scope link  src 192.168.2.11
+192.168.2.0/24 dev enp7s0  proto kernel  scope link  src 192.168.2.10  metric 100
+192.168.122.0/24 dev virbr0  proto kernel  scope link  src 192.168.122.1
+192.168.125.0/24 dev virbr1  proto kernel  scope link  src 192.168.125.1
+192.168.130.0/24 dev virbr2  proto kernel  scope link  src 192.168.130.1
+
+[root@rhce5 ~]# nc -v team0.intercloudzone.com 7777 -w 1
+Ncat: Version 7.50 ( https://nmap.org/ncat )
+Ncat: Connection refused.
+
+[root@rhce5 ~]# cat /etc/hosts
+192.168.130.40	team0.intercloudzone.com
+192.168.125.40	bond0.intercloudzone.com
+
+ip route add 192.168.130.40 via 192.168.122.1 dev virbr0
+ip route add 192.168.125.40 via 192.168.122.1 dev virbr0
+
+[root@rhce5 ~]# nc -v team0.intercloudzone.com 7777 -w 1
+Ncat: Version 7.50 ( https://nmap.org/ncat )
+Ncat: Connected to 192.168.130.40:7777.
+
+[root@rhce4 conf.d]# httpd -t -D DUMP_VHOSTS
+VirtualHost configuration:
+192.168.125.40:6666    bond0.intercloudzone.com (/etc/httpd/conf.d/bond0.conf:1)
+192.168.130.40:7777    team0.intercloudzone.com (/etc/httpd/conf.d/team0.conf:1)
+*:443                  webserver.intercloudzone.com (/etc/httpd/conf.d/ssl.conf:56)
+*:8888                 vhost1.intercloudzone.com (/etc/httpd/conf.d/vhost1.conf:1)
+
+[root@rhce4 conf.d]# cat team0.conf
+<VirtualHost 192.168.130.40:7777>
+    ServerAdmin team0@webserver.intercloudzone.com
+    DocumentRoot "/var/www/html/team0"
+    ServerName team0.intercloudzone.com
+    ErrorLog "/var/log/httpd/team0.error_log"
+    CustomLog "/var/log/httpd/team0-access_log" common
+</VirtualHost>
+
+[root@rhce4 conf.d]# cat bond0.conf
+<VirtualHost 192.168.125.40:6666>
+    ServerAdmin bond0@webserver.intercloudzone.com
+    DocumentRoot "/var/www/html/bond0"
+    ServerName bond0.intercloudzone.com
+    ErrorLog "/var/log/httpd/bond0.error_log"
+    CustomLog "/var/log/httpd/bond0-access_log" common
+</VirtualHost>
+
+
+
+</pre>
+
+</div>
+
+
+
+
+<div class="w3-container">
+	<h1><span class="mw-headline" id="Work-Related"> Work-Related </h1>
+<p>
+
+</p>
+
+
+<pre> 
+1. Zone was created, up until then the dotted records were resolving. Due to TTL's/-ive TTL's the resolution started failing from several resolvers but with gaps. Akamai/Dyn both had to look on their side until this was resolved.
+
+2. VM's from same network works, but some VM's didn't. The CIDR was /25 instead of /24 which took few VM's outside of the subnet.
+
+3. The pages stopped rendering from outside network but worked from intranet (Corporate). The result had to do  with a .js script load which occurs from a static site which was inherently blocked (cloud-sites-state.oracle.com) from within the application to the outside world.
+
+4. MTU size was different 
+
+
+</pre>
+
+</div>
+
+
+
+
+<div class="w3-container">
+	<h1><span class="mw-headline" id="MariaDB"> MariaDB </h1>
+<p>
+
+</p>
+
+
+<pre> 
+
+--Securing MySQL Installation
+
+[root@rhce1 ~]# mysql_secure_installation
+
+NOTE: RUNNING ALL PARTS OF THIS SCRIPT IS RECOMMENDED FOR ALL MariaDB
+      SERVERS IN PRODUCTION USE!  PLEASE READ EACH STEP CAREFULLY!
+
+In order to log into MariaDB to secure it, we'll need the current
+password for the root user.  If you've just installed MariaDB, and
+you haven't set the root password yet, the password will be blank,
+so you should just press enter here.
+
+Enter current password for root (enter for none):
+ERROR 1045 (28000): Access denied for user 'root'@'localhost' (using password: YES)
+
+--Work-around for the above..
+
+#Start on safe mode
+[root@rhce1 ~]# mysqld_safe --skip-grant-tables
+180409 09:28:51 mysqld_safe Logging to '/var/log/mariadb/mariadb.log'.
+
+
+#Login as root and switch to mysql database.
+
+[root@rhce1 ~]# mysql -u root
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MariaDB connection id is 1
+Server version: 5.5.56-MariaDB MariaDB Server
+
+Copyright (c) 2000, 2017, Oracle, MariaDB Corporation Ab and others.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+MariaDB [(none)]> use mysql
+
+# Update the password, flush and quit.
+MariaDB [mysql]> update user set password=password('oracle') where user='root';
+flush privileges;
+quit
+
+systemctl restart mariadb
+
+--Dict tables
+show variables
+use information_schema; show tables;
+select @@version;
+
+--Backup & restore
+mysqldump --databases rhce -u root -p  > /tmp/rhce.sql
+
+--Allow root/remote login
+grant all privileges on *.* to 'root'@'192.168.%.%' identified by 'oracle' with grant option;
+
+--Change password
+set password for 'kuttu'@'localhost' = password('oracle');
+
+flush privileges
+
+
+</pre>
+
+</div>
+
+
+
+
+</body>
+</html>

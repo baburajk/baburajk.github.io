@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head> <script data-ad-client="ca-pub-2393111531899119" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script> 
+	<meta charset="utf-8">
+	<title>intercloudzone</title>
+	<meta name="description" content="">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<meta property="og:image" content="path/to/image.jpg">
+<!-- favicon -->
+<link rel="shortcut icon" href="img/favicon/favicon.ico" type="image/x-icon">
+<link rel="apple-touch-icon" href="img/favicon/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="72x72" href="img/favicon/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="114x114" href="img/favicon/apple-touch-icon-114x114.png">
+<!-- favicon -->
+<!-- build:css -->
+<link rel="stylesheet" href="css/libs/bootstrap.min.css">
+<link rel="stylesheet" href="css/libs/font-awesome.min.css">
+<link rel="stylesheet" href="css/libs/animate.min.css">
+<link rel="stylesheet" href="css/libs/slick.css">
+<link rel="stylesheet" href="css/libs/magnific-popup.css">
+
+<link rel="stylesheet" href="css/main.css">
+<link rel="stylesheet" href="css/media.css">
+<!-- endbuild -->
+	<!-- Chrome, Firefox OS and Opera -->
+	<meta name="theme-color" content="#000">
+	<!-- Windows Phone -->
+	<meta name="msapplication-navbutton-color" content="#000">
+	<!-- iOS Safari -->
+	<meta name="apple-mobile-web-app-status-bar-style" content="#000">
+	<!-- <style>body { opacity:s 0; overflow-x: hidden; } html { background-color: #fff; }</style> -->
+</head>
+<body data-spy="scroll" data-target=".navbar" data-offset="50" class="loaded" link="blue">
+<!-- Preloader -->
+<div class="preloader">
+	<div class="cssload-spinner">
+		<div class="cssload-ball cssload-ball-1"></div>
+		<div class="cssload-ball cssload-ball-2"></div>
+		<div class="cssload-ball cssload-ball-3"></div>
+		<div class="cssload-ball cssload-ball-4"></div>
+	</div>
+</div>
+<!-- Preloader -->
+<div class="site-content">
+	<!-- Naviigation -->
+	<div class="navbar-wrap">
+		<div class="navbar">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-12">
+						<nav class="navbar-menu">
+							<div class="navbar-header">
+								<button class="collapsed navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-example-js-navbar-scrollspy">
+									<span class="icon-bar"></span>
+									<span class="icon-bar"></span>
+									<span class="icon-bar"></span>
+								</button>
+							</div>
+							 
+							<div class="navbar-full">
+								<div class="collapse bs-example-js-navbar-scrollspy">
+									<ul class="nav navbar-nav">
+										<li style="display: none;"><a></a></li>
+										<li><a href="http://www.linkedin.com/in/baburajkallarakkal">About Me</a></li>
+										<li><a href="http://padmavyuha.blogspot.com/">Blog</a></li>
+										<li><a href="https://sourceforge.net/projects/oraclerman/">Projects</a></li>
+										<li><a href="https://hub.docker.com/u/baburaj/">Docker</a></li>
+										<li><a href="mailto:raj.anju@gmail.com">Contact Me</a></li>
+										<li>
+										</li>
+									</ul>
+									<!-- btn -->
+									<div class="nav-button main-button">
+										<a href="#" class="btn btn-nav btn-block" role="button">
+											Site is in Beta!
+										</a>
+									</div>
+									<!-- btn -->
+								</div>
+							</div>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Naviigation -->
+<!-- Header -->
+	<div class="menu-sticky"></div>
+
+	 
+
+	<!-- Screen-one -->
+	<div class="screen-one">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="screen-one-title">
+						<h2>Apache, MariaDB </h2>
+					</div>
+				</div>
+			</div>
+		</div>
+	 
+		<div class="container">
+					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0s">
+						<span>01.</span>
+						<div class="screen-one-item-container">
+							<h3>Apache </h3>
+							<p> Certs, Configurations and TLS </p>
+							<p> </p>
+<pre>
+
+[root@rhce4 conf.d]# httpd -t -D DUMP_VHOSTS
+VirtualHost configuration:
+192.168.125.40:6666    bond0.intercloudzone.com (/etc/httpd/conf.d/bond0.conf:1)
+192.168.130.40:7777    team0.intercloudzone.com (/etc/httpd/conf.d/team0.conf:1)
+*:443                  webserver.intercloudzone.com (/etc/httpd/conf.d/ssl.conf:56)
+*:8888                 vhost1.intercloudzone.com (/etc/httpd/conf.d/vhost1.conf:1)
+
+[root@rhce4 conf.d]# cat team0.conf
+<VirtualHost 192.168.130.40:7777>
+    ServerAdmin team0@webserver.intercloudzone.com
+    DocumentRoot "/var/www/html/team0"
+    ServerName team0.intercloudzone.com
+    ErrorLog "/var/log/httpd/team0.error_log"
+    CustomLog "/var/log/httpd/team0-access_log" common
+</VirtualHost>
+
+[root@rhce4 conf.d]# cat bond0.conf
+<VirtualHost 192.168.125.40:6666>
+    ServerAdmin bond0@webserver.intercloudzone.com
+    DocumentRoot "/var/www/html/bond0"
+    ServerName bond0.intercloudzone.com
+    ErrorLog "/var/log/httpd/bond0.error_log"
+    CustomLog "/var/log/httpd/bond0-access_log" common
+</VirtualHost>
+
+
+--Apache (IncludeOptional does not generate errors if path specified does not match any file.)
+
+[root@rhce4 conf]# grep ^Include httpd.conf
+Include conf.modules.d/*.conf
+IncludeOptional conf.d/*.conf
+
+--In Directory Container ( to allow explicit access)
+
+Order Allow,Deny 
+Allow from intercloudzone.com
+Deny from all
+
+--Directive to list the files/dirs if index.html is absent
+
+Options Indexes FollowSymLinks
+
+--Search selinux alerts
+
+[root@rhce4 conf.d]# ausearch -m avc -c httpd
+----
+time->Fri Apr 20 19:42:26 2018
+type=PROCTITLE msg=audit(1524271346.864:748): proctitle=2F7573722F7362696E2F6874747064002D44464F524547524F554E44
+type=SYSCALL msg=audit(1524271346.864:748): arch=c000003e syscall=49 success=no exit=-13 a0=6 a1=563c8e71e7c0 a2=1c a3=7fff2ac8ad2c items=0 ppid=1 pid=9402 auid=4294967295 uid=0 gid=0 euid=0 suid=0 fsuid=0 egid=0 sgid=0 fsgid=0 tty=(none) ses=4294967295 comm="httpd" exe="/usr/sbin/httpd" subj=system_u:system_r:httpd_t:s0 key=(null)
+type=AVC msg=audit(1524271346.864:748): avc:  denied  { name_bind } for  pid=9402 comm="httpd" src=8888 scontext=system_u:system_r:httpd_t:s0 tcontext=system_u:object_r:unreserved_port_t:s0 tclass=tcp_socket
+----
+
+
+--Apache Manual
+
+elinks http://localhost/manual/vhosts
+
+-- CGI Bin Setup.
+semanage boolean -m httpd_can_sendmail --on or setsebool 
+
+--Load CGI Scripts..
+
+[root@rhce4 ~]# cat /var/www/app/email.sh
+#!/bin/bash
+echo -e "Content-type: text/html \n\n";
+echo "<html>";
+echo "<body>";
+date | /usr/bin/mailx -s Test kuttu;
+echo "Email has been sent";
+echo "</body>";
+echo "</html>";
+
+type=AVC msg=audit(1524521548.542:560): avc:  denied  { read } for  pid=3224 comm="sendmail" path=2F746D702F527347797A764533202864656C6574656429 dev="dm-0" ino=6643073 scontext=system_u:system_r:system_mail_t:s0 tcontext=system_u:object_r:httpd_sys_rw_content_t:s0 tclass=file
+
+
+semanage fcontext -a -s system_u -t httpd_sys_script_exec_t -r s0 "/var/www/app(/.*)?"
+restorecon -vR /var/www/app
+semanage boolean -m httpd_can_sendmail --on
+
+
+[root@rhce4 ~]# ausearch -c 'sendmail' --raw | audit2allow -M my-sendmail
+******************** IMPORTANT ***********************
+To make this policy package active, execute:
+
+semodule -i my-sendmail.pp
+
+[root@rhce4 ~]# semodule -i my-sendmail.pp
+
+--Enable home directorie - control file /etc/httpd/conf.d/userdir.conf
+
+
+Either do chmod o+x /home/userdir or
+setfacl -R -m u:apache:X  /home/devopsuser1
+setfacl -R -m d:u:apache:X  /home/devopsuser1
+
+curl -s http://webserver.intercloudzone.com/~devopsuser1/index.html
+
+-INstall via group install
+
+yum group info
+yum group info "Basic Web Server"
+yum group install "web-server"
+
+-Check SSL Page via curl (download cacert)
+[root@rhce5 ~]# curl -s --cacert cert.pem https://webserver.intercloudzone.com/index.html
+This is an ssl/tls protected page
+
+--Prevent access via firewalld
+[root@rhce4 ~]# firewall-cmd --add-rich-rule 'rule family="ipv4" source address="192.168.0.0/16" service name=https reject'
+success
+
+--Limit Output from Apache
+ServerTokens OS
+
+--Available modules location and configured modules directory.
+/usr/lib64/httpd/modules/
+/etc/httpd/conf.modules.d/
+
+[root@rhce4 ~]# grep modules /etc/httpd/conf/httpd.conf
+# LoadModule foo_module modules/mod_foo.so
+Include conf.modules.d/*.conf
+
+--AllowOverride options to secure Apache files
+
+<VirtualHost *:80>
+    ServerAdmin webmaster@example.intercloudzone.com
+    DocumentRoot "/var/www/html/example"
+    ServerName example.intercloudzone.com
+    ErrorLog "/var/log/httpd/example-host.example.com-error_log"
+    CustomLog "/var/log/httpd/example-host.example.com-access_log" common
+    <Directory "/var/www/html/example">
+         AllowOverride AuthConfig
+         AuthType Basic
+         AuthName "Password Required"
+         AuthUserFile /var/www/html/password.file
+         AuthGroupFile /var/www/html/group.file
+         Require group admins
+    </Directory>
+</VirtualHost>
+
+
+-Enable home directories to execute CGI
+
+in httpd.conf
+
+<Directory "/home/*/public_html/cgi-bin">
+        Options ExecCGI
+        SetHandler cgi-script
+</Directory>
+
+[root@rhce4 conf.d]# ls -lZ /home/devopsuser1/public_html/cgi-bin/
+-rwxr-xr-x+ devopsuser1 devopsuser1 unconfined_u:object_r:httpd_user_script_exec_t:s0 email.sh
+-rwxr-xr-x+ devopsuser1 devopsuser1 unconfined_u:object_r:httpd_user_script_exec_t:s0 test.pl
+
+[root@rhce4 conf.d]# curl -s http://webserver.intercloudzone.com/cgi-bin/test.pl
+Hello
+
+
+[root@rhce4 conf.d]# httpd -t -D DUMP_VHOSTS
+VirtualHost configuration:
+192.168.125.40:6666    bond0.intercloudzone.com (/etc/httpd/conf.d/bond0.conf:1)
+192.168.130.40:7777    team0.intercloudzone.com (/etc/httpd/conf.d/team0.conf:1)
+*:443                  webserver.intercloudzone.com (/etc/httpd/conf.d/ssl.conf:56)
+*:8888                 vhost1.intercloudzone.com (/etc/httpd/conf.d/vhost1.conf:1)
+
+[root@rhce4 conf.d]# cat team0.conf
+<VirtualHost 192.168.130.40:7777>
+    ServerAdmin team0@webserver.intercloudzone.com
+    DocumentRoot "/var/www/html/team0"
+    ServerName team0.intercloudzone.com
+    ErrorLog "/var/log/httpd/team0.error_log"
+    CustomLog "/var/log/httpd/team0-access_log" common
+</VirtualHost>
+
+[root@rhce4 conf.d]# cat bond0.conf
+<VirtualHost 192.168.125.40:6666>
+    ServerAdmin bond0@webserver.intercloudzone.com
+    DocumentRoot "/var/www/html/bond0"
+    ServerName bond0.intercloudzone.com
+    ErrorLog "/var/log/httpd/bond0.error_log"
+    CustomLog "/var/log/httpd/bond0-access_log" common
+</VirtualHost>
+ 
+--Secure reload failure
+
+==> /var/log/httpd/big-error.log <==
+[Mon May 14 16:02:49.594562 2018] [ssl:emerg] [pid 11019] AH01910: Oops, no RSA, DSA or ECC server certificate found for 'big.intercloudzone.com:0'?!
+
+** ENusre the ServerName directive contains the port number.
+
+ ServerName big.intercloudzone.com:443
+
+ --For APACHE, things to remember to override for restricting pages..
+
+<Directory "/var/privgroup">
+    AllowOverride AuthConfig
+    AuthType Basic
+    AuthName "This is for prviate group DBA only"
+    AuthUserFile "/var/privgroup/userdb"
+    AuthGroupFile "/var/privgroup/groupdb"
+    Require group dba
+    # Allow open access:
+</Directory>
+
+--Example of generating a self-signed cert
+[root@rhce1 ~]# grep answers /etc/pki/tls/certs/make-dummy-cert
+answers() {
+  answers | /usr/bin/openssl req -newkey rsa:2048 -keyout $PEM1 -nodes -x509 -days 365 -out $PEM2 2> /dev/null
+
+--Without x509 here will generate a CSR and KEY.
+openssl req -newkey rsa:2048 -keyout rhce1.intercloudzone.com.key -nodes -x509 -days 365 -out rhce1.intercloudzone.com.crt
+openssl req -new -newkey rsa:4096 -days 365 -nodes -x509  -keyout test.key -out test.pem
+
+--3 Step process 
+
+a) Generate a key ( man genpkey)
+openssl genpkey -algorithm RSA -out key.pem -pkeyopt rsa_keygen_bits:2048
+
+b) Generate a CSR
+openssl req -new -key key.pem -out req.pem
+
+c) Generate a cert
+openssl x509 -req -in req.pem -signkey key.pem -out cert.pem
+
+or 
+
+--Generate key one shot
+genkey webserver.intercloudzone.com 
+
+Note: Make sure to give PortNumber on the ServerName directive.
+
+[root@rhce4 conf.d]# cat secure.conf
+<VirtualHost *:443>
+    ServerAdmin secure@webserver.intercloudzone.com
+    DocumentRoot "/var/www/html/secure"
+    ServerName webserver.intercloudzone.com:443
+    ErrorLog "/var/log/httpd/secure.error_log"
+    CustomLog "/var/log/httpd/secure-access_log" common
+    SSLCertificateFile /etc/pki/tls/certs/secure.pem
+    SSLCertificateKeyFile /etc/pki/tls/private/secure.key
+</VirtualHost>
+
+[root@rhce5 ~]# echo | openssl s_client -showcerts -servername webserver.intercloudzone.com -connect webserver.intercloudzone.com:443 > cert.pem
+
+[root@rhce5 ~]# curl --cacert cert.pem https://webserver.intercloudzone.com/index.html
+This is an ssl/tls protected page
+
+--Allows binary to bind on low numbered ports.
+
+setcap CAP_NET_BIND_SERVICE=+eip /path/to/binary
+ 
+--To install the man pages for httpd_linux
+
+yum install httpd-manual
+elinks http://localhost/manual
+
+</pre>
+						</div>
+				</div>
+
+				   <div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.1s">
+						<span>02.</span>
+						<div class="screen-one-item-container">
+							<h3> MariaDB </h3>
+							<p> MariaDB dump, configurations, snapshot backups..
+							</p>
+							<p> </p>
+
+<pre>
+
+MariaDB Configurations are stored in /etc/my.conf
+
+bind-address 
+
+--Securing MySQL Installation
+
+[root@rhce1 ~]# mysql_secure_installation
+
+NOTE: RUNNING ALL PARTS OF THIS SCRIPT IS RECOMMENDED FOR ALL MariaDB
+      SERVERS IN PRODUCTION USE!  PLEASE READ EACH STEP CAREFULLY!
+
+In order to log into MariaDB to secure it, we'll need the current
+password for the root user.  If you've just installed MariaDB, and
+you haven't set the root password yet, the password will be blank,
+so you should just press enter here.
+
+Enter current password for root (enter for none):
+ERROR 1045 (28000): Access denied for user 'root'@'localhost' (using password: YES)
+
+--Work-around for the above..
+
+#Start on safe mode
+[root@rhce1 ~]# mysqld_safe --skip-grant-tables
+180409 09:28:51 mysqld_safe Logging to '/var/log/mariadb/mariadb.log'.
+
+
+#Login as root and switch to mysql database.
+
+[root@rhce1 ~]# mysql -u root
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MariaDB connection id is 1
+Server version: 5.5.56-MariaDB MariaDB Server
+
+Copyright (c) 2000, 2017, Oracle, MariaDB Corporation Ab and others.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+MariaDB [(none)]> use mysql
+
+# Update the password, flush and quit.
+MariaDB [mysql]> update user set password=password('oracle') where user='root';
+flush privileges;
+quit
+
+systemctl restart mariadb
+
+--Dict tables
+show variables
+use information_schema; show tables;
+select @@version;
+
+--Backup & restore
+mysqldump --databases rhce -u root -p  > /tmp/rhce.sql
+
+--Allow root/remote login
+grant all privileges on *.* to 'root'@'192.168.%.%' identified by 'oracle' with grant option;
+
+--Change password
+set password for 'kuttu'@'localhost' = password('oracle');
+
+flush privileges
+
+-There are sample configurations at  /usr/share/mysql/my-small.cnf
+
+
+-MariadB
+To find out all the options related to MariaDB
+
+[root@rhce4 doc]# systemctl status mariadb  |grep mysql
+ Main PID: 1760 (mysqld_safe)
+           ├─1760 /bin/sh /usr/bin/mysqld_safe --basedir=/usr
+           └─1922 /usr/libexec/mysqld --basedir=/usr --datadir=/var/lib/mysql --plugin-dir=/usr/lib64/mysql/plugin --log-erro
+
+
+/usr/libexec/mysqld --verbose --help
+
+--To see what values a running MySQL server is using 
+mysqladmin variables
+
+-To configure mysql allowing connections only from local-clients add to /etc/mysql.conf under [mysqld]
+skip-networking = 1
+
+
+-Backup database
+
+mysqldump --all-databases
+
+
+-Find the data directory
+[root@rhce4 ~]# mysqladmin -u root -poracle variables | grep datadir
+| datadir                                           | /var/lib/mysql/
+
+
+-Find the LVM
+[root@rhce4 ~]# df -h /var/lib/mysql/
+Filesystem             Size  Used Avail Use% Mounted on
+/dev/mapper/vgos-root  3.9G  2.1G  1.9G  53% /
+
+-Check for free space
+[root@rhce4 ~]# vgdisplay vgos | grep Free 
+  Free  PE / Size       624 / <2.44 GiB
+
+- Ensure DB is shutdown or  flush with read lock.
+FLUSH TABLES WITH READ LOCK; 
+Note:  Do no close this session as the lock will be lifted once the session is exited!
+
+
+-Create an LVM Snapshot
+lvreate -L2G -n mariadb-backup /dev/mapper/vgos-root -s
+
+- Mount the snapshot and backup the datafiles from here..
+[root@rhce4 ~]# mkdir /mnt/snapshot
+[root@rhce4 ~]# mount /dev/vgos/mariadb-backup /mnt/snapshot/
+
+
+</pre>
+						</div>
+					</div>
+
+					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
+						<span>03.</span>
+						<div class="screen-one-item-container">
+							<h3> Apache </h3>
+							<p> Configurations contd. <br>
+
+							  <br>
+						</p>
+						<p> </p>
+
+<pre>
+
+-TLS-HandShake
+
+A Certificate has multiple parts - a public key, server identity and a signature from certificate authority.
+
+During the initial handshake, when setting up encrypted connection client and server agree on a set of encryption
+ciphers supported by both server and client and exchange a bits of random data. The client uses this random data to generate
+a session key which will be used for much faster symmetric encryption and the same is used for both encryption and decryption.
+To make sure the key is not compromised, it is sent to the server encrypted with the servers public key(part of server certificate).
+
+Note: The SELinux context for a certificate is cert_t 
+
+HSTS : Configuring HTTP Strict Transport  
+A common misconfiguration and the one that result in warnings in most modern browsers is having a web-page that is served over 
+https include resources served out over clear-text http.
+
+To protect againt this type of misconfiguration, add following line inside <VirtualHost> block that has TLS enabled.
+
+Header always Strict-Transport-Security "max-age=15768000"
+
+Sending this extra header informs clients that they are not allowed to fetch any resources for this page that are not served using TLS.
+
+To setup redirects from http to https, a catch-all virtualhost configuration can be used. So inside a <VirtualHost *:80> block
+
+RewriteEngine on
+RewriteRule ^(/.*)$ https://%{HTTP_POST}$1 [redirect=301]
+
+
+-Redirection rule and a catch-all configuration file
+
+[root@rhce5 conf.d]# cat 00-default.conf
+<-VirtualHost _default_:80>
+    DocumentRoot "/srv/default/www"
+    CustomLog "/var/log/httpd/default-vhost.log" common
+    RewriteEngine on
+    RewriteRule ^(/.*)$ https://%{HTTP_HOST}$1 [redirect=301]
+<-/VirtualHost>
+
+<-Directory /srv/default/www>
+  AllowOverride none
+  Require all granted
+<-/Directory>
+
+
+ScriptAlias /cgi-bin/ "/var/www/cgi-bin/"
+
+This instructs httpd to redirect any request for files under the /cgi-bin/ to /var/www/cgi-bin directory and treat
+the files in that directiory as executables.
+
+All these files should be executable by apache user/group and httpd_sys_script_exec_t SELinux context should be set.
+
+CGI Directory should have "Options None" and access should be granted via <Directory> block.
+
+--Serving Dynamic Python Content
+
+WSGI(Web Server Gateway Interface)
+
+</pre>
+ 
+	  					</div>
+					</div>
+
+<!-- Contact -->
+<a class="anchor" id="contact"></a>
+
+<section class="contact">
+		<div class="contact-wrap">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-12 __web-inspector-hide-shortcut__">
+						<div class="contact-title">
+							<h2></h2>
+							<p> 
+								<br class="disable"></p>
+						</div>
+						<!-- /.contact-title -->
+					</div>
+					<!-- /.col-md-12 -->
+					
+					<!-- /.col-md-10 -->
+				</div>
+				<!-- /.row -->
+			</div>
+			<!-- /.container -->
+		</div>
+		<!-- /.directions-wrap -->
+	</section>
+
+</div>
+<!-- Site content -->
+
+<!-- Footer -->
+<a class="anchor" id="footer"></a>
+<footer class="footer" style="background-image: url(img/footer-bg.jpg); background-position:center; background-size: cover; background-repeat:no-repeat;">
+	<div class="footer-wrap">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="footer-title">
+						<h2>www.intercloudzone.com</h2>
+						<ul class="footer-icons">
+						<script src="//platform.linkedin.com/in.js" type="text/javascript"> lang: en_US</script>
+						<script type="IN/Share" data-url="http://www.intercloudzone.com/web-database.html"></script>
+						</ul>
+						<p> </p>
+					</div>
+					<!-- /.footer-title -->
+				</div>
+				<!-- /.col-md-12 -->
+			</div>
+			<!-- /.row -->
+		</div>
+		<!-- /.container -->
+	</div>
+	<!-- /.directions-wrap -->
+</footer>
+<!-- Footer -->
+
+
+
+<!-- links -->
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?key=AIzaSyDDuC8pr6YqiBr9wqfhNIJ56AqwzWKhiQo"></script>
+<!-- build:js -->
+
+ 
+
+<script src="js/libs/jquery.min.js"></script>
+<script type="text/javascript" src="js/libs/bootstrap.min.js"></script>
+<script type="text/javascript" src="js/libs/waypoints.min.js"></script>
+<script type="text/javascript" src="js/libs/slick.min.js"></script>
+<script type="text/javascript" src="js/libs/magnific-popup.min.js"></script>
+
+<script type="text/javascript" src="js/common.js"></script>
+<!-- endbuild -->
+<!-- links -->
+</body>
+</html>
+
+

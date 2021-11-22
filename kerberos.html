@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head> <script data-ad-client="ca-pub-2393111531899119" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script> 
+	<meta charset="utf-8">
+	<title>intercloudzone</title>
+	<meta name="description" content="">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<meta property="og:image" content="path/to/image.jpg">
+<!-- favicon -->
+<link rel="shortcut icon" href="img/favicon/favicon.ico" type="image/x-icon">
+<link rel="apple-touch-icon" href="img/favicon/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="72x72" href="img/favicon/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="114x114" href="img/favicon/apple-touch-icon-114x114.png">
+<!-- favicon -->
+<!-- build:css -->
+<link rel="stylesheet" href="css/libs/bootstrap.min.css">
+<link rel="stylesheet" href="css/libs/font-awesome.min.css">
+<link rel="stylesheet" href="css/libs/animate.min.css">
+<link rel="stylesheet" href="css/libs/slick.css">
+<link rel="stylesheet" href="css/libs/magnific-popup.css">
+
+<link rel="stylesheet" href="css/main.css">
+<link rel="stylesheet" href="css/media.css">
+<!-- endbuild -->
+	<!-- Chrome, Firefox OS and Opera -->
+	<meta name="theme-color" content="#000">
+	<!-- Windows Phone -->
+	<meta name="msapplication-navbutton-color" content="#000">
+	<!-- iOS Safari -->
+	<meta name="apple-mobile-web-app-status-bar-style" content="#000">
+	<!-- <style>body { opacity:s 0; overflow-x: hidden; } html { background-color: #fff; }</style> -->
+</head>
+<body data-spy="scroll" data-target=".navbar" data-offset="50" class="loaded" link="blue">
+<!-- Preloader -->
+<div class="preloader">
+	<div class="cssload-spinner">
+		<div class="cssload-ball cssload-ball-1"></div>
+		<div class="cssload-ball cssload-ball-2"></div>
+		<div class="cssload-ball cssload-ball-3"></div>
+		<div class="cssload-ball cssload-ball-4"></div>
+	</div>
+</div>
+<!-- Preloader -->
+<div class="site-content">
+	<!-- Naviigation -->
+	<div class="navbar-wrap">
+		<div class="navbar">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-12">
+						<nav class="navbar-menu">
+							<div class="navbar-header">
+								<button class="collapsed navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-example-js-navbar-scrollspy">
+									<span class="icon-bar"></span>
+									<span class="icon-bar"></span>
+									<span class="icon-bar"></span>
+								</button>
+							</div>
+							 
+							<div class="navbar-full">
+								<div class="collapse bs-example-js-navbar-scrollspy">
+									<ul class="nav navbar-nav">
+										<li style="display: none;"><a></a></li>
+										<li><a href="http://www.linkedin.com/in/baburajkallarakkal">About Me</a></li>
+										<li><a href="http://padmavyuha.blogspot.com/">Blog</a></li>
+										<li><a href="https://sourceforge.net/projects/oraclerman/">Projects</a></li>
+										<li><a href="https://hub.docker.com/u/baburaj/">Docker</a></li>
+										<li><a href="mailto:raj.anju@gmail.com">Contact Me</a></li>
+										<li>
+										</li>
+									</ul>
+									<!-- btn -->
+									<div class="nav-button main-button">
+										<a href="#" class="btn btn-nav btn-block" role="button">
+											Site is in Beta!
+										</a>
+									</div>
+									<!-- btn -->
+								</div>
+							</div>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Naviigation -->
+<!-- Header -->
+	<div class="menu-sticky"></div>
+
+	 
+
+	<!-- Screen-one -->
+	<div class="screen-one">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="screen-one-title">
+						<h2>Reference/Hints</h2>
+					</div>
+				</div>
+			</div>
+		</div>
+	 
+		<div class="container">
+					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0s">
+						<span>01.</span>
+						<div class="screen-one-item-container">
+							<h3>Kerberos</h3>
+							<p> Installation/Configuration of Kerberos realm </p>
+							<p> </p>
+<pre>
+
+--Update Host file Note (If DNS is not being used, make sure the FQDN is right after the IP in /etc/hosts)
+
+192.168.122.10 rhce1.intercloudzone.com rhce1
+192.168.122.20 rhce2.intercloudzone.com rhce2
+
+--Install Packages (On the Server)
+yum install -y krb5-server krb5-workstation pam_krb5
+
+
+Note: Without pam_krb5 module, the authconfig will fail
+[root@rhce2 ~]# authconfig --enablekrb5 --update
+authconfig: Authentication module /usr/lib64/security/pam_krb5.so is missing. Authentication process might not work correctly.
+
+
+--Edit /etc/krb5.conf to update realm
+
+--Update KDC configuration files with the FQDN (REALM)
+
+[root@rhce1 ~]# grep -i intercloudzone /etc/krb5.conf
+ default_realm = INTERCLOUDZONE.COM
+ INTERCLOUDZONE.COM = {
+  kdc = rhce1.intercloudzone.com
+  admin_server = rhce1.intercloudzone.com
+ .intercloudzone.com = INTERCLOUDZONE.COM
+ intercloudzone.com = INTERCLOUDZONE.COM
+
+
+-- Update ACL with the realm.
+[root@rhce1 ~]# sed -i 's/EXAMPLE/INTERCLOUDZONE/g' /var/kerberos/krb5kdc/kadm5.acl
+[root@rhce1 ~]# cat /var/kerberos/krb5kdc/kadm5.acl
+*/admin@INTERCLOUDZONE.COM  *
+
+
+-- Create krb5 DB( -s creates stash file )
+
+[root@rhce1 ~]# kdb5_util create -s -r INTERCLOUDZONE.COM
+Loading random data
+Initializing database '/var/kerberos/krb5kdc/principal' for realm 'INTERCLOUDZONE.COM',
+master key name 'K/M@INTERCLOUDZONE.COM'
+You will be prompted for the database Master Password.
+It is important that you NOT FORGET this password.
+Enter KDC database master key:
+
+[root@rhce1 ~]# rpm -ql krb5-server-1.15.1-8.el7.x86_64 |grep systemd
+/usr/lib/systemd/system/kadmin.service
+/usr/lib/systemd/system/kprop.service
+/usr/lib/systemd/system/krb5kdc.service
+
+-Start admin & KDC
+
+For kerberos to work time sync should be working (chrony/ntp)
+systemctl start krb5kdc kadmin
+
+--Add services to firewall
+
+[root@rhce2 ~]# nc -v rhce1.intercloudzone.com 88  
+Ncat: Version 6.40 ( http://nmap.org/ncat )
+libnsock nsi_new2(): nsi_new (IOD #1)
+libnsock nsock_connect_tcp(): TCP connection requested to 192.168.122.10:88 (IOD #1) EID 8
+libnsock nsock_trace_handler_callback(): Callback: CONNECT ERROR [No route to host (113)] for EID 8 [192.168.122.10:88]
+Ncat: No route to host.
+
+--Enable kerberos with firewalld on rhce1 and retry
+
+
+[root@rhce1 icmptypes]# firewall-cmd --permanent --add-service kerberos
+success
+[root@rhce1 icmptypes]# firewall-cmd --permanent --add-service kadmin
+success
+[root@rhce1 icmptypes]# firewall-cmd --reload
+success
+
+
+--Create admin & users (to test) and add hosts
+
+kadmin.local:  addprinc root/admin
+kadmin.local:  addprinc kuttu
+kadmin.local: addprinc -randkey host/rhce1.intercloudzone.com
+kadmin.local: addprinc -randkey host/rhce2.intercloudzone.com
+useradd kuttu
+
+systemctl restart krb5kdc kadmin
+
+--Create a local copy stored by default in the /etc/krb5.keytab file:
+kadmin.local:  ktadd host/rhce1.intercloudzone.com
+
+
+--Test KDC on the server itself , add to /etc/ssh/sshd_config followed
+
+GSSAPIAuthentication yes
+GSSAPIDelegateCredentials yes
+
+systemctl reload sshd
+
+
+--On Client (Enable these)
+[root@rhce2 ~]# grep yes /etc/ssh/ssh_config
+ 
+   GSSAPIAuthentication yes
+   GSSAPIDelegateCredentials yes
+ 
+ --Test it on the server itself.
+
+
+[kuttu@rhce1 ~]$ kinit
+Password for kuttu@INTERCLOUDZONE.COM:
+[kuttu@rhce1 ~]$ klist
+Ticket cache: KEYRING:persistent:1002:1002
+Default principal: kuttu@INTERCLOUDZONE.COM
+
+Valid starting       Expires              Service principal
+01/19/2018 13:06:41  01/20/2018 13:06:41  krbtgt/INTERCLOUDZONE.COM@INTERCLOUDZONE.COM
+
+[kuttu@rhce1 ~]$ ssh rhce1.intercloudzone.com
+Last login: Fri Jan 19 13:06:39 2018
+
+
+[kuttu@rhce1 ~]$ kdestroy
+[kuttu@rhce1 ~]$ klist
+klist: Credentials cache keyring 'persistent:1002:1002' not found
+[kuttu@rhce1 ~]$ ssh rhce1.intercloudzone.com
+kuttu@rhce1.intercloudzone.com's password:
+
+
+-Logs of interest.
+ /var/log/krb5kdc.log /var/log/secure /var/log/messages and /var/log/audit/audit.log
+
+Make sure to add root user , run ktadd -k /etc/krb5.keytab and ship the keytab file to client.
+
+[root@rhce1 exports.d]# klist -k /etc/krb5.keytab
+Keytab name: FILE:/etc/krb5.keytab
+KVNO Principal
+---- --------------------------------------------------------------------------
+   3 usera@INTERCLOUDZONE.COM
+   3 usera@INTERCLOUDZONE.COM
+   2 host/rhce2.intercloudzone.com@INTERCLOUDZONE.COM
+   2 host/rhce2.intercloudzone.com@INTERCLOUDZONE.COM
+   2 host/kerberos.intercloudzone.com@INTERCLOUDZONE.COM
+   2 host/kerberos.intercloudzone.com@INTERCLOUDZONE.COM
+   2 root/admin@INTERCLOUDZONE.COM
+   2 root/admin@INTERCLOUDZONE.COM
+
+--Add client host and principal user.
+
+kadmin -p root/admin
+kadmin: addprinc -randkey host/rhce2.intercloudzone.com
+kadmin: addprinc kannan/rhce2.intercloudzone.com
+
+-While logged in extract principal's key and store it locally in a keytab file called krb5.keytab
+kadmin:  ktadd -k /etc/krb5.keytab host/rhce2.intercloudzone.com
+
+authconfig --enablekrb5 --update --test
+authconfig --enablekrb5 --update
+
+--Backup
+kdb5_util dump -verbose /tmp/kdc.dump
+strings /backup/kdc.dump
+
+--Restore
+kdb5_util load /backup/kdc.dump
+
+--Display Keylist (Principals) in a Keytab File
+klist -kt /etc/krb5.keytab
+
+--Remove keylist (Principals) from a keytab file
+ktremove -k /etc/krb5.keytab usera
+
+--Troubleshoot
+# export KRB5_TRACE=/dev/stdout
+# kinit
+
+</pre>
+						</div>
+				</div>
+
+
+<!-- Contact -->
+<a class="anchor" id="contact"></a>
+
+<section class="contact">
+		<div class="contact-wrap">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-12 __web-inspector-hide-shortcut__">
+						<div class="contact-title">
+							<h2></h2>
+							<p> 
+								<br class="disable"></p>
+						</div>
+						<!-- /.contact-title -->
+					</div>
+					<!-- /.col-md-12 -->
+					
+					<!-- /.col-md-10 -->
+				</div>
+				<!-- /.row -->
+			</div>
+			<!-- /.container -->
+		</div>
+		<!-- /.directions-wrap -->
+	</section>
+
+</div>
+<!-- Site content -->
+
+<!-- Footer -->
+<a class="anchor" id="footer"></a>
+<footer class="footer" style="background-image: url(img/footer-bg.jpg); background-position:center; background-size: cover; background-repeat:no-repeat;">
+	<div class="footer-wrap">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="footer-title">
+						<h2>www.intercloudzone.com</h2>
+						<ul class="footer-icons">
+						<script src="//platform.linkedin.com/in.js" type="text/javascript"> lang: en_US</script>
+						<script type="IN/Share" data-url="http://www.intercloudzone.com/kerberos.html"></script>
+						</ul>
+						<p> </p>
+					</div>
+					<!-- /.footer-title -->
+				</div>
+				<!-- /.col-md-12 -->
+			</div>
+			<!-- /.row -->
+		</div>
+		<!-- /.container -->
+	</div>
+	<!-- /.directions-wrap -->
+</footer>
+<!-- Footer -->
+
+
+
+<!-- links -->
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?key=AIzaSyDDuC8pr6YqiBr9wqfhNIJ56AqwzWKhiQo"></script>
+<!-- build:js -->
+
+ 
+
+<script src="js/libs/jquery.min.js"></script>
+<script type="text/javascript" src="js/libs/bootstrap.min.js"></script>
+<script type="text/javascript" src="js/libs/waypoints.min.js"></script>
+<script type="text/javascript" src="js/libs/slick.min.js"></script>
+<script type="text/javascript" src="js/libs/magnific-popup.min.js"></script>
+
+<script type="text/javascript" src="js/common.js"></script>
+<!-- endbuild -->
+<!-- links -->
+</body>
+</html>

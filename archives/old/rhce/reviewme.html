@@ -1,0 +1,2979 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>InterCloudZone</title>
+<meta name="keywords" content="" />
+<meta name="description" content="" />
+<link href="style.css" rel="stylesheet" type="text/css" media="screen" />
+<link href="google-code-prettify/sunburst.css" type="text/css" rel="stylesheet" />
+
+<!--[if IE]>
+<style type="text/css">
+#sidebar #calendar {
+	background-position: 0px 20px;
+}
+</style>
+<![endif]-->
+
+<script src="http://www.google.com/jsapi" type="text/javascript"></script>
+<script type="text/javascript">google.load("jquery", "1.3.2");</script>
+<script type="text/javascript" src="/google-code-prettify/prettify.js?autoload=true&;lang=css;skin=sunburst""></script> 
+
+</head>
+<body onload="prettyPrint()">
+
+<div id="logo">
+	<h1> InterCloudZone.com </h1>
+</div>
+<div id="menu">
+	<ul>
+		<li class="first"><a href="http://www.intercloudzone.com" accesskey="1" title="">Home</a></li>
+		<li><a href="http://sourceforge.net/projects/oraclerman/" accesskey="2" title="">OpenSource</a></li>
+		<li><a href="http://padmavyuha.blogspot.com/" accesskey="3" title="">Blogs</a></li>
+		<li><a href="http://www.linkedin.com/in/baburajkallarakkal" accesskey="4" title="">Profile</a></li>
+	</ul>
+	
+</div>
+<hr />
+<!-- div id="banner"><img src="images/img09.jpg" alt="" width="960" height="147" / ></div -->
+<!-- start page -->
+
+<div id="swift-page" class="default-page" >
+	<!-- start content -->
+	<h2 class="title"> rhsa </h2>
+
+
+<p> rpm/ yum </p>
+
+<pre>
+
+Metadata information of packagest are stored in /var/lib/rpm
+
+[root@lab11 ~]# rpm -ql net-tools
+/bin/netstat
+/sbin/arp
+/sbin/ether-wake
+/sbin/ifconfig
+/sbin/ipmaddr
+/sbin/iptunnel
+/sbin/mii-diag
+/sbin/mii-tool
+/sbin/nameif
+/sbin/plipconfig
+/sbin/route
+/sbin/slattach
+
+#To identify which package a file is associated with
+
+[root@lab11 ~]# rpm -qf /etc/passwd
+setup-2.8.71-6.el7.noarch
+
+#List dependencies of a package
+
+[root@lab11 ~]# rpm -qR net-tools
+/bin/sh
+libc.so.6()(64bit)
+
+# To query what the installable package is for..
+
+root@panchajanya:/var/ftp/pub/rhel7/Packages\> rpm -qip scap-security-guide-0.1.25-3.el7.centos.0.1.noarch.rpm
+Name        : scap-security-guide
+Version     : 0.1.25
+
+# To extract files from RPM's
+[root@server tmp]# rpm2cpio net-tools-2.0-0.17.20131004git.el7.x86_64.rpm | cpio -id
+1848 blocks
+
+
+#RedHat signs products and include necessary public keys in the products for verification. These are copied /etc/pki/rpm-gpg.
+
+[root@server test]# cd /etc/pki/rpm-gpg/
+[root@server rpm-gpg]# ls -ltr
+total 12
+-rw-r--r--. 1 root root 1690 Dec  9  2015 RPM-GPG-KEY-CentOS-Testing-7
+-rw-r--r--. 1 root root 1004 Dec  9  2015 RPM-GPG-KEY-CentOS-Debug-7
+-rw-r--r--. 1 root root 1690 Dec  9  2015 RPM-GPG-KEY-CentOS-7
+
+[root@server tmp]# rpm -K --nosignature net-tools-2.0-0.17.20131004git.el7.x86_64.rpm
+net-tools-2.0-0.17.20131004git.el7.x86_64.rpm: sha1 md5 OK
+
+# To check credibility of the package, first the relevant GPG key has be imported and then the package need to be verified. 
+[root@server tmp]# rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+[root@server tmp]# rpm -K  net-tools-2.0-0.17.20131004git.el7.x86_64.rpm
+net-tools-2.0-0.17.20131004git.el7.x86_64.rpm: rsa sha1 (md5) pgp md5 OK
+
+#Check the imported on the last command
+[root@server tmp]# rpm -q gpg-pubkey
+gpg-pubkey-f4a80eb5-53a7ff4b
+
+[root@server tmp]# rpm -qi gpg-pubkey-f4a80eb5-53a7ff4b
+Name        : gpg-pubkey
+Version     : f4a80eb5
+Release     : 53a7ff4b
+
+#Verify an installed package against the attributes of files in the package..
+
+[root@lab11 ~]# rpm -qf /usr/bin/netstat
+net-tools-2.0-0.17.20131004git.el7.x86_64
+[root@lab11 ~]# rpm -Vf /usr/bin/netstat
+[root@lab11 ~]# ls -ltr /usr/bin/netstat
+-rwxr-xr-x. 1 root root 154968 Jun  9  2014 /usr/bin/netstat
+[root@lab11 ~]# chmod ugo-x /usr/bin/netstat
+[root@lab11 ~]# rpm -Vf /usr/bin/netstat
+.M.......    /bin/netstat
+
+=> Indicates mode changed
+
+[root@lab11 ~]# chown user100:user100 /usr/bin/netstat
+[root@lab11 ~]# rpm -Vf /usr/bin/netstat
+.M...UG..    /bin/netstat
+
+=> Indicates User/Group Changed
+
+
+[root@lab11 ~]# rpm -Vfv /usr/bin/netstat
+.M...UG..    /bin/netstat
+.........    /sbin/arp
+.........    /sbin/ether-wake
+.........    /sbin/ifconfig
+
+=> In verbose mode
+
+
+Refer page :135
+In yum.repo , file:///path for localpath and // for hostname (eg below)
+root@panchajanya:/etc/yum.repos.d\> cat ftp.repo
+[ftprepo]
+name=ftp repo
+baseurl=ftp://192.168.2.10/pub/rhel7
+enabled=1
+gpgcheck=0
+
+
+yum check-update
+yum group list
+yum group info
+
+#Create local yum repository.
+
+[root@server ~]# mkdir -pv /var/localrepo
+mkdir: created directory ‘/var/localrepo’
+[root@server ~]# cd /var/localrepo/
+[root@server localrepo]# cp /tmp/net-tools-2.0-0.17.20131004git.el7.x86_64.rpm .
+[root@server localrepo]# yum -y install createrepo
+
+
+[root@server localrepo]# createrepo -v /var/localrepo/
+Spawning worker 0 with 1 pkgs
+
+
+[root@server localrepo]# pwd
+/var/localrepo
+[root@server localrepo]# ls -ltr
+total 308
+-r--r--r--. 1 root root 311020 Aug  4 18:56 net-tools-2.0-0.17.20131004git.el7.x86_64.rpm
+drwxr-xr-x. 2 root root   4096 Aug  4 18:57 repodata
+
+[root@server yum.repos.d]# cat local.repo
+[localrepo]
+name=THis is a local repo
+baseurl=file:///var/localrepo
+gpgcheck=1
+enabled=1
+
+yum clean all
+
+yum -v repolist
+
+#List all available packages from enabled repos
+
+yum list available
+
+#List all installed
+yum list installed
+
+
+#Combines outputs from both(above)
+yum list
+
+yum list updates
+yum list installed net*
+
+yum localinstall /tmp/net-tools-2.0-0.17.20131004git.el7.x86_64.rpm
+yum provides netstat
+yumdownloader -v dhclient
+
+yum history list
+yum history list 1..5
+
+gnome-packagekit
+gpk-application
+gpk-update-viewer
+
+
+yum-config-manager --add-repo http://www.example.com/example.repo
+yum-config-manager --enable example\*
+
+yum-config-manager --enable local\*
+
+ </pre>
+
+
+
+
+<p> swap - devices - files </p>
+
+
+<pre>
+
+page-out and page-in are called demand paging.
+excessive amount of paging that affects performance is called thrashing
+
+[root@server ~]# lvcreate -L 1G -n swapvol vgdata0
+WARNING: ext4 signature detected on /dev/vgdata0/swapvol at offset 1080. Wipe it? [y/n]: y
+  Wiping ext4 signature on /dev/vgdata0/swapvol.
+  Logical volume "swapvol" created.
+
+[root@server ~]# mkswap /dev/vgdata0/swapvol
+Setting up swapspace version 1, size = 1048572 KiB
+no label, UUID=b4bb1977-2a2d-4d9d-8f91-2eb1efc01156
+
+[root@server ~]# swapon -v /dev/vdb2
+swapon /dev/vdb2
+swapon: /dev/vdb2: found swap signature: version 1, page-size 4, same byte order
+swapon: /dev/vdb2: pagesize=4096, swapsize=1048576, devsize=1048576
+[root@server ~]# swapon -v /dev/vgdata0/swapvol
+swapon /dev/vgdata0/swapvol
+swapon: /dev/mapper/vgdata0-swapvol: found swap signature: version 1, page-size 4, same byte order
+swapon: /dev/mapper/vgdata0-swapvol: pagesize=4096, swapsize=1073741824, devsize=1073741824
+
+swapon -s
+
+
+/dev/device-nodes
+
+#Character(raw) devices are accessed serially - printers, mice, keyboards, terminals, etc and block devices are accessed in parallel via blocks - HDD, optical drives etc.
+
+
+chattr +i afile # Immutable, can't be deleted, renamed or changed
+chattr +a afile # Can only be appended.
+
+Files metadata includes several piece of informaiton, such as files type, size, permissions, owners name, group name, last access/mod time, ACL, link count , bloks and pointers to the location where actual data is stored. This takes 128-byte space in the FS for each file and this tiny storage space is reerred to as inode (index node). inode is assigned a unique
+identifier that is used by kernel to access, track and manage the file.
+
+the file name and corresponding inode number is maintained in directories metadata. 
+
+inode doesn't store file name. 
+
+Hardlinked files share same data location and and unlike soft-links cannot cross file system boundaries and link directories.
+
+#umask
+default umask is 0022 for root and system users and 0002 for all regular users with a bash shell.
+
+[radha@lab11 ~]$ umask
+0002
+
+[radha@lab11 ~]$ umask -S
+u=rwx,g=rwx,o=rx
+
+Linux assigns default permissions by using "preset value" -  "umask value"
+
+For files 666 - umask , directories 777 - umask.
+
+
+#setuid - set's on files. Gives ability for non-owenrs and non-group members the ability to run executables with the privileges of owner.
+
+Find all files in teh system with setuid bit set
+
+[root@server ~]# find / -perm -4000
+
+
+[radha@lab11 ~]$ ll /usr/bin/su
+-rwsr-xr-x. 1 root root 32072 Nov 20  2015 /usr/bin/su
+[radha@lab11 ~]$ su - root
+Password:
+Last login: Thu Aug  3 08:30:04 CDT 2017 from 192.168.134.1 on pts/0
+[root@lab11 ~]# chmod u-s /usr/bin/su
+[root@lab11 ~]# ll /usr/bin/su
+-rwxr-xr-x. 1 root root 32072 Nov 20  2015 /usr/bin/su
+[root@lab11 ~]# su - radha
+Last login: Thu Aug  3 14:17:44 CDT 2017 on pts/0
+[radha@lab11 ~]$ su - root
+Password:
+su: Authentication failure
+
+
+#setgid is set at group level
+
+File can be executed by non-owners by exact same privileges that group members have.
+[root@server ~]# ll /usr/bin/wall
+-r-xr-sr-x. 1 root tty 15344 Jun  9  2014 /usr/bin/wall
+
+wall is used for broadcasting message to all logged in users.
+
+chmod 2555 /usr/bin/wall
+
+Also used for group collaboration
+
+user100@lab11 ~]$ cd /sdata
+[user100@lab11 sdata]$ touch afile
+[user100@lab11 sdata]$ ls -al
+total 4
+drwxrwxr-x.  2 root    sdatagrp   18 Aug  3 14:47 .
+dr-xr-xr-x. 19 root    root     4096 Aug  3 14:43 ..
+-rw-rw-r--.  1 user100 user100     0 Aug  3 14:47 afile
+[user100@lab11 sdata]$ exit
+logout
+[root@lab11 ~]# chmod g+s /sdata
+[root@lab11 ~]# su - user100
+Last login: Thu Aug  3 14:47:48 CDT 2017 on pts/0
+[user100@lab11 ~]$ cd /sdata
+[user100@lab11 sdata]$ ls -l
+total 0
+-rw-rw-r--. 1 user100 user100 0 Aug  3 14:47 afile
+[user100@lab11 sdata]$ touch afile
+[user100@lab11 sdata]$ ls -l
+total 0
+-rw-rw-r--. 1 user100 user100 0 Aug  3 14:48 afile
+[user100@lab11 sdata]$ touch bfile
+[user100@lab11 sdata]$ ls -l
+total 0
+-rw-rw-r--. 1 user100 user100  0 Aug  3 14:48 afile
+-rw-rw-r--. 1 user100 sdatagrp 0 Aug  3 14:48 bfile
+[user100@lab11 sdata]$
+
+Owning group get's automatically changed to the sdatagrp with setgid.
+
+
+#stickybit 
+chmod 1755 public_writable_directory
+
+Set on directories where rw exists for everyone and prevents from moving/dpurging of files owned by other users.
+
+#ACL's
+Before ACL's can be enabled hte FS should be mounted with ACL support.
+
+chacl, getacl, setacl
+
+eg:
+[root@server data]# getfacl afile
+# file: afile
+# owner: root
+# group: root
+user::rw-
+group::r--
+other::r--
+
+1. user:1000:r-  # Means that a user with UID 1000, who is no tthe owner of the file nor member of the owning group is allowed only read access to this file.
+
+sefacl mask permissions - max permissions a specific user/group can have on a file/dir. If it's set to rw_ no specific user/group can have more permissions than read-write
+
+setfacl switches (-b = remove all acl settings, -d applies to default acl's, -k = remove all default acls, -m = modify , -x = remove specific ACL setting)
+
+
+eg:
+
+[root@lab11 sdata]# getfacl -c afile
+user::rw-
+group::rw-
+other::r--
+
+[user200@lab11 sdata]$ echo test > bfile
+
+
+[root@lab11 sdata]# setfacl -m u:user200:r bfile
+
+[root@lab11 sdata]# getfacl bfile
+# file: bfile
+# owner: user100
+# group: sdatagrp
+user::rw-
+user:user200:r--
+group::rw-
+mask::rw-
+other::r--
+
+[user200@lab11 sdata]$ echo test > bfile
+-bash: bfile: Permission denied
+
+#Removes just that permission
+
+[root@lab11 sdata]# setfacl -x u:user200 bfile
+[root@lab11 sdata]# getfacl -c bfile
+user::rw-
+group::rw-
+mask::rw-
+other::r--
+
+#Sets the max permission
+
+[root@lab11 sdata]# setfacl -m m:r bfile
+[root@lab11 sdata]# getfacl -c bfile
+user::rw-
+group::rw-			#effective:r--
+mask::r--
+other::r--
+
+
+[user200@lab11 sdata]$ echo test > bfile
+-bash: bfile: Permission denied
+
+# No need to check acl option for XFS file systems as they are integral part of it.
+
+[user100@lab11 sdata]$ ls -l bfile
+-rw-r--r--. 1 user100 sdatagrp 5 Aug  3 16:17 bfile
+
+[user200@lab11 sdata]$ echo test > bfile
+-bash: bfile: Permission denied
+
+[user100@lab11 sdata]$ getfacl -c bfile
+user::rw-
+group::r--
+other::r--
+
+[user100@lab11 sdata]$ setfacl -m g:sdatagrp:rw bfile
+[user100@lab11 sdata]$ getfacl -c bfile
+user::rw-
+group::r--
+group:sdatagrp:rw-
+mask::rw-
+other::r--
+
+[user200@lab11 sdata]$ echo test > bfile
+
+[user100@lab11 sdata]$ setfacl -x group:sdatagrp bfile
+
+Also, XFS enables user_xattr (extended user attributes) and acl (POSIX access control lists) as default mount options, unlike ext3 or ext4
+
+
+
+ </pre>
+
+<p> filesystem </p>
+
+
+<pre> 
+
+#Basic file system commands
+
+[root@server ~]# findmnt -t xfs
+TARGET  SOURCE                  FSTYPE OPTIONS
+/       /dev/mapper/vgos-lvroot xfs    rw,relatime,seclabel,attr2,inode64,noquota
+├─/boot /dev/vda1               xfs    rw,relatime,seclabel,attr2,inode64,noquota
+└─/home /dev/mapper/vgos-lvhome xfs    rw,relatime,seclabel,attr2,inode64,noquota
+
+
+#Find block id
+
+blkid
+grep boot /etc/fstabx
+
+[root@server ~]# xfs_admin -u /dev/mapper/vg01-lvol0
+UUID = e29bcbe1-6566-4f89-bbd7-0f7549bf4a09
+
+
+#Labelling XFS file system
+[root@server ~]# xfs_admin -L "test" /dev/mapper/vg01-lvol0
+writing all SBs
+new label = "test"
+[root@server ~]# xfs_admin -l /dev/mapper/vg01-lvol0
+label = "test"
+
+
+
+[root@server ~]# e2label /dev/mapper/vg01-lvol1
+teste2
+
+
+[root@server ~]# tune2fs -l /dev/mapper/vg01-lvol1
+tune2fs 1.42.9 (28-Dec-2013)
+Filesystem volume name:   teste2
+
+
+#/etc/fstab - The last column is fsck
+
+Pass (fsck order)
+Fsck order is to tell fsck what order to check the file systems, if set to "0" file system is ignored.
+
+Often a source of confusion, there are only 3 options :
+
+0 == do not check.
+1 == check this partition first.
+2 == check this partition(s) next
+
+[root@server ~]# e2label /dev/mapper/vg01-lvol1
+teste2
+[root@server ~]# mount LABEL=teste2 /mnt/
+[root@server ~]# findmnt -t ext4
+TARGET SOURCE                 FSTYPE OPTIONS
+/mnt   /dev/mapper/vg01-lvol1 ext4   rw,relatime,seclabel,data=ordered
+
+
+
+[root@server ~]# dumpe2fs /dev/mapper/vg01-lvol1 |grep superblock
+dumpe2fs 1.42.9 (28-Dec-2013)
+  Primary superblock at 1, Group descriptors at 2-3
+  Backup superblock at 8193, Group descriptors at 8194-8195
+  Backup superblock at 24577, Group descriptors at 24578-24579
+  Backup superblock at 40961, Group descriptors at 40962-40963
+  Backup superblock at 57345, Group descriptors at 57346-57347
+  Backup superblock at 73729, Group descriptors at 73730-73731
+  Backup superblock at 204801, Group descriptors at 204802-204803
+
+
+[root@server ~]# fsck -b 8193 /dev/mapper/vg01-lvol1
+fsck from util-linux 2.23.2
+e2fsck 1.42.9 (28-Dec-2013)
+teste2 was not cleanly unmounted, check forced.
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+
+teste2: ***** FILE SYSTEM WAS MODIFIED *****
+teste2: 11/53248 files (0.0% non-contiguous), 12632/212992 blocks
+
+
+#Error
+
+[root@server ~]# pvcreate /dev/vdd
+  WARNING: Device for PV xdVv91-0Gfz-uzSs-1pzu-CDVQ-34Pm-PwsGBd not found or rejected by a filter.
+  Device /dev/vdd not found (or ignored by filtering).
+
+
+[root@server ~]# uuidgen
+c534079b-103f-45ab-9252-839684568fd6
+
+
+[root@server ~]# tune2fs /dev/vdd -U c534079b-103f-45ab-9252-839684568fd6
+tune2fs 1.42.9 (28-Dec-2013)
+tune2fs: Bad magic number in super-block while trying to open /dev/vdd
+Couldn't find valid filesystem superblock.
+
+[root@server ~]# dumpe2fs /dev/vdd
+dumpe2fs 1.42.9 (28-Dec-2013)
+dumpe2fs: Bad magic number in super-block while trying to open /dev/vdd
+Couldn't find valid filesystem superblock.
+
+
+#mkfs -n doesn't create a FS , but displays what it would do if it were to create a FS..
+
+[root@server ~]# mkfs.ext4 -n /dev/vdd
+mke2fs 1.42.9 (28-Dec-2013)
+Filesystem label=
+OS type: Linux
+Block size=4096 (log=2)
+Fragment size=4096 (log=2)
+Stride=0 blocks, Stripe width=0 blocks
+196608 inodes, 786432 blocks
+39321 blocks (5.00%) reserved for the super user
+First data block=0
+Maximum filesystem blocks=805306368
+24 block groups
+32768 blocks per group, 32768 fragments per group
+8192 inodes per group
+Superblock backups stored on blocks:
+	32768, 98304, 163840, 229376, 294912
+
+
+[root@server ~]# fsck -b 98304 /dev/vdd
+fsck from util-linux 2.23.2
+e2fsck 1.42.9 (28-Dec-2013)
+fsck.ext2: Invalid argument while trying to open /dev/vdd
+
+The superblock could not be read or does not describe a correct ext2
+filesystem.  If the device is valid and it really contains an ext2
+filesystem (and not swap or ufs or something else), then the superblock
+is corrupt, and you might try running e2fsck with an alternate superblock:
+    e2fsck -b 8193 <device>
+
+#Last ditch effort of recreating ONLY superblocks
+
+[root@server ~]# mke2fs -S /dev/vdd -t ext4
+mke2fs 1.42.9 (28-Dec-2013)
+Filesystem label=
+OS type: Linux
+Block size=4096 (log=2)
+Fragment size=4096 (log=2)
+Stride=0 blocks, Stripe width=0 blocks
+196608 inodes, 786432 blocks
+39321 blocks (5.00%) reserved for the super user
+First data block=0
+Maximum filesystem blocks=805306368
+24 block groups
+32768 blocks per group, 32768 fragments per group
+8192 inodes per group
+Superblock backups stored on blocks:
+	32768, 98304, 163840, 229376, 294912
+
+Allocating group tables: done
+Skipping journal creation in super-only mode
+Writing superblocks and filesystem accounting information: done
+
+Run e2fsck immediately..
+
+root@server ~]# e2fsck /dev/vdd
+
+#Display devices ..
+[root@server ~]# lvs -a -o +devices
+  WARNING: Device for PV xdVv91-0Gfz-uzSs-1pzu-CDVQ-34Pm-PwsGBd not found or rejected by a filter.
+  LV     VG   Attr       LSize   Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert Devices
+  lvol0  vg01 -wi-a----- 208.00m                                                     /dev/vde(0)
+
+
+
+
+#Another utility
+debugfs
+
+
+[root@server ~]# vgs -a -o +pv_name
+  VG   #PV #LV #SN Attr   VSize VFree   PV
+  vg01   2   3   0 wz--n- 3.97g   3.36g /dev/vde
+  vg01   2   3   0 wz--n- 3.97g   3.36g /dev/vdc1
+  vgos   1   2   0 wz--n- 9.76g 996.00m /dev/vda2
+
+[root@server ~]# vgreduce vg01 --removemissing --force
+  WARNING: Device for PV xdVv91-0Gfz-uzSs-1pzu-CDVQ-34Pm-PwsGBd not found or rejected by a filter.
+  WARNING: Device for PV xdVv91-0Gfz-uzSs-1pzu-CDVQ-34Pm-PwsGBd not found or rejected by a filter.
+  Wrote out consistent volume group vg01
+
+
+ [root@server ~]# pvcreate /dev/vdd
+  Physical volume "/dev/vdd" successfully created
+
+
+</pre>
+
+<p> ldap </p>
+
+
+<pre>
+ yum install openldap openldap-clients nss-pam-ldapd sssd authconfig authconfig-gtk
+
+
+ [root@lab11 conf.d]# authconfig --enableldap --enableldapauth --ldapserver=ldap://server --enablesssd --ldapbasedn="dc=example,dc=com" --update
+
+ [root@lab11 sssd]# grep -v ^# /etc/openldap/ldap.conf
+ 
+TLS_CACERTDIR /etc/openldap/cacerts
+
+SASL_NOCANON	on
+URI ldap://server
+BASE dc=example,dc=com
+
+# https://www.certdepot.net/rhel7-configure-ldap-directory-service-user-connection/ 
+
+#Server setup
+yum install -y openldap openldap-clients openldap-servers migrationtools
+
+#Generate ldap password from a secret key.
+
+[root@server ~]# slappasswd -s redhat -n  > /etc/openldap/passwd
+[root@server ~]# cat /etc/openldap/passwd
+{SSHA}yB19hMMrLO+O2wPaIl3ZXk5qqjL8zaRb
+
+
+#Generate a self-signed cert 
+
+[root@server ~]# openssl req -new -x509 -nodes -out /etc/openldap/certs/cert.pem -keyout  /etc/openldap/certs/priv.pem -days 365
+Generating a 2048 bit RSA private key
+.......................................+++
+...............+++
+writing new private key to '/etc/openldap/certs/priv.pem'
+-----
+You are about to be asked to enter information that will be incorporated
+into your certificate request.
+What you are about to enter is what is called a Distinguished Name or a DN.
+There are quite a few fields but you can leave some blank
+For some fields there will be a default value,
+If you enter '.', the field will be left blank.
+-----
+Country Name (2 letter code) [XX]:us
+State or Province Name (full name) []:texas
+Locality Name (eg, city) [Default City]:round rock
+Organization Name (eg, company) [Default Company Ltd]:intercloudzone.com
+Organizational Unit Name (eg, section) []:dba
+Common Name (eg, your name or your server's hostname) []:server.intercloudzone.com
+
+
+
+#Secure the contents 
+
+[root@server certs]# chown ldap:ldap *
+[root@server certs]# chmod 600 priv.pem
+[root@server certs]# pwd
+/etc/openldap/certs
+
+
+#Prepare the database
+[root@server certs]# cp /usr/share/openldap-servers/DB_CONFIG.example /var/lib/ldap/DB_CONFIG
+
+#Generate database files.
+
+[root@server certs]# slaptest
+59822d10 hdb_db_open: database "dc=my-domain,dc=com": db_open(/var/lib/ldap/id2entry.bdb) failed: No such file or directory (2).
+59822d10 backend_startup_one (type=hdb, suffix="dc=my-domain,dc=com"): bi_db_open failed! (2)
+slap_startup failed (test would succeed using the -u switch)
+
+
+[root@server certs]# chown ldap:ldap /var/lib/ldap/*
+
+#Enable and start slapd
+
+[root@server certs]# systemctl enable slapd
+Created symlink from /etc/systemd/system/multi-user.target.wants/slapd.service to /usr/lib/systemd/system/slapd.service.
+[root@server certs]# systemctl start slapd
+[root@server certs]# systemctl status slapd
+
+
+
+[root@server certs]# netstat -lt |grep ldap
+tcp        0      0 0.0.0.0:ldap            0.0.0.0:*               LISTEN
+tcp6       0      0 [::]:ldap               [::]:*                  LISTEN
+
+## Ss another tool to investigate sockets
+
+[root@server certs]# ss -ltap | grep ldap
+LISTEN     0      128        *:ldap                     *:*                     users:(("slapd",pid=2828,fd=8))
+LISTEN     0      128       :::ldap                    :::*                     users:(("slapd",pid=2828,fd=9))
+
+
+
+#To start the configuration of the LDAP server, add the cosine & nis LDAP schemas:
+
+
+cd /etc/openldap/schema/
+
+
+[root@server schema]# ldapadd -Y EXTERNAL -H ldapi:/// -D "cn=config" -f cosine.ldif
+SASL/EXTERNAL authentication started
+SASL username: gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth
+SASL SSF: 0
+adding new entry "cn=cosine,cn=schema,cn=config"
+ 
+[root@server schema]# ldapadd -Y EXTERNAL -H ldapi:/// -D "cn=config" -f nis.ldif
+SASL/EXTERNAL authentication started
+SASL username: gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth
+SASL SSF: 0
+adding new entry "cn=nis,cn=schema,cn=config"
+
+
+#Create changes.ldif file
+
+[root@server schema]# cat /etc/openldap/changes.ldif
+dn: olcDatabase={2}hdb,cn=config
+changetype: modify
+replace: olcSuffix
+olcSuffix: dc=intercloudzone,dc=com
+
+dn: olcDatabase={2}hdb,cn=config
+changetype: modify
+replace: olcRootDN
+olcRootDN: cn=Manager,dc=intercloudzone,dc=com
+
+dn: olcDatabase={2}hdb,cn=config
+changetype: modify
+replace: olcRootPW
+olcRootPW: {SSHA}yB19hMMrLO+O2wPaIl3ZXk5qqjL8zaRb
+
+dn: cn=config
+changetype: modify
+replace: olcTLSCertificateFile
+olcTLSCertificateFile: /etc/openldap/certs/cert.pem
+
+dn: cn=config
+changetype: modify
+replace: olcTLSCertificateKeyFile
+olcTLSCertificateKeyFile: /etc/openldap/certs/priv.pem
+
+dn: cn=config
+changetype: modify
+replace: olcLogLevel
+olcLogLevel: -1
+
+dn: olcDatabase={1}monitor,cn=config
+changetype: modify
+replace: olcAccess
+olcAccess: {0}to * by dn.base="gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth" read by dn.base="cn=Manager,dc=intercloudzone,dc=com" read by * none
+
+#Send changes to LDAP DB
+
+[root@server schema]# ldapmodify -Y EXTERNAL -H ldapi:/// -f /etc/openldap/changes.ldif
+SASL/EXTERNAL authentication started
+SASL username: gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth
+SASL SSF: 0
+modifying entry "olcDatabase={2}hdb,cn=config"
+
+modifying entry "olcDatabase={2}hdb,cn=config"
+
+modifying entry "olcDatabase={2}hdb,cn=config"
+
+modifying entry "cn=config"
+
+modifying entry "cn=config"
+
+modifying entry "cn=config"
+
+modifying entry "olcDatabase={1}monitor,cn=config"
+
+
+#Create base ldif file
+
+[root@server schema]# cat /etc/openldap/base.ldif
+dn: dc=intercloudzone,dc=com
+dc: intercloudzone
+objectClass: top
+objectClass: domain
+
+dn: ou=People,dc=intercloudzone,dc=com
+ou: People
+objectClass: top
+objectClass: organizationalUnit
+
+dn: ou=Group,dc=intercloudzone,dc=com
+ou: Group
+objectClass: top
+objectClass: organizationalUnit
+
+#Create base directory structure in ldap
+
+[root@server schema]# ldapadd -x -w redhat -D cn=Manager,dc=intercloudzone,dc=com -f /etc/openldap/base.ldif
+adding new entry "dc=intercloudzone,dc=com"
+
+adding new entry "ou=People,dc=intercloudzone,dc=com"
+
+adding new entry "ou=Group,dc=intercloudzone,dc=com"
+
+#Create two users for testing
+
+[root@server schema]# mkdir /home/guests
+[root@server schema]# useradd -d /home/guests/ldapuser01 ldapuser01
+[root@server schema]# useradd -d /home/guests/ldapuser02 ldapuser02
+
+
+[root@server migrationtools]# egrep '^\$DEFAULT_BASE|^\$DEFAULT_MAIL_DOMAIN' migrate_common.ph
+$DEFAULT_MAIL_DOMAIN = "intercloudzone.com";
+$DEFAULT_BASE = "dc=intercloudzone,dc=com";
+
+
+#Migrate users to ldap
+
+[root@server migrationtools]# grep ":10[0-9][0-9]" /etc/passwd > passwd
+[root@server migrationtools]# ./migrate_passwd.pl passwd users.ldif
+
+
+[root@server migrationtools]# ldapadd -x -w redhat -D cn=Manager,dc=intercloudzone,dc=com -f users.ldif
+adding new entry "uid=kuttu,ou=People,dc=intercloudzone,dc=com"
+
+
+[root@server migrationtools]# ldapsearch -x cn=ldapuser01 -b dc=intercloudzone,dc=com
+# extended LDIF
+#
+# LDAPv3
+# base <dc=intercloudzone,dc=com> with scope subtree
+# filter: cn=ldapuser01
+# requesting: ALL
+#
+
+# ldapuser01, People, intercloudzone.com
+dn: uid=ldapuser01,ou=People,dc=intercloudzone,dc=com
+uid: ldapuser01
+cn: ldapuser01
+objectClass: account
+objectClass: posixAccount
+objectClass: top
+objectClass: shadowAccount
+userPassword:: e2NyeXB0fSQ2JER5elgwQlMwJDBEUzZJVy9ET1lReG9FRWdQYThrZXhLMmgzSGZ
+ BcmxzbTZRQWExTkRiOGo2bzFhWGVVMnBiL3NPN1FyU1IyUzdLTU1uZWxRQ2dzYnpIS0ZCalc3WlYu
+shadowLastChange: 17380
+shadowMin: 0
+shadowMax: 99999
+shadowWarning: 7
+loginShell: /bin/bash
+uidNumber: 1012
+gidNumber: 1012
+homeDirectory: /home/guests/ldapuser01
+
+# search result
+search: 2
+result: 0 Success
+
+
+
+
+
+#Migrate groups 
+
+cd /usr/share/migrationtools
+cat /etc/group > group
+./migrate_group.pl group groups.ldif
+
+
+[root@server migrationtools]# ldapadd -x -w redhat -D "cn=Manager,dc=intercloudzone,dc=com" -f groups.ldif
+adding new entry "cn=root,ou=Group,dc=intercloudzone,dc=com"
+
+
+
+
+
+#Add service to fw
+
+firewall-cmd --permanent --add-service=ldap
+
+
+Edit the /etc/rsyslog.conf file and add the following line:
+
+local4.* /var/log/ldap.log
+
+systemctl restart rsyslog
+
+
+# On the client
+authconfig --enableldap --enableldapauth --ldapserver=ldap://server --enablesssd --ldapbasedn="dc=intercloudzone,dc=com" --update
+
+[root@lab11 ~]# getent passwd ldapuser01
+ldapuser01:*:1012:1012:ldapuser01:/home/guests/ldapuser01:/bin/bash
+
+[root@lab11 ~]# su - ldapuser01
+su: warning: cannot change directory to /home/guests/ldapuser01: No such file or directory
+id: cannot find name for group ID 1012
+
+[root@lab11 ~]# authconfig --enablemkhomedir --update
+[root@lab11 ~]# su - ldapuser01
+Creating directory '/home/guests/ldapuser01'.
+Last login: Wed Aug  2 15:50:08 CDT 2017 on pts/0
+id: cannot find name for group ID 1012
+
+
+#On Server - adding a user
+
+[root@server migrationtools]# ldapadd -x -W -D cn=Manager,dc=intercloudzone,dc=com -f babu.ldif
+Enter LDAP Password:
+adding new entry "uid=babu,ou=People,dc=intercloudzone,dc=com"
+
+[root@server migrationtools]# cat babu.ldif
+dn: uid=babu,ou=People,dc=intercloudzone,dc=com
+uid: babu
+cn: babu
+objectClass: account
+objectClass: posixAccount
+objectClass: top
+objectClass: shadowAccount
+userPassword: {crypt}$6$/3bu6bR7$kDwUZNT88YMB3dScmfm2xEHYLLKYA9O.O3MJi1jMQDSg7asebqtoPGoio2LV.2ZkfZguwWoVamjbk2meNgPqN1
+shadowLastChange: 17380
+shadowMin: 0
+shadowMax: 99999
+shadowWarning: 7
+loginShell: /bin/bash
+uidNumber: 1013
+gidNumber: 1013
+homeDirectory: /home/guests/babu
+
+
+#USER ADD
+
+[root@server migrationtools]# ldapadd -x -w redhat -D "cn=Manager,dc=intercloudzone,dc=com" -f radha.ldif
+adding new entry "uid=radha,ou=People,dc=intercloudzone,dc=com"
+
+
+[root@lab11 ~]# su - radha
+Creating directory '/home/guests/radha'.
+id: cannot find name for group ID 2000
+
+
+Adding OpenLDAP POSIX groups
+
+
+[root@server migrationtools]# cat radha-group.ldif
+dn: cn=radha,ou=Group,dc=intercloudzone,dc=com
+objectClass: top
+objectClass: posixGroup
+cn: radha
+userPassword: {crypt}$6$/3bu6bR7$kDwUZNT88YMB3dScmfm2xEHYLLKYA9O.O3MJi1jMQDSg7asebqtoPGoio2LV.2ZkfZguwWoVamjbk2meNgPqN1
+gidNumber: 2000
+
+
+[root@server migrationtools]# ldapadd -x -w redhat -D "cn=Manager,dc=intercloudzone,dc=com" -f radha-group.ldif
+adding new entry "cn=radha,ou=Group,dc=intercloudzone,dc=com"
+
+
+[root@lab11 ~]# su - radha
+Last login: Wed Aug  2 16:54:53 CDT 2017 on pts/0
+
+
+https://techhelplist.com/index.php/tech-tutorials/34-openldap/48-user-management-in-openldap
+
+#Change Password
+
+[root@lab11 ~]# ldappasswd -x -D "cn=Manager,dc=intercloudzone,dc=com" -w redhat "uid=radha,ou=People,dc=intercloudzone,dc=com"
+New password: OQMBvAHI
+[root@lab11 ~]# ldappasswd -x -D "cn=Manager,dc=intercloudzone,dc=com" -w redhat "uid=radha,ou=People,dc=intercloudzone,dc=com" -s radha
+
+[root@lab11 ~]# ldapsearch -x -D "cn=Manager,dc=intercloudzone,dc=com" -w redhat -s sub "cn=*radha*"
+# extended LDIF
+#
+# LDAPv3
+
+
+
+#Search every entry
+[root@lab11 ~]# ldapsearch -x -D "cn=Manager,dc=intercloudzone,dc=com" -w redhat -s sub "objectclass=*"
+
+#Display only dn
+ldapsearch -x -D "cn=Manager,dc=intercloudzone,dc=com" -w redhat -s sub "objectclass=*" dn
+
+#Change admin password
+
+[root@server cn=config]# grep ldapadm olcDatabase\=\{2\}hdb.ldif
+olcRootDN: cn=ldapadm,dc=intercloudzone,dc=com
+[root@server cn=config]# pwd
+/etc/openldap/slapd.d/cn=config
+
+[root@lab11 ~]# ldapsearch -x -D "cn=ldapadm,dc=intercloudzone,dc=com" -w redhat -s sub "objectclass=*" dn
+
+ </pre>
+
+
+
+<p> readthis </p>
+
+
+<pre>
+
+#Ways to find the IP address of hte VM running
+
+
+virsh # domiflist lab11
+Interface  Type       Source     Model       MAC
+-------------------------------------------------------
+vnet4      bridge     br_fe      virtio      52:54:00:86:73:f2
+vnet5      network    vnetnat    virtio      52:54:00:57:e4:ff
+vnet6      network    vnetrou    virtio      52:54:00:a0:8e:2e
+vnet7      network    vnetiso    virtio      52:54:00:ba:e7:ce
+
+
+domifaddr lab11 - isn't returning anything (BUG ) - so going for fallback option
+
+# Try to get access to console 
+virsh console lab11 
+
+#Doesn't work until the console access is enabled. Enable via kpartx
+
+
+root@panchajanya:~\> virsh domblklist lab11
+Target     Source
+------------------------------------------------
+vda        /data/sdd01/vspd1/lab11.img
+
+root@panchajanya:~\> kpartx -av /data/sdd01/vspd1/lab11.img
+add map loop0p1 (253:14): 0 1048576 linear /dev/loop0 2048
+add map loop0p2 (253:15): 0 20971520 linear /dev/loop0 1050624
+add map loop0p3 (253:16): 0 1048576 linear /dev/loop0 22022144
+root@panchajanya:~\> mount /dev/mapper/loop0p1 /mnt/
+root@panchajanya:~\> cd /mnt/
+root@panchajanya:/mnt\> ls
+config-3.10.0-327.el7.x86_64                             initrd-plymouth.img
+grub                                                     symvers-3.10.0-327.el7.x86_64.gz
+grub2                                                    System.map-3.10.0-327.el7.x86_64
+initramfs-0-rescue-d88dc0e9818b405383649087000b224a.img  vmlinuz-0-rescue-d88dc0e9818b405383649087000b224a
+initramfs-3.10.0-327.el7.x86_64.img                      vmlinuz-3.10.0-327.el7.x86_64
+initramfs-3.10.0-327.el7.x86_64kdump.img
+root@panchajanya:/mnt\> vi grub2/grub.cfg
+root@panchajanya:/mnt\> grep console grub2/grub.cfg
+terminal_output console
+	linux16 /vmlinuz-3.10.0-327.el7.x86_64 root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet LANG=en_US.UTF-8 console=ttyS0
+
+umount /dev/mapper/loop0p1
+
+kpartx -dv /data/sdd01/vspd1/lab11.img
+
+
+root@panchajanya:~\> virsh shutdown lab11
+Domain lab11 is being shutdown
+
+root@panchajanya:~\> virsh start lab11
+Domain lab11 started
+
+root@panchajanya:/mnt\> virsh console lab11
+Connected to domain lab11
+Escape character is ^]
+
+CentOS Linux 7 (Core)
+Kernel 3.10.0-327.el7.x86_64 on an x86_64
+
+lab11 login: root
+Password:
+
+
+
+
+#Option 2, once logged into the server
+
+
+[root@lab11 ~]# grubby --help |grep kernel |grep update
+                                      new arguments for kernel being updated
+                                      kernel being updated
+  --update-kernel=kernel-path         updated information for the specified
+
+
+[root@lab11 ~]# grubby --default-kernel
+/boot/vmlinuz-3.10.0-327.el7.x86_64
+[root@lab11 ~]# grubby --default-index
+0
+[root@lab11 ~]# grubby --info=ALL
+index=0
+kernel=/boot/vmlinuz-3.10.0-327.el7.x86_64
+args="ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet LANG=en_US.UTF-8 console=ttyS0"
+root=/dev/mapper/vgos-lvroot
+initrd=/boot/initramfs-3.10.0-327.el7.x86_64.img
+title=CentOS Linux (3.10.0-327.el7.x86_64) 7 (Core)
+index=1
+kernel=/boot/vmlinuz-0-rescue-d88dc0e9818b405383649087000b224a
+args="ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet"
+root=/dev/mapper/vgos-lvroot
+initrd=/boot/initramfs-0-rescue-d88dc0e9818b405383649087000b224a.img
+title=CentOS Linux (0-rescue-d88dc0e9818b405383649087000b224a) 7 (Core)
+index=2
+non linux entry
+
+
+[root@lab11 ~]# grep linux16 /etc/grub2.cfg
+	linux16 /vmlinuz-3.10.0-327.el7.x86_64 root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet LANG=en_US.UTF-8 console=ttyS0
+	linux16 /vmlinuz-0-rescue-d88dc0e9818b405383649087000b224a root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet
+
+[root@lab11 ~]# grubby --remove-args="console=ttys0" --update-kernel=/boot/vmlinuz-3.10.0-327.el7.x86_64
+[root@lab11 ~]# grep linux16 /etc/grub2.cfg
+	linux16 /vmlinuz-3.10.0-327.el7.x86_64 root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet LANG=en_US.UTF-8
+	linux16 /vmlinuz-0-rescue-d88dc0e9818b405383649087000b224a root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet
+
+[root@lab11 ~]# grubby --update-kernel=/boot/vmlinuz-3.10.0-327.el7.x86_64 --args="console=ttyS0 console=tty0 console=ttyS0,115200"
+[root@lab11 ~]# grep linux16 /boot/grub2/grub.cfg
+	linux16 /vmlinuz-3.10.0-327.el7.x86_64 root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet LANG=en_US.UTF-8 console=ttyS0 console=tty0 console=ttyS0,115200
+	linux16 /vmlinuz-0-rescue-d88dc0e9818b405383649087000b224a root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet
+
+#Another option
+
+root@lab11 default]# grep linux16 /boot/grub2/grub.cfg
+	linux16 /vmlinuz-3.10.0-327.el7.x86_64 root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet LANG=en_US.UTF-8 console=ttyS0 console=tty0 console=ttyS0,115200
+	linux16 /vmlinuz-0-rescue-d88dc0e9818b405383649087000b224a root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet
+
+
+
+[root@lab11 default]# grub2-mkconfig -o /boot/grub2/grub.cfg
+Generating grub configuration file ...
+Found linux image: /boot/vmlinuz-3.10.0-327.el7.x86_64
+Found initrd image: /boot/initramfs-3.10.0-327.el7.x86_64.img
+Found linux image: /boot/vmlinuz-0-rescue-d88dc0e9818b405383649087000b224a
+Found initrd image: /boot/initramfs-0-rescue-d88dc0e9818b405383649087000b224a.img
+done
+
+[root@lab11 default]# grep linux16 /boot/grub2/grub.cfg
+	linux16 /vmlinuz-3.10.0-327.el7.x86_64 root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet
+	linux16 /vmlinuz-0-rescue-d88dc0e9818b405383649087000b224a root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet
+
+
+[root@lab11 default]# grep CMD grub
+GRUB_CMDLINE_LINUX="crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet console=ttyS0 console=tty0 console=ttyS0,115200 "
+[root@lab11 default]# grub2-mkconfig -o /boot/grub2/grub.cfg
+Generating grub configuration file ...
+Found linux image: /boot/vmlinuz-3.10.0-327.el7.x86_64
+Found initrd image: /boot/initramfs-3.10.0-327.el7.x86_64.img
+Found linux image: /boot/vmlinuz-0-rescue-d88dc0e9818b405383649087000b224a
+Found initrd image: /boot/initramfs-0-rescue-d88dc0e9818b405383649087000b224a.img
+done
+
+[root@lab11 default]# grep linux16 /boot/grub2/grub.cfg
+	linux16 /vmlinuz-3.10.0-327.el7.x86_64 root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet console=ttyS0 console=tty0 console=ttyS0,115200
+	linux16 /vmlinuz-0-rescue-d88dc0e9818b405383649087000b224a root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet console=ttyS0 console=tty0 console=ttyS0,115200	
+
+
+ </pre>
+
+<p>lvm </p>
+
+<pre> 
+
+lvm stores details in /etc/lvm/ directory.
+
+Run partprobe after partitioning modification , the results can be found in /proc/partitions 
+
+
+</pre>
+
+
+
+
+<p> sshd</p>
+
+
+<pre> 
+AllowTCPForwarding
+This tells whether or not the tunneled connections are allowed.
+
+[root@server ssh]# grep banner sshd_config
+# no default banner path
+Banner /etc/banner
+
+ClientAliveCountMax
+This sets the number of attempts the OpenSSH server should make contacting the client before issuing a disconnect ( Zero means session stays connected indefinitely.
+ )and will be sent in intervals defined by ClientAliveInterval.
+
+
+TCPKeepAlive
+sshd will send keep-alive requests to the clients. So in case of a client crash, the server side process will be terminated.
+
+X11Forwarding
+Will establish a tunnel and automatically set the $DISPLAY variable. eg 10:1 (Where X11DisplayOffset 10) If a user resets the DISPLAY variable to use a different one for eg.rack:0.1
+then encryption is defeated.
+
+#Enabling Port 99 in addition to port 22 and restart of sshd.
+
+*******************#012#012If you believe that sshd should be allowed name_bind access on the port 99 tcp_socket by default.#012Then you should report this as a bug.#012You can generate a local policy module to allow this access.#012Do#012allow this access for now by executing:#012# ausearch -c 'sshd' --raw | audit2allow -M my-sshd#012# semodule -i my-sshd.pp#012
+Aug  1 14:32:18 server setroubleshoot: SELinux is preventing /usr/sbin/sshd from name_bind access on the tcp_socket port 99. For complete SELinux messages. run sealert -l fc07953e-1392-421e-a4db-21705ffa9df1
+Aug  1 14:32:18 server python: SELinux is preventing /usr/sbin/sshd from name_bind access on the tcp_socket port 99.#012#012*****  Plugin bind_ports (99.5 confidence) suggests   ************************#012#012If you want to allow /usr/sbin/sshd to bind to network port 99#012Then you need to modify the port type.#012Do#012# semanage port -a -t PORT_TYPE -p tcp 99#012    where PORT_TYPE is one of the following: ssh_port_t, vnc_port_t, xserver_port_t.#012#012*****  Plugin catchall (1.49 confidence) suggests   **************************#012#012If you believe that sshd should be allowed name_bind access on the port 99 tcp_socket by default.#012Then you should report this as a bug.#012You can generate a local policy module to allow this access.#012Do#012allow this access for now by executing:#012# ausearch -c 'sshd' --raw | audit2allow -M my-sshd#012# semodule -i my-sshd.pp#012
+
+
+[root@server ~]# sealert -l fc07953e-1392-421e-a4db-21705ffa9df1
+SELinux is preventing /usr/sbin/sshd from name_bind access on the tcp_socket port 99.
+
+*****  Plugin bind_ports (99.5 confidence) suggests   ************************
+
+If you want to allow /usr/sbin/sshd to bind to network port 99
+Then you need to modify the port type.
+Do
+# semanage port -a -t PORT_TYPE -p tcp 99
+    where PORT_TYPE is one of the following: ssh_port_t, vnc_port_t, xserver_port_t.
+
+*****  Plugin catchall (1.49 confidence) suggests   **************************
+
+If you believe that sshd should be allowed name_bind access on the port 99 tcp_socket by default.
+Then you should report this as a bug.
+You can generate a local policy module to allow this access.
+Do
+allow this access for now by executing:
+# ausearch -c 'sshd' --raw | audit2allow -M my-sshd
+# semodule -i my-sshd.pp
+
+
+Additional Information:
+Source Context                system_u:system_r:sshd_t:s0-s0:c0.c1023
+Target Context                system_u:object_r:reserved_port_t:s0
+Target Objects                port 99 [ tcp_socket ]
+Source                        sshd
+Source Path                   /usr/sbin/sshd
+Port                          99
+Host                          server
+Source RPM Packages
+Target RPM Packages
+Policy RPM                    selinux-policy-3.13.1-102.el7_3.16.noarch
+Selinux Enabled               True
+Policy Type                   targeted
+Enforcing Mode                Enforcing
+Host Name                     server
+Platform                      Linux server 3.10.0-327.el7.x86_64 #1 SMP Thu Nov
+                              19 22:10:57 UTC 2015 x86_64 x86_64
+Alert Count                   5
+First Seen                    2017-08-01 12:38:53 CDT
+Last Seen                     2017-08-01 14:32:04 CDT
+Local ID                      fc07953e-1392-421e-a4db-21705ffa9df1
+
+Raw Audit Messages
+type=AVC msg=audit(1501615924.31:403): avc:  denied  { name_bind } for  pid=3067 comm="sshd" src=99 scontext=system_u:system_r:sshd_t:s0-s0:c0.c1023 tcontext=system_u:object_r:reserved_port_t:s0 tclass=tcp_socket
+
+
+Hash: sshd,sshd_t,reserved_port_t,tcp_socket,name_bind
+
+
+# Update semanage context.
+
+[root@server ~]# semanage port -a -t ssh_port_t -p tcp 99
+[root@server ~]# semanage port -l |grep ssh
+ssh_port_t                     tcp      99, 22
+
+
+TCPWrappers 
+
+Makes use of /etc/hosts.allow and /etc/hosts.deny ( allow consulted first by tcpd)
+
+[root@server etc]# vi hosts.deny
+[root@server etc]# tcpdmatch -d sshd hosts.deny
+client:   address  198.105.244.228
+server:   process  sshd
+access:   denied
+
+client:   address  198.105.254.228
+server:   process  sshd
+access:   denied
+
+
+</pre>
+
+<p> selinux example </p>
+
+
+
+<pre> 
+
+# Change context type of /etc/shadow
+
+[root@server ~]# ls -lZ /etc/shadow
+----------. root root system_u:object_r:shadow_t:s0    /etc/shadow
+
+[root@server ~]# chcon -t public_content_t /etc/shadow
+
+[root@server ~]# ls -lZ /etc/shadow
+----------. root root system_u:object_r:public_content_t:s0 /etc/shadow
+
+
+
+Try to change the password
+
+[root@server ~]# passwd user3
+Changing password for user user3.
+New password:
+BAD PASSWORD: The password is shorter than 8 characters
+Retype new password:
+passwd: Authentication token manipulation error
+
+
+# Check logs..
+
+
+systemctl status auditd states it's running. So instead of rsyslogd sending messages to /var/log/messages auditd would be sending it to audit.log
+
+
+type=AVC msg=audit(1501520443.317:502): avc:  denied  { read } for  pid=3069 comm="unix_chkpwd" name="shadow" dev="dm-0" ino=16970057 scontext=unconfined_u:unconfined_r:chkpwd_t:s0-s0:c0.c1023 tcontext=system_u:object_r:public_content_t:s0 tclass=file
+type=SYSCALL msg=audit(1501520443.317:502): arch=c000003e syscall=2 success=no exit=-13 a0=7f3e393350b3 a1=80000 a2=1b6 a3=24 items=0 ppid=3068 pid=3069 auid=0 uid=0 gid=0 euid=0 suid=0 fsuid=0 egid=0 sgid=0 fsgid=0 tty=(none) ses=1 comm="unix_chkpwd" exe="/usr/sbin/unix_chkpwd" subj=unconfined_u:unconfined_r:chkpwd_t:s0-s0:c0.c1023 key=(null)
+
+type=AVC msg=audit(1501520449.941:504): avc:  denied  { read } for  pid=3068 comm="passwd" name="shadow" dev="dm-0" ino=16970057 scontext=unconfined_u:unconfined_r:passwd_t:s0-s0:c0.c1023 tcontext=system_u:object_r:public_content_t:s0 tclass=file
+type=SYSCALL msg=audit(1501520449.941:504): arch=c000003e syscall=2 success=no exit=-13 a0=7f1c854832d4 a1=0 a2=1 a3=7f1c8d23bc8c items=0 ppid=2550 pid=3068 auid=0 uid=0 gid=0 euid=0 suid=0 fsuid=0 egid=0 sgid=0 fsgid=0 tty=pts2 ses=1 comm="passwd" exe="/usr/bin/passwd" subj=unconfined_u:unconfined_r:passwd_t:s0-s0:c0.c1023 key=(null)
+
+
+#Check the selinux 
+
+[root@server ~]# sestatus
+SELinux status:                 enabled
+SELinuxfs mount:                /sys/fs/selinux
+SELinux root directory:         /etc/selinux
+Loaded policy name:             targeted
+Current mode:                   enforcing
+Mode from config file:          enforcing
+Policy MLS status:              enabled
+Policy deny_unknown status:     allowed
+Max kernel policy version:      28
+
+# It's enforcing, let's temporarily set the context types to permissive
+
+
+[root@server ~]# semanage permissive -a chkpwd_t
+[root@server ~]# semanage permissive -a passwd_t
+[root@server ~]# semanage permissive -l
+
+Customized Permissive Types
+
+chkpwd_t
+httpd_t
+passwd_t
+
+Builtin Permissive Types
+..
+
+
+#Retry password change
+
+[root@server ~]# passwd user3
+Changing password for user user3.
+New password:
+BAD PASSWORD: The password is shorter than 8 characters
+Retype new password:
+passwd: all authentication tokens updated successfully.
+
+Password change worked, although avc_denied re-appers since permissive allows access bug logs the denials.
+
+
+# Backout policy changes 
+
+[root@server ~]# semanage permissive -d chkpwd_t
+libsemanage.semanage_direct_remove_key: Removing last permissive_chkpwd_t module (no other permissive_chkpwd_t module exists at another priority).
+[root@server ~]# semanage permissive -d passwd_t
+libsemanage.semanage_direct_remove_key: Removing last permissive_passwd_t module (no other permissive_passwd_t module exists at another priority).
+
+
+
+
+</pre>
+
+
+<p> selinux </p>
+
+
+<pre> 
+
+https://wiki.gentoo.org/wiki/SELinux/Users_and_logins
+
+
+
+MAC limits the ability of a subject(user/process) to access an object(file,dir,fs,device, interface,port,socket etc). To ensure a 
+coarse-grained control MAC uses a set of defined authorization rules called "policies" to examine security attributes associated with
+the subjects and object shwen a subject tries to acccess an object. These attributes are stored in contexts (aka labels) and are applicable
+to obth subject and objects.
+
+SELinux decisions are stored in a special cache area called AVC ( Acccess Vector Cache)
+
+Subject:
+Any user or process that access an object. Some xamples include system_u for SELinux System user and unconfined_u for subjects that aren't bound by SELinux policy. This is the 
+first filed of selinxu context.
+
+Object:
+Oject is a resource such as a file, dir, device, interface, port. Some examples include object_r for general objects, system_r for system-owned objects and unconfined_r for the
+ones not bound by SELinux. 
+
+Access:
+This is an action performed by a subject on an object. 
+
+Policy:
+This is the ruleset defined that is enforced system-wide which controls subjects access to objects or subject to subject interactions. The default behaviour in absence of a rules is to deny.
+
+Two standard pre-configured policies exists  : targeted and strict. 
+
+Targeted is default and ensures that any processes that are targeted will run in confined domains and any processes that aren't targeted runs on unconfined domains. For eg.
+SElinux runs the logged in user in unconfined domain vs the httpd process in confiend domain.
+
+Context:
+This is a tag that SELinux uses to store security attributes for both subject & object. The term context may be used interchangeably with the term label. In SELInux every subject 
+and object has a context assigned to it, which consists of a SELinux user, role, type(domain) and access control decisions are made based on these attributes.
+
+
+Labelling:
+This is the mapping between files in a file system with their file contexts. 
+
+SELinux User:
+There are several pre-defined entities that exist in SELinux Policy. These users have been assigned specific set of roles. SELinux users maps the linux users to selinux user identities
+to allow the linux users to inherit restrictions placed on SELinux users. 
+
+Role:
+It's an attribute of Role Based Access Control (RBAC) security model that is part of selinux. Defines which subject is allowed to access whcih domains. Each subject has an associated rule
+so that the system and user processes are separated.
+
+Subject can transition to other roles to gain access to other domains. Some examples include user_r for normal users, sysadm_r for sysadmins, system_r for processes that initiate under the
+system_r role . Role is the 2nd field in the context.
+
+Type and Domain:
+A type is aan attributed of Type Enforcement (TE).  Objects such as files & dir's with common security requirements are grouped within a specific type and processes with common security
+requirements are grouped and called as 'domains'
+
+
+SOme examples included selinux using user_home_dir_t for objects located in users home directories and user_t for most objects stored in /usr directory. Type is the 3rd field.
+
+
+Domain determines type of access a process has. Each process runs confined withn a domain. Some examples of selinux domain include init_t for the systemd process a, firewalld_t for the firewalld process  and unconfined_t for all processes not bound by selinux.
+
+
+Type Enforcement:
+IDentifies and limits subjects availability to access domaisn for processes and types for files. 
+
+Level is an attribute of MLS (Multi-Level-Security) and Multi-Category-Security(MCS). It's a pair of sensitivity:category values that defines the level of security in the context.
+
+category can be c0.c4 which represents from c0 to c4. In RHEL7 targeted policy is default and sensitivity level is s0 ( Supported values are from 0 - 1023)
+
+
+yum install setools-console
+yum install policycoreutils-python
+
+
+[root@server zones]# id -Z
+unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023
+
+root is mapped to a Selinux user - unconfined_u, and is running as unconfined_r role in the unconfined_t domain with security level 0 in all 1024 categories.
+
+
+
+Users defined by selinux
+
+[root@server zones]# seinfo -u
+
+Users: 8
+   sysadm_u
+   system_u
+   xguest_u
+   root
+   guest_u
+   staff_u
+   user_u
+   unconfined_u
+
+
+yum provides semanage
+
+root@panchajanya:/etc/selinux/targeted\> cat setrans.conf
+#
+# Multi-Category Security translation table for SELinux
+...
+# Examples:
+# s0:c0=CompanyConfidential
+# s0:c1=PatientRecord
+# s0:c2=Unclassified
+# s0:c3=TopSecret
+# s0:c1,c3=CompanyConfidentialRedHat
+s0=SystemLow
+s0-s0:c0.c1023=SystemLow-SystemHigh
+s0:c0.c1023=SystemHigh
+
+
+# What happens on context preservation
+
+a) IF file is copied over on same directory or different directory the context will be switched to the destination file's attributes.
+b) If a file is copied to a new directory as a new file - the context of the destination directory is preserved.
+c) If a file is moved to same or different directory the user attribute (subject) will be changed to unconfined_u
+d) For tar archives use --selinux opttion to preserve contexts
+
+
+[root@server ~]# ls -ldZ /usr/bin/
+dr-xr-xr-x. root root system_u:object_r:bin_t:s0       /usr/bin/
+[root@server ~]# ls -ldZ /usr/etc/
+drwxr-xr-x. root root system_u:object_r:etc_t:s0       /usr/etc/
+[root@server ~]# cd /usr/bin/
+[root@server bin]# touch afile
+[root@server bin]# ls -lZ afile
+-rw-r--r--. root root unconfined_u:object_r:bin_t:s0   afile
+[root@server bin]# cp afile ../etc/
+[root@server bin]# cd ../etc/
+[root@server etc]# ls -lZ afile
+-rw-r--r--. root root unconfined_u:object_r:etc_t:s0   afile
+-rw-r--r--. root root unconfined_u:object_r:etc_t:s0   ../etc/afile
+[root@server bin]# cp afile ../etc/ --preserve=context
+cp: overwrite ‘../etc/afile’? y
+[root@server bin]# ls -lZ ../etc/afile
+-rw-r--r--. root root unconfined_u:object_r:bin_t:s0   ../etc/afile
+
+
+[root@server bin]# ls -lZ zcat.test
+-rwxr-xr-x. root root system_u:object_r:bin_t:s0       zcat.test
+[root@server bin]# ls -lZ zcat.test
+-rwxr-xr-x. root root unconfined_u:object_r:bin_t:s0   zcat.test
+
+To set booleans 
+
+setsebool 
+sestatus -b
+
+
+root@panchajanya:/var/ftp\> ls -Z vnetiso.xml
+-rw-r--r--. root root unconfined_u:object_r:unlabeled_t:s0 vnetiso.xml
+
+root@panchajanya:/var/ftp\> chcon -t public_content_t vnetiso.xml
+root@panchajanya:/var/ftp\> ls -Z vnetiso.xml
+-rw-r--r--. root root unconfined_u:object_r:public_content_t:s0 vnetiso.xml
+
+#Adding a user
+[root@server bin]# semanage login -a -s user_u user4
+[root@server bin]# semanage login -l
+
+Login Name           SELinux User         MLS/MCS Range        Service
+
+__default__          unconfined_u         s0-s0:c0.c1023       *
+root                 unconfined_u         s0-s0:c0.c1023       *
+system_u             system_u             s0-s0:c0.c1023       *
+user4                user_u               s0                   *
+user5                staff_u              s0-s0:c0.c1023       *
+
+#change default selinux login context
+
+[root@server bin]# semanage login -l
+
+Login Name           SELinux User         MLS/MCS Range        Service
+
+__default__          unconfined_u         s0-s0:c0.c1023       *
+root                 unconfined_u         s0-s0:c0.c1023       *
+system_u             system_u             s0-s0:c0.c1023       *
+user4                user_u               s0                   *
+user5                staff_u              s0-s0:c0.c1023       *
+[root@server bin]# semanage login -m -S targeted -s staff_u __default__
+[root@server bin]# semanage login -l
+
+Login Name           SELinux User         MLS/MCS Range        Service
+
+__default__          staff_u              s0-s0:c0.c1023       *
+root                 unconfined_u         s0-s0:c0.c1023       *
+system_u             system_u             s0-s0:c0.c1023       *
+user4                user_u               s0                   *
+user5                staff_u              s0-s0:c0.c1023       *
+
+[root@server bin]# semanage login -m -S targeted -r s0:c0 -s staff_u __default__
+^[[A[root@server bi^C
+[root@server bin]# semanage login -l
+
+Login Name           SELinux User         MLS/MCS Range        Service$
+se$
+
+
+__default__          staff_u              s0:c0                *
+root                 unconfined_u         s0-s0:c0.c1023       *
+system_u             system_u             s0-s0:c0.c1023       *
+user4                user_u               s0                   *
+user5                staff_u              s0-s0:c0.c1023       *
+</pre>
+
+
+#Add persistent context for a file
+[root@server ~]# semanage fcontext -a  -S targeted -s user_u -t public_content_t /root/afile
+
+[root@server ~]# cat /etc/selinux/targeted/contexts/files/file_contexts.local | grep afile
+/root/afile    user_u:object_r:public_content_t:s0
+
+[root@server ~]# ls -Zd /root/
+dr-xr-x---. root root system_u:object_r:admin_home_t:s0 /root/
+[root@server ~]# chcon -u user_u -t var_run_t /root
+[root@server ~]# ls -Zd /root/
+dr-xr-x---. root root user_u:object_r:var_run_t:s0     /root/
+
+[root@server ~]# restorecon -Fv /root/
+restorecon reset /root context user_u:object_r:var_run_t:s0->system_u:object_r:admin_home_t:s0
+[root@server ~]# ls -Zd /root/
+dr-xr-x---. root root system_u:object_r:admin_home_t:s0 /root/
+
+[root@server ~]# semanage port -a -t http_port_t -p tcp 8010
+[root@server ~]# semanage port -l |grep http_port_t
+http_port_t                    tcp      8010, 80, 81, 443, 488, 8008, 8009, 8443, 9000
+pegasus_http_port_t            tcp      5988
+[root@server ~]# semanage port -d -t http_Port_t -p tcp 8010
+[root@server ~]# semanage port -l |grep http_port_t
+http_port_t                    tcp      80, 81, 443, 488, 8008, 8009, 8443, 9000
+pegasus_http_port_t            tcp      5988
+
+
+https://wiki.centos.org/HowTos/SELinux
+
+
+Note: Check Apache secontext during apache installation/configuration
+https://wiki.centos.org/HowTos/SELinux
+
+
+ semanage user --add -r s0:c0 -R "auditadm_r sysadm_r" auditor_u
+ semanage login --add -s auditor_u phil
+
+[root@server phil]# semanage permissive -a httpd_t
+[root@server phil]# seinfo --permissive
+
+Permissive Types: 7
+   httpd_t
+   blkmapd_t
+   hsqldb_t
+   ipmievd_t
+   sanlk_resetd_t
+   systemd_hwdb_t
+   targetd_t
+<p>firewalld </p>
+
+
+<pre>
+[root@server zones]# firewall-cmd --permanent --add-port=5901-5910/tcp
+success
+[root@server zones]# firewalll-cmd --list-all
+-bash: firewalll-cmd: command not found
+[root@server zones]# firewall-cmd --list-all
+public (default, active)
+  interfaces: eth0 eth1 eth2 eth3
+  sources:
+  services: dhcpv6-client http ssh
+  ports: 443/tcp
+  masquerade: no
+  forward-ports:
+  icmp-blocks:
+  rich rules:
+
+[root@server zones]# firewall-cmd --reload
+success
+[root@server zones]# firewall-cmd --list-all
+public (default, active)
+  interfaces: eth0 eth1 eth2 eth3
+  sources:
+  services: dhcpv6-client http ssh
+  ports: 5901-5910/tcp
+  masquerade: no
+  forward-ports:
+  icmp-blocks:
+  rich rules:
+
+[root@server zones]# pwd
+/etc/firewalld/zones
+[root@server zones]# cat public.xml
+<?xml version="1.0" encoding="utf-8"?>
+<zone>
+  <short>Public</short>
+  <description>For use in public areas. You do not trust the other computers on networks to not harm your computer. Only selected incoming connections are accepted.</description>
+  <service name="dhcpv6-client"/>
+  <service name="http"/>
+  <service name="ssh"/>
+  <port protocol="tcp" port="5901-5910"/>
+</zone>
+
+
+</pre>
+
+
+
+<p>qemu</p>
+
+
+<pre>
+qemu:///system - connects locally as the root user to the daemon supervising guest virtual machines on the KVM hypervisor.
+
+
+
+
+</pre>
+
+
+<p> iptables </p>
+
+
+<pre>
+yum install iptables.services
+systemctl disable firewalld
+systemctl mask firewalld
+systemctl enable iptables
+
+#Sample commands.
+iptables --line-numbers -L -n -v
+iptables -t filter -A FORWARD -s 192.168.1.0/24 -d 192.168.2.0/24 -j ACCEPT
+iptables -t filter -A OUTPUT -m state --state NEW,ESTABLISHED -p tcp --dport 25 -j DROP
+iptables -t filter -I INPUT -m state --state NEW -p tcp --dport 21 -j ACCEPT
+
+#set default policy
+iptables -P INPUT ACCEPT
+
+#Flush all rules in NAT filter
+iptables -t nat -F 
+
+#Delete all chains in mangle
+
+iptables -t mange -X
+
+
+#To log and drop spoofing per 5 minutes, in bursts of at most 7 entries .
+iptables -A INPUT -i eth1 -s 10.0.0.0/8 -m limit --limit 5/m --limit-burst 7 -j LOG --log-prefix "IP_SPOOF A: "
+
+#from mac source
+iptables -A INPUT -m mac --mac-source 00:0F:EA:91:04:08 -j DROP
+
+#Drop icmp 
+iptables -A INPUT -p icmp --icmp-type echo-request -j DROP
+
+### ** assumed that default INPUT policy set to DROP ** #############
+iptables -A INPUT -p icmp --icmp-type echo-reply -j ACCEPT
+iptables -A INPUT -p icmp --icmp-type destination-unreachable -j ACCEPT
+iptables -A INPUT -p icmp --icmp-type time-exceeded -j ACCEPT
+## ** all our server to respond to pings ** ##
+iptables -A INPUT -p icmp --icmp-type echo-request -j ACCEPT
+
+## only accept connection to tcp port 80 (Apache) if ip is between 192.168.1.100 and 192.168.1.200 ##
+iptables -A INPUT -p tcp --destination-port 80 -m iprange --src-range 192.168.1.100-192.168.1.200 -j ACCEPT
+
+## nat example ##
+iptables -t nat -A POSTROUTING -j SNAT --to-source 192.168.1.20-192.168.1.25
+
+
+#21: Restrict the Number of Parallel Connections To a Server Per Client IP
+# iptables -A INPUT -p tcp --syn --dport 22 -m connlimit --connlimit-above 3 -j REJECT
+
+Set HTTP requests to 20:
+# iptables -p tcp --syn --dport 80 -m connlimit --connlimit-above 20 --connlimit-mask 24 -j DROP
+
+--connlimit-above 3 : Match if the number of existing connections is above 3.
+--connlimit-mask 24 : Group hosts using the prefix length. For IPv4, this must be a number between (including) 0 and 32.
+ </pre>
+
+
+<p> firewalld </p>
+
+
+<pre>
+Firewalld stores configuration files as .xml files. System defined rules are in /usr/lib/firewalld and user-defined in /etc/firewalld.
+
+
+</pre>
+
+
+<p> kickstart - labx.cfg </p>
+
+<pre>
+
+
+ </pre>
+
+<p>isolated </p>
+
+
+
+<pre> 
+
+root@panchajanya:/data/sdc01/rhsa/stage\> cat vnetiso.xml
+<network>
+  <name>vnetiso</name>
+  <bridge name='vbriso' stp='on' delay='0' />
+  <ip address='192.168.132.1' netmask='255.255.255.0'>
+    <range start='192.168.132.2' end='192.168.132.254'/>
+  </ip>
+</network>
+
+</pre>
+
+
+<p> disk based storage </p>
+
+
+<pre> 
+
+
+
+Source Device Path: This is the device parameter where the partitions will be created.
+Target Path : The file system target parameter with the path sub-parameter determines the location on the host file system to attach volumes created with this storage pool.
+For example, sdb1, sdb2, sdb3. Using /dev/, as in the example below, means volumes created from this storage pool can be accessed as /dev/sdb1, /dev/sdb2, /dev/sdb3. 
+
+
+virsh # pool-define-as --name demodisk --type disk --source-dev /dev/sde --target /dev --source-format gpt
+Pool demodisk defined
+
+ 
+virsh # pool-build demodisk
+Pool demodisk built
+
+ 
+
+virsh # pool-start demodisk
+Pool demodisk started
+
+
+virsh # vol-create-as --pool demodisk --name sde1 --capacity 10G --format linux
+Vol sde1 created
+
+virsh # vol-create-as --pool demodisk --name sde2 --capacity 10G --format linux
+Vol sde2 created
+
+root@panchajanya:~\> parted /dev/sde
+GNU Parted 3.1
+Using /dev/sde
+Welcome to GNU Parted! Type 'help' to view a list of commands.
+(parted) p
+Model: ATA Hitachi HDS72105 (scsi)
+Disk /dev/sde: 500GB
+Sector size (logical/physical): 512B/4096B
+Partition Table: gpt
+Disk Flags:
+
+Number  Start   End     Size    File system  Name     Flags
+ 1      17.4kB  10.7GB  10.7GB               primary
+ 2      10.7GB  21.5GB  10.7GB               primary
+
+
+
+
+</pre>
+
+
+<p> partition based storage </p>
+
+
+#device
+The device parameter with the path attribute specifies the device path of the storage device. This example uses the partition /dev/sdc1.
+
+#mountpoint
+The mountpoint on the local file system where the formatted device will be mounted. If the mount point directory does not exist, the virsh command can create the directory.
+The directory /guest_images is used in this example.
+
+
+
+virsh # pool-define-as --type fs --name demofs --source-dev=/dev/sde1 --target=/data/demofs
+Pool demofs defined
+
+virsh # pool-build demofs
+Pool demofs built
+
+virsh # pool-dumpxml demofs
+<pool type='fs'>
+  <name>demofs</name>
+  <uuid>23f27f1e-7235-4613-bde2-588a3a5c5a56</uuid>
+  <capacity unit='bytes'>0</capacity>
+  <allocation unit='bytes'>0</allocation>
+  <available unit='bytes'>0</available>
+  <source>
+    <device path='/dev/sde1'/>
+    <format type='auto'/>
+  </source>
+  <target>
+    <path>/data/demofs</path>
+  </target>
+</pool>
+
+root@panchajanya:/data/demofs\> pwd
+/data/demofs
+
+
+(parted) p
+Model: ATA Hitachi HDS72105 (scsi)
+Disk /dev/sde: 976773168s
+Sector size (logical/physical): 512B/4096B
+Partition Table: gpt
+Disk Flags:
+
+Number  Start  End  Size  File system  Name  Flags
+
+(parted) mkpart primary xfs 0% 10G
+(parted) p
+Model: ATA Hitachi HDS72105 (scsi)
+Disk /dev/sde: 976773168s
+Sector size (logical/physical): 512B/4096B
+Partition Table: gpt
+Disk Flags:
+
+Number  Start  End        Size       File system  Name     Flags
+ 1      2048s  19531775s  19529728s               primary
+
+
+root@panchajanya:/data/demofs\> mkfs.xfs /dev/sde1 -f
+meta-data=/dev/sde1              isize=256    agcount=4, agsize=610304 blks
+         =                       sectsz=4096  attr=2, projid32bit=1
+         =                       crc=0        finobt=0
+data     =                       bsize=4096   blocks=2441216, imaxpct=25
+         =                       sunit=0      swidth=0 blks
+naming   =version 2              bsize=4096   ascii-ci=0 ftype=0
+log      =internal log           bsize=4096   blocks=2560, version=2
+         =                       sectsz=4096  sunit=1 blks, lazy-count=1
+realtime =none                   extsz=4096   blocks=0, rtextents=0
+
+
+virsh # pool-start demofs
+Pool demofs started
+
+virsh # vol-create-as --pool demofs demo1.img --capacity 2G
+Vol demo1.img created
+
+virsh # vol-create-as --pool demofs demo2.img --capacity 2G
+Vol demo2.img created
+
+
+root@panchajanya:/data/demofs\> ls -ltr
+total 4194304
+-rw-------. 1 root root 2147483648 Jul 24 20:50 demo1.img
+-rw-------. 1 root root 2147483648 Jul 24 20:50 demo2.img
+
+
+<pre> </pre>
+
+
+
+<p>dir pool</p>
+
+
+<pre> 
+
+A pool with a type of dir provides the means to manage files within a directory. The files can be fully allocated raw files, sparsely allocated raw files, or one of the special disk formats such as qcow,qcow2,vmdk, cow, etc as supported by the qemu-img program. If the directory does not exist at the time the pool is defined, the build operation can be used to create it.
+
+virsh # pool-define-as --type dir --name demodir --target /data/demodir
+Pool demodir defined
+
+virsh # pool-build demodir
+Pool demodir built
+
+
+root@panchajanya:~\> ls -ltr /data/demodir/
+total 0
+root@panchajanya:~\>
+
+
+virsh # pool-start demodir
+Pool demodir started
+
+virsh # vol-create-as --pool demodir demo1.img --capacity 10G
+Vol demo1.img created
+
+
+root@panchajanya:~\> ls -ltr /data/demodir/
+total 10485760
+-rw-------. 1 root root 10737418240 Jul 24 20:56 demo1.img
+
+virsh # pool-dumpxml demodir
+<pool type='dir'>
+  <name>demodir</name>
+  <uuid>f3badc84-253d-4c61-a2e1-79a364b7e0ac</uuid>
+  <capacity unit='bytes'>35881521152</capacity>
+  <allocation unit='bytes'>30513004544</allocation>
+  <available unit='bytes'>5368516608</available>
+  <source>
+  </source>
+  <target>
+    <path>/data/demodir</path>
+    <permissions>
+      <mode>0755</mode>
+      <owner>0</owner>
+      <group>0</group>
+      <label>system_u:object_r:default_t:s0</label>
+    </permissions>
+  </target>
+</pool>
+
+</pre>
+
+ 
+<p> lvm based pool </p>
+
+
+<pre> 
+
+Volumes are created as LVM's ..
+
+LVM-based storage pools require a full disk partition. If activating a new partition/device with these procedures, the partition will be formatted and all data will be erased. If using the host's existing Volume Group (VG) nothing will be erased. It is recommended to back up the storage device before commencing the following procedure.
+
+Note : For a pre-defined LVM volume group, simply providing the group name is sufficient, while to build a new group requires providing a list of source devices to serve as physical volumes. Volumes will be allocated by carving out chunks of storage from the volume group.
+
+virsh # pool-define-as --type logical --name demolvm --source-dev /dev/sde --source-name vgdemo
+Pool demolvm defined
+
+virsh # pool-dumpxml demolvm
+<pool type='logical'>
+  <name>demolvm</name>
+  <uuid>e8c9bd2d-f4cc-4506-9e06-78f24082bc0f</uuid>
+  <capacity unit='bytes'>0</capacity>
+  <allocation unit='bytes'>0</allocation>
+  <available unit='bytes'>0</available>
+  <source>
+    <device path='/dev/sde'/>
+    <name>vgdemo</name>
+    <format type='lvm2'/>
+  </source>
+  <target>
+    <path>/dev/vgdemo</path>
+  </target>
+</pool>
+
+virsh # pool-build vgdemo
+error: failed to get pool 'vgdemo'
+error: Storage pool not found: no storage pool with matching name 'vgdemo'
+
+virsh # pool-build demolvm
+Pool demolvm built
+
+
+root@panchajanya:~\> vgs
+  VG      #PV #LV #SN Attr   VSize   VFree
+  oczsda    1   3   0 wz--n-  55.41g  64.00m
+  oczsdb    1   3   0 wz--n-  55.41g  64.00m
+  vgdatac   1   4   0 wz--n- 465.76g 265.76g
+  vgdatad   1   4   0 wz--n- 465.76g 265.76g
+  vgdemo    1   0   0 wz--n- 465.76g 465.76g
+
+virsh # pool-start demolvm
+Pool demolvm started
+
+
+virsh # vol-create-as --pool demolvm --name lvdemo1 --capacity 2G
+Vol lvdemo1 created
+
+virsh # vol-create-as --pool demolvm --name lvdemo2 --capacity 2G
+Vol lvdemo2 created
+
+virsh # vol-list --pool demolvm
+ Name                 Path
+------------------------------------------------------------------------------
+ lvdemo1              /dev/vgdemo/lvdemo1
+ lvdemo2              /dev/vgdemo/lvdemo2
+
+root@panchajanya:~\> lvs vgdemo
+  LV      VG     Attr       LSize Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
+  lvdemo1 vgdemo -wi-a----- 2.00g
+  lvdemo2 vgdemo -wi-a----- 2.00g
+</pre>
+
+<p>Unable to delete the file </p>
+
+
+<pre>
+root@panchajanya:/etc/libvirt/qemu\> virsh --debug 0 vol-delete --pool virpool0 demo.img
+vol-delete: pool(optdata): virpool0
+vol-delete: vol(optdata): demo.img
+vol-delete: found option <pool>: virpool0
+vol-delete: <pool> trying as pool NAME
+vol-delete: found option <vol>: demo.img
+vol-delete: <vol> trying as vol name
+error: Failed to delete vol demo.img
+error: cannot unlink file '/data/sdd00/demo.img': Success
+
+
+
+virsh # pool-refresh virpool0
+Pool virpool0 refreshed
+
+
+root@panchajanya:/etc/libvirt/qemu\> virsh --debug 0 vol-delete --pool virpool0 demo.img
+vol-delete: pool(optdata): virpool0
+vol-delete: vol(optdata): demo.img
+vol-delete: found option <pool>: virpool0
+vol-delete: <pool> trying as pool NAME
+vol-delete: found option <vol>: demo.img
+vol-delete: <vol> trying as vol name
+
+
+# General info
+virsh # domblklist rhce
+Target     Source
+------------------------------------------------
+vda        /data/sdd00/vspd0/rhce_hdd0.img
+
+</pre>
+
+<p>demo </p>
+
+
+<pre> 
+http://cobbler.github.io/manuals/quickstart/
+
+
+*Note : Without the --autostart --os-type=linux --os-variant=rhel7  , the installation would hit a failure with an error message "Exception Attribute Error: Nonetype object has no attributed udev_unref"
+
+virt-install --name=demo --memory 1024 --vcpus=1 --autostart --os-type=linux --os-variant=rhel7 --location=ftp://192.168.2.11/pub/demo --network bridge=br_fe --network bridge=virbr0 --network bridge=virbr1 --network bridge=virbr2 --disk vol=virpool0/demo.img --extra-args ks=ftp://192.168.2.11/pub/demo/demo.cfg
+
+vol-create-as virpool0 demo.img 10G
+
+
+
+root@panchajanya:~\> virt-install --name demo --memory 1024 --disk /data/sdd00/demo.img --location ftp://192.168.2.11/pub/demo/ --extra-args "ks=ftp://192.168.2.11/pub/demo/demo.cfg" --network bridge=br_fe --network network=default --network network=virnet1 --network network=virnet2
+WARNING  Graphics requested but DISPLAY is not set. Not running virt-viewer.
+WARNING  No console to launch for the guest, defaulting to --wait -1
+
+#To cleanup
+root@panchajanya:~\> virsh destroy demo
+Domain demo destroyed
+
+root@panchajanya:~\> virsh undefine demo --remove-all-storage
+Domain demo has been undefined
+Volume 'hda'(/data/sdd00/demo.img) removed.
+
+
+</pre>
+
+<p> vsftp -  </p>
+
+<pre>
+curl: (9) Server denied you to change to the given directory
+
+
+root@panchajanya:/var/ftp/pub\> setenforce 1
+
+root@panchajanya:/var/ftp/pub\> getenforce
+Enforcing
+
+
+root@panchajanya:/var/ftp/pub\> curl ftp://192.168.2.11/pub//test/repodata/repomd.xml
+curl: (9) Server denied you to change to the given directory
+
+root@panchajanya:/var/ftp/pub\> setenforce 0
+
+root@panchajanya:/var/ftp/pub\> getenforce
+Permissive
+
+root@panchajanya:/var/ftp/pub\> curl ftp://192.168.2.11/pub//test/repodata/repomd.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<repomd xmlns="http://linux.duke.edu/metadata/repo" xmlns:rpm="http://linux.duke.edu/metadata/rpm"
+..
+
+or change the selinux boolean
+
+root@panchajanya:/var/ftp/pub\> getsebool -a |grep ftpd_full
+ftpd_full_access --> off
+sftpd_full_access --> off
+root@panchajanya:/var/ftp/pub\> setsebool ftpd_full_access 1
+root@panchajanya:/var/ftp/pub\> getsebool -a |grep ftpd_full
+ftpd_full_access --> on
+sftpd_full_access --> off
+
+
+
+ </pre>
+
+
+<p> mount </p>
+
+
+<pre>
+
+mount -t iso9660 /data/sdc01/iso/CentOS-7-x86_64-DVD-1511.iso /tmp/test/
+mount -o loop /data/sdc01/iso/CentOS-7-x86_64-DVD-1511.iso /tmp/test/
+
+
+</pre>
+
+
+<p>vnet </p>
+
+
+<pre> 
+
+
+
+virsh # list
+ Id    Name                           State
+----------------------------------------------------
+ 2     rhce                           running
+
+virsh # domiflist rhce
+Interface  Type       Source     Model       MAC
+-------------------------------------------------------
+vnet0      bridge     br_fe      virtio      52:54:00:48:1f:c1
+vnet1      bridge     virbr0     virtio      52:54:00:24:f0:74
+vnet2      bridge     virbr1     virtio      52:54:00:73:b4:94
+vnet3      bridge     virbr2     virtio      52:54:00:a4:c0:3c
+
+
+#Find the interface list
+
+virsh # net-list
+ Name                 State      Autostart     Persistent
+----------------------------------------------------------
+ default              active     yes           yes
+ virnet1              active     yes           yes
+ virnet2              active     yes           yes
+
+ #Find the bridges that are mapped to each networks..
+
+ root@panchajanya:/etc/libvirt/qemu/networks\> for file in `ls -1 *.xml `; do cat $file | grep bridge ; done
+  <bridge name='virbr0' stp='on' delay='0'/>
+  <bridge name='virbr1' stp='on' delay='0'/>
+  <bridge name='virbr2' stp='on' delay='0'/>
+
+ or
+
+ #Do dump-xml and look for the bridge name
+
+ root@panchajanya:/etc/libvirt/qemu/networks\> virsh net-dumpxml default |grep bridge
+  <bridge name='virbr0' stp='on' delay='0'/>
+
+root@panchajanya:/etc/libvirt/qemu/networks\> virsh net-dumpxml virnet1 |grep bridge
+  <bridge name='virbr1' stp='on' delay='0'/>
+
+root@panchajanya:/etc/libvirt/qemu/networks\> virsh net-dumpxml virnet2 |grep bridge
+  <bridge name='virbr2' stp='on' delay='0'/>
+
+
+ #Find the bridges that are active.
+
+root@panchajanya:/etc/libvirt/qemu/networks\> bridge link show |grep forwarding
+3: enp8s0 state UP : <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 master br_fe state forwarding priority 32 cost 4
+11: vnet0 state UNKNOWN : <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 master br_fe state forwarding priority 32 cost 100
+12: vnet1 state UNKNOWN : <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 master virbr0 state forwarding priority 32 cost 100
+13: vnet2 state UNKNOWN : <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 master virbr1 state forwarding priority 32 cost 100
+14: vnet3 state UNKNOWN : <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 master virbr2 state forwarding priority 32 cost 100
+
+
+
+
+
+
+</pre>
+
+
+
+<p>
+boot
+ </p>
+
+
+
+<pre>
+[root@rhce boot]# dd if=/dev/vda bs=512 count=1 | od -Ax -tx1z -v
+1+0 records in
+1+0 records out
+512 bytes (512 B) copied, 5.7363e-05 s, 8.9 MB/s
+000000 eb 63 90 10 8e d0 bc 00 b0 b8 00 00 8e d8 8e c0  >.c..............<
+000010 fb be 00 7c bf 00 06 b9 00 02 f3 a4 ea 21 06 00  >...|.........!..<
+
+
+
+ </pre>
+
+
+
+
+
+<p>
+kvm
+</p>
+
+<pre class="prettyprint lang-xml">
+
+root@mayura:~\> lsmod | grep kvm
+kvm_intel             192512  6
+kvm                   573440  1 kvm_intel
+irqbypass              16384  17 kvm
+
+# To load the modules
+
+modproble kvm_intel 
+ 
+</pre>	
+		
+
+
+
+<p> firewalld </p>
+
+
+
+<pre class="prettyprint lang-xml">
+ 
+
+root@panchajanya:/u03/slice01/RHCE/spool\> firewall-cmd --get-default-zone
+public
+
+root@panchajanya:/u03/slice01/RHCE/spool\> firewall-cmd --get-active-zones
+public
+interfaces: br_fe enp7s0
+
+root@panchajanya:/u03/slice01/RHCE/spool\> firewall-cmd --state
+running
+
+root@panchajanya:~\> nc -v 192.168.2.11 50000 -w 2
+Ncat: Version 6.40 ( http://nmap.org/ncat )
+Ncat: Connection refused.
+
+root@panchajanya:/u03/slice01/RHCE/spool\> firewall-cmd --zone=public --add-port=50000/tcp
+success
+root@panchajanya:/u03/slice01/RHCE/spool\> firewall-cmd --list-ports
+50000/tcp
+
+root@panchajanya:/u03/slice01/RHCE/spool\> firewall-cmd --zone=public --list-all
+public (default, active)
+interfaces: br_fe enp7s0
+sources:
+services: dhcpv6-client ftp ssh
+ports: 50000/tcp
+masquerade: no
+forward-ports:
+icmp-blocks:
+rich rules:
+
+root@panchajanya:/u03/slice01/RHCE/spool\> firewall-cmd  --zone=public --add-rich-rule="rule family="ipv4" source address="192.168.2.0/24" log prefix="ftp_firewalld" level="debug" accept"
+success
+
+root@panchajanya:/u03/slice01/RHCE/spool\> firewall-cmd --remove-rich-rule "rule family="ipv4" source address="192.168.2.0/24" log prefix="ftp_firewalld" level="debug" accept"
+success
+ 
+tail /var/log/messages
+
+Mar  3 14:00:35 panchajanya kernel: ftp_firewalldIN=br_fe OUT= MAC=00:1f:bc:02:01:67:52:54:00:78:55:c8:08:00 SRC=192.168.2.50 DST=192.168.2.11 LEN=60 TOS=0x00 PREC=0x00 TTL=64 ID=62747 DF PROTO=TCP SPT=45295 DPT=21 WINDOW=29200 RES=0x00 SYN URGP=0
+Mar  3 14:00:35 panchajanya kernel: ftp_firewalldIN=br_fe OUT= MAC=00:1f:bc:02:01:67:52:54:00:78:55:c8:08:00 SRC=192.168.2.50 DST=192.168.2.11 LEN=60 TOS=0x00 PREC=0x00 TTL=64 ID=52789 DF PROTO=TCP SPT=51930 DPT=50000 WINDOW=29200 RES=0x00 SYN URGP=0
+Mar  3 14:00:35 panchajanya kernel: ftp_firewalldIN=br_fe OUT= MAC=00:1f:bc:02:01:67:52:54:00:78:55:c8:08:00 SRC=192.168.2.50 DST=192.168.2.11 LEN=60 TOS=0x00 PREC=0x00 TTL=64 ID=39398 DF PROTO=TCP SPT=45297 DPT=21 WINDOW=29200 RES=0x00 SYN URGP=0
+Mar  3 14:00:35 panchajanya kernel: ftp_firewalldIN=br_fe OUT= MAC=00:1f:bc:02:01:67:52:54:00:78:55:c8:08:00 SRC=192.168.2.50 DST=192.168.2.11 LEN=60 TOS=0x00 PREC=0x00 TTL=64 ID=64845 DF PROTO=TCP SPT=51932 DPT=50000 WINDOW=29200 RES=0x00 SYN URGP=0
+
+
+
+</pre>	
+		
+
+
+
+ <p>
+module
+ </p>
+
+
+ <pre>
+To load module
+modprobe -v dm_mirror # Loads all dependent modules
+modprobe -vr dm_mirror # Unloads the module
+depmod -v # Scans for undetected hardware devices and loads the appropriate modules.
+
+
+ </pre> 
+
+
+<p>
+kernel
+
+</p>
+
+
+<pre>
+yum list installed-kernel*5$
+
+Always do rpm -ivh kernel or yum -y update kernel to ensure a new installation.
+
+[root@rhce ~]# modprobe -v dm_mirror
+[root@rhce ~]# modprobe -vr dm_mirror
+rmmod dm_mirror
+rmmod dm_region_hash
+rmmod dm_log
+[root@rhce ~]# modprobe -v dm_mirror
+insmod /lib/modules/3.10.0-327.el7.x86_64/kernel/drivers/md/dm-log.ko
+insmod /lib/modules/3.10.0-327.el7.x86_64/kernel/drivers/md/dm-region-hash.ko
+insmod /lib/modules/3.10.0-327.el7.x86_64/kernel/drivers/md/dm-mirror.ko
+
+
+[root@rhce ~]# ls -ltr /lib/modules/3.10.0-327.el7.x86_64/ |grep modules
+
+
+
+</pre>
+
+
+
+<p>
+bios/uefi
+</p>
+
+
+<pre>
+
+https://www.happyassassin.net/2014/01/25/uefi-boot-how-does-that-actually-work-then/
+
+
+
+</pre>
+
+<p>
+timezone
+</p>
+
+<pre>
+
+Don't have ntp & chronyd run on same machine. NTP good for systems connected to networks, chronyd for vm's..
+
+[root@rhce systemd]# ls -lr /etc/localtime
+lrwxrwxrwx. 1 root root 37 Jul 12 09:57 /etc/localtime -> ../usr/share/zoneinfo/America/Chicago
+
+[root@rhce systemd]# timedatectl list-timezones |grep UTC
+UTC
+[root@rhce systemd]# timedatectl list-timezones |grep GMT
+[root@rhce systemd]# timedatectl set-timezone UTC
+[root@rhce systemd]# timedatectl
+      Local time: Fri 2017-07-14 19:20:10 UTC
+  Universal time: Fri 2017-07-14 19:20:10 UTC
+        RTC time: Fri 2017-07-14 19:20:10
+       Time zone: UTC (UTC, +0000)
+
+[root@rhce systemd]# chronyc sources -v
+210 Number of sources = 4
+
+  .-- Source mode  '^' = server, '=' = peer, '#' = local clock.
+ / .- Source state '*' = current synced, '+' = combined , '-' = not combined,
+| /   '?' = unreachable, 'x' = time may be in error, '~' = time too variable.
+||                                                 .- xxxx [ yyyy ] +/- zzzz
+||      Reachability register (octal) -.           |  xxxx = adjusted offset,
+||      Log2(Polling interval) --.      |          |  yyyy = measured offset,
+||                                \     |          |  zzzz = estimated error.
+||                                 |    |           \
+MS Name/IP address         Stratum Poll Reach LastRx Last sample
+===============================================================================
+^* minime.fdf.net                3  10   377    90  -1438us[-1952us] +/-   28ms
+^- acheron.bitsrc.net            3  10   377   112   -427us[ -940us] +/-  123ms
+^+ mirror1.sjc02.svwh.net        2  10   377    78  +1489us[+1489us] +/-   51ms
+^- ntp2.wiktel.com               2  10   377    88  +6199us[+6199us] +/-   84ms
+
+
+</pre>
+
+
+
+<p>
+
+chrond
+</p>
+
+
+<pre>
+
+
+</pre>
+
+
+<p>
+ systemd
+</p>
+
+
+
+<pre class="prettyprint lang-xml ">
+
+
+Systemd contains 12 unit types.
+
+Two types of unit configuration files : system unit files located @ /usr/lib/systemd/system and user nit files that are generated by users and stored in /etc/systemd/user
+
+
+
+Creates sockets for all enabled services first that support socket based activation instantneously at the very beginning of initialiation process
+systemd is the first process to be started. 
+
+Additional systemd units are created dynamically and are located at /run/systemd/system/
+
+
+Refer Pg:268 systemd unit types ( Slice, Target, Service, Socket, Dveice, Scope)
+Custom files are stored in /etc/systemd/system and default files are stored in /usr/lib/systemd/system
+
+
+Units will have dependency relationships
+
+
+
+Targets in systemd
+
+systemd.unit=graphical.target #default
+systemd.unit=multi-user.target # command-line or console-based login mode (no GUI)
+systemd.unit=emergency.target #Only root FS is mounted in read-only mode
+
+Modes that doesn't require a password
+init=/sysroot/bin/sh
+rd.break
+
+systemctl list-unit-files displays whether services are enabled/disabled at teh startup.
+
+
+[root@server ~]# mkinitrd -f test-$(uname -r).img  $(uname -r)
+
+#Volume Group missing in /dev/mapper
+
+[root@server ~]# vgscan --mknodes -v
+    Wiping cache of LVM-capable devices
+    Wiping internal VG cache
+  Reading all physical volumes.  This may take a while...
+    Using volume group(s) on command line.
+  Found volume group "vgdata0" using metadata type lvm2
+  Found volume group "vg01" using metadata type lvm2
+  Found volume group "vgos" using metadata type lvm2
+    Using logical volume(s) on command line.
+    Found same device /dev/vdd with same pvid ywDFI8P7iwtvcxw9mE6lcsbC1Wcf38b4
+    Found same device /dev/vdc1 with same pvid BqF5eyDAnfn9jWVlYovW21KaYZZJx913
+    Found same device /dev/vda2 with same pvid WJJmyni5cuaquhl8FJbyRgQecm2MNcoe
+
+
+
+[root@server ~]# ls -ltr /dev/mapper/
+control      vgos-lvhome  vgos-lvroot
+[root@server ~]# vgchange -a y vgdata0
+
+
+
+</pre>	
+
+ <p>  
+ systemctl   
+ </p>
+
+
+<pre class="prettyprint lang-xml ">
+
+
+
+systemctl get-default
+
+
+[root@rhce initramfs]# ls -lt /etc/systemd/system/*.target
+lrwxrwxrwx. 1 root root 37 Jul 12 09:57 /etc/systemd/system/default.target -> /lib/systemd/system/multi-user.target
+
+[root@rhce ~]# ls -ld /etc/grub2.cfg
+lrwxrwxrwx. 1 root root 22 Jul 12 09:51 /etc/grub2.cfg -> ../boot/grub2/grub.cfg
+
+[root@rhce ~]# ls -ltr /etc/default/grub
+-rw-r--r--. 1 root root 289 Jul 12 09:57 /etc/default/grub  # File to edit 
+
+
+The First Process, Targets, and Units
+
+The Linux kernel continues the boot process by calling the first process, systemd. In RHEL 7, the legacy init process is configured with a symbolic link to systemd.
+
+Units are the basic building blocks of systemd. The most common are service units, which have a .service extension and activate a system service. To show a list of all service units, type the following command:
+ 
+systemctl list-units --type=service --all
+
+The --all flag includes all units, not just the active ones. There are other types of units, such as mount and automount units, which manage mount points; path units, which activate a service when there is a change on a filesystem path (such as a spool directory); socket units, which start a service only when a client connection is made (if you have used the xinetd daemon, this is similar to how xinetd starts services on demand); and many, many more.
+
+A special type of unit is a target unit, which is used to group together other system units and to transition the system into a different state. To list all target units, type the following command:
+systemctl list-units --type=target --all
+
+
+root@rhce ~]# ls -ltr /usr/lib/systemd/system/runlevel?.target
+lrwxrwxrwx. 1 root root 13 Jul 12 09:51 /usr/lib/systemd/system/runlevel1.target -> rescue.target
+lrwxrwxrwx. 1 root root 15 Jul 12 09:51 /usr/lib/systemd/system/runlevel0.target -> poweroff.target
+lrwxrwxrwx. 1 root root 17 Jul 12 09:51 /usr/lib/systemd/system/runlevel2.target -> multi-user.target
+lrwxrwxrwx. 1 root root 17 Jul 12 09:51 /usr/lib/systemd/system/runlevel3.target -> multi-user.target
+lrwxrwxrwx. 1 root root 16 Jul 12 09:51 /usr/lib/systemd/system/runlevel5.target -> graphical.target
+lrwxrwxrwx. 1 root root 17 Jul 12 09:51 /usr/lib/systemd/system/runlevel4.target -> multi-user.target
+lrwxrwxrwx. 1 root root 13 Jul 12 09:51 /usr/lib/systemd/system/runlevel6.target -> reboot.target
+
+systemctl list-dependencies graphical.target
+
+systemctl isolate poweroff.target # To switch between targets
+
+systemctl-analyze time
+systemctl-analyze blame
+
+
+
+[root@rhce systemd]# ls -l /etc/systemd/system/multi-user.target.wants
+total 0
+lrwxrwxrwx. 1 root root 38 Jul 12 09:52 auditd.service -> /usr/lib/systemd/system/auditd.service
+lrwxrwxrwx. 1 root root 39 Jul 12 09:53 chronyd.service -> /usr/lib/systemd/system/chronyd.service
+lrwxrwxrwx. 1 root root 37 Jul 12 09:51 crond.service -> /usr/lib/systemd/system/crond.service
+lrwxrwxrwx. 1 root root 42 Jul 12 09:51 irqbalance.service -> /usr/lib/systemd/system/irqbalance.service
+lrwxrwxrwx. 1 root root 37 Jul 12 09:51 kdump.service -> /usr/lib/systemd/system/kdump.service
+lrwxrwxrwx. 1 root root 46 Jul 12 09:51 NetworkManager.service -> /usr/lib/systemd/system/NetworkManager.service
+lrwxrwxrwx. 1 root root 39 Jul 12 09:52 postfix.service -> /usr/lib/systemd/system/postfix.service
+lrwxrwxrwx. 1 root root 40 Jul 12 09:51 remote-fs.target -> /usr/lib/systemd/system/remote-fs.target
+lrwxrwxrwx. 1 root root 39 Jul 12 09:51 rsyslog.service -> /usr/lib/systemd/system/rsyslog.service
+lrwxrwxrwx. 1 root root 36 Jul 12 09:53 sshd.service -> /usr/lib/systemd/system/sshd.service
+lrwxrwxrwx. 1 root root 37 Jul 12 09:51 tuned.service -> /usr/lib/systemd/system/tuned.service
+
+[root@rhce systemd]# cat /usr/lib/systemd/system/crond.service
+[Unit]
+Description=Command Scheduler
+After=auditd.service systemd-user-sessions.service time-sync.target
+
+[Service]
+EnvironmentFile=/etc/sysconfig/crond
+ExecStart=/usr/sbin/crond -n $CRONDARGS
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=process
+
+[Install]
+WantedBy=multi-user.target
+
+
+# To disable a service
+systemctl mask postfix.service  - This will create a symbolic link t 
+ 
+[root@rhce systemd]# systemctl mask postfix.service
+[root@rhce systemd]# ls -ltr /usr/lib/systemd/system/postfix.service
+-rw-r--r--. 1 root root 463 Jun  9  2014 /usr/lib/systemd/system/postfix.service
+[root@rhce systemd]# ls -ltr /etc/systemd/system/postfix.service
+lrwxrwxrwx. 1 root root 9 Jul 14 14:14 /etc/systemd/system/postfix.service -> /dev/null
+[root@rhce systemd]#
+
+
+
+[root@rhce 3.10.0-327.el7.x86_64]# systemctl list-units --type=socket
+UNIT                         LOAD   ACTIVE SUB       DESCRIPTION
+dbus.socket                  loaded active running   D-Bus System Message Bus Socket
+dm-event.socket              loaded active listening Device-mapper event daemon FIFOs
+
+[root@rhce 3.10.0-327.el7.x86_64]# systemctl show dbus
+Type=simple
+Restart=no
+NotifyAccess=no
+
+
+To list all the failed processes
+
+systemctl --failed
+
+</pre>  
+
+
+<p>
+ grub
+</p>
+
+
+<pre>
+
+
+
+
+
+grub2-mkconfig -o /boot/grub2/grub.cfg
+
+grub2-set-default 1 # Changes the default boot kernel to 2nd one. Default is in /boot/grub2/grubenv. To change to default set to 0
+
+
+#FOr Password reset
+mount -o remount,rw /sysroot
+chroot /sysroot
+passwd , touch /.autorelabel ( exit, exit)
+
+
+
+#Grub menu - press C 
+ls, search.file, insmod lvm
+
+insmod lvm
+
+
+
+# Re-install grub
+
+rpm -qc grub2-tools
+rm -f /etc/default/grub
+rm -f /etc/grub.d/*
+
+yum reinstall grub2-tools
+grub2-mkconfig -o /boot/grub2/grub.cfg
+
+Re-install grub2
+[root@rhce ~]# rpm -qc grub2-tools
+/etc/default/grub
+/etc/grub.d/00_header
+/etc/grub.d/01_users
+/etc/grub.d/10_linux
+/etc/grub.d/20_linux_xen
+/etc/grub.d/20_ppc_terminfo
+/etc/grub.d/30_os-prober
+/etc/grub.d/40_custom
+/etc/grub.d/41_custom
+ 
+
+
+#00_header sets the GRUB envrionment
+#10_linux script searches for all installed kernels on the same disk partition
+#30_os_prober searches for other OS
+#40_custom* and 41_custom are to add any customaization to boot menu
+
+
+
+ To change the boot target append 
+ systemd.unit=name.target
+
+To boot to console-text mode(not GUUI) : systemd.unit=multi-user.target 
+
+To boot to recovery shell : systemd.unit=rescue.target
+
+To boot to emergency shell : systemd.unit=emergency.target  - No FS is mounted apart from root FS which is in ro
+
+With no root password, init=/sysroot/bin/sh or rd.break Starts a shell, root FS in ro and no password required.
+
+reboot -f ( FOr Transaction is destructive error)
+chroot /sysroot
+
+
+#Enable virtual console
+
+grubby --update-kernel=ALL --args="console=ttyS0"
+
+or 
+edit
+[root@server etc]# cat /etc/default/grub  |grep CMDLINE
+GRUB_CMDLINE_LINUX="crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet"
+
+and run 
+ grub2-mkconfig -o /boot/grub2/grub.cfg
+
+
+#Emergency Procedure
+
+root@panchajanya:~\> virsh dumpxml server |grep "source file="
+      <source file='/data/sdd01/vspd1/server.img'/>
+
+
+#Map the virtual machine via kpartx 
+root@panchajanya:~\> kpartx -av /data/sdd01/vspd1/server.img
+add map loop0p1 (253:14): 0 1024000 linear /dev/loop0 2048
+add map loop0p2 (253:15): 0 20480000 linear /dev/loop0 1026048
+add map loop0p3 (253:16): 0 1024000 linear /dev/loop0 21506048
+
+root@panchajanya:~\> mount /dev/loop
+loop0         loop-control
+
+root@panchajanya:~\> mount /dev/mapper/loop0p1 /mnt/
+root@panchajanya:~\> vi /mnt/grub2/grub.cfg and append console=ttyS0 
+
+#Unmap the machine image.
+
+
+</pre>
+
+
+
+
+ <p>  
+ initramfs   
+
+ </p>
+
+
+<pre class="prettyprint lang-xml ">
+
+ls -al /boot/initramfs-$(uname -r).img
+
+#To uncompress
+
+
+mkdir -pv /tmp/initramfs
+[root@rhce initramfs]# cp /boot/initramfs-3.10.0-327.el7.x86_64.img .
+[root@rhce initramfs]# /usr/lib/dracut/skipcpio initramfs-$(uname -r).img | zcat | cpio -ivd                      
+
+
+
+#Root log messages
+dmesg, journalctl
+
+
+
+</pre>  
+			
+	
+
+
+<p>
+journalctl
+</p>
+
+
+<pre>
+
+ journalctl -b 0 displays the log messages since the last reboot, journalctl -b 1 from the boot before the last one and so on..
+
+ journalctl -p warning displays all messages with a priority level of warning.
+
+
+[root@rhce system]# systemctl get-default
+multi-user.target
+[root@rhce system]# ls -ltr /etc/systemd/system/default.target
+lrwxrwxrwx. 1 root root 37 Jul 12 09:57 /etc/systemd/system/default.target -> /lib/systemd/system/multi-user.target
+
+
+[root@rhce system]# chgrp systemd-journal /var/log/journal
+[root@rhce system]# ls -ld  /var/log/journal/
+drwxr-xr-x. 2 root systemd-journal 6 Jul 14 12:31 /var/log/journal/
+[root@rhce system]# chmod 2775 /var/log/journal
+[root@rhce system]# ls -ld  /var/log/journal/
+drwxrwsr-x. 2 root systemd-journal 6 Jul 14 12:31 /var/log/journal/
+[root@rhce system]# systemctl restart systemd-journald.service
+[root@rhce system]# systemctl status systemd-journdald.service
+● systemd-journdald.service
+   Loaded: not-found (Reason: No such file or directory)
+   Active: inactive (dead)
+[root@rhce system]# systemctl status systemd-journald.service
+● systemd-journald.service - Journal Service
+   Loaded: loaded (/usr/lib/systemd/system/systemd-journald.service; static; vendor preset: disabled)
+   Active: active (running) since Fri 2017-07-14 12:33:14 CDT; 23s ago
+     Docs: man:systemd-journald.service(8)
+           man:journald.conf(5)
+ Main PID: 2649 (systemd-journal)
+   Status: "Processing requests..."
+   CGroup: /system.slice/systemd-journald.service
+           └─2649 /usr/lib/systemd/systemd-journald
+
+Jul 14 12:33:14 rhce systemd-journal[2649]: Permanent journal is using 8.0M (max allowed 866.2M, trying to leave 1.2G fr…866.2M).
+Jul 14 12:33:14 rhce systemd-journal[2649]: Permanent journal is using 8.0M (max allowed 866.2M, trying to leave 1.2G fr…866.2M).
+Jul 14 12:33:14 rhce systemd-journal[2649]: Time spent on flushing to /var is 17.448ms for 1109 entries.
+Jul 14 12:33:14 rhce systemd-journal[2649]: Journal started
+Hint: Some lines were ellipsized, use -l to show in full.
+
+journalctl -o verbose for a verbose output
+
+journalctl -k -b for only kernel generated messages
+
+journalctl /sbin/crond to see messages by a specific executable.
+
+journalctl _PID=1 ( to shby a specific process)
+
+journalctl _SYSTEM_UNIT=sshd ( to display messages from a specific unit)
+journalctl -u sshd 
+
+journalctl --since 2017-01-01 --until today -p err 
+
+To make changes persistejt
+
+mkdir -pv /var/log/journal
+systemctl restart systemd-journald
+
+[root@rhce logrotate.d]# ls -ltr /var/log/journal/
+total 0
+drwxr-sr-x. 2 root systemd-journal 27 Jul 17 18:15 d458f1266e944ac49077920032339122
+You have new mail in /var/spool/mail/root
+[root@rhce logrotate.d]# cat /etc/machine-id
+d458f1266e944ac49077920032339122
+
+</pre>
+
+
+
+<p> 
+cgroups
+</p>
+	
+<pre>
+Control groups are a feature of linux kernel to group processes together and control or limit their resource usage. In systemd, cgroups are primarily
+used to track processes and toe ensure that all processes that belongs to a service are terminated when a service is stopped.
+
+systemd-cgls
+systemd-cgtop
+
+Service is a collection of processes, scope is a group of processes started by an outside entity and slice is a strucutred assembly of service and scope units for managing 
+processes within them.
+
+
+Review properties 
+
+systemctl show -p B
+</pre>
+
+
+<p>rsyslogd </p>
+
+
+<pre> 
+
+rsyslog is the multithreaded daemon that logs messages from kernel,daemons,commands,user activities, applications to syslogs..
+Port used is 514 and conf is /etc/rsyslog.conf
+
+[root@rhce run]# cat syslogd.pid
+583
+[root@rhce run]# pwd
+/var/run
+
+rsyslog.conf has 3 sections - Modules, Global Directives and Rules.
+
+There are two modules - imuxsock ( for logger) and imjournal (for systemd journal)
+
+Under rules the section is called facility.priority.
+
+*.info;mail.none;authpriv.none;cron.none                /var/log/messages
+
+Supported facilities are auth, authpriv, cron, daemon, kern, news, syslog, uucp,user, local0 to local7
+
+Once the modifications arre made to rsyslog , run it with ryslogd -N 1 (1 = verbose level)
+
+logrotate is in /etc/cron.daily
+
+
+Custom files in the /etc/logrotate.d overrides /etc/logrotate.confcat 
+
+[root@rhce cron.daily]# cd /etc/logrotate.d/
+You have new mail in /var/spool/mail/root
+[root@rhce logrotate.d]# ls -ltr
+total 20
+-rw-r--r--. 1 root root 136 Jun 10  2014 ppp
+-rw-r--r--. 1 root root 100 Jun 15  2015 wpa_supplicant
+-rw-r--r--. 1 root root 224 Sep  7  2015 syslog
+-rw-r--r--. 1 root root 178 Nov 23  2015 chrony
+-rw-r--r--. 1 root root 100 Dec  3  2015 yum
+[root@rhce logrotate.d]# cat yum
+/var/log/yum.log {
+    missingok
+    notifempty
+    size 30k
+    yearly
+    create 0600 root root
+}
+
+</pre>
+
+
+<script>$( "pre" ).addClass( "prettyprint" );</script>	
+	
+	<div id="content">
+	<!-- end content -->
+	</div>
+<!-- end page -->
+<div id="footer">
+	<p class="legal">Copyright (c) 2015 InterCloudZone.com. All rights reserved.</p>
+</div>
+
+
+
+</body>
+
+</html>

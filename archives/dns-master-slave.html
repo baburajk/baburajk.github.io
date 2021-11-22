@@ -1,0 +1,539 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>InterCloudZone</title>
+<meta name="keywords" content="" />
+<meta name="description" content="" />
+<link href="style.css" rel="stylesheet" type="text/css" media="screen" />
+<link href="google-code-prettify/sunburst.css" type="text/css" rel="stylesheet" />
+
+<!--[if IE]>
+<style type="text/css">
+#sidebar #calendar {
+	background-position: 0px 20px;
+}
+</style>
+<![endif]-->
+
+<script src="http://www.google.com/jsapi" type="text/javascript"></script>
+<script type="text/javascript">google.load("jquery", "1.3.2");</script>
+<script type="text/javascript" src="/google-code-prettify/prettify.js?autoload=true&;lang=css;skin=sunburst""></script>
+<script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js?autoload=true&amp;lang=css&amp;skin=sunburst"></script>
+</head>
+<body>
+<div id="logo">
+	<h1> InterCloudZone.com </h1>
+</div>
+<div id="menu">
+	<ul>
+		<li class="first"><a href="http://www.intercloudzone.com" accesskey="1" title="">Home</a></li>
+		<li><a href="http://sourceforge.net/projects/oraclerman/" accesskey="2" title="">OpenSource</a></li>
+		<li><a href="http://padmavyuha.blogspot.com/" accesskey="3" title="">Blogs</a></li>
+		<li><a href="http://www.linkedin.com/in/baburajkallarakkal" accesskey="4" title="">Profile</a></li>
+	</ul>
+	 
+</div>
+<hr />
+<!-- div id="banner"><img src="images/img09.jpg" alt="" width="960" height="147" / ></div -->
+<!-- start page -->
+
+<div id="swift-page" class="default-page" >
+	<!-- start content -->
+	<h2 class="title"> Configuring DNS Master/Slave on RHEL/CentOS 6.5 </h2>
+
+	<p> 
+		For this setup I used two two CentOS 6.5 VM's with 1GB Memory and for the installation itself option chosen
+		was "Basic Server" to keep a minimum install footprint.
+		
+		Here the RBDNS10 is configured as the DNS Master and RBDNS11 as Slave.
+	</p>
+
+
+	<p>	</p>
+
+
+	<input id="x" type="image" name="imageField" src="images/dns/vbox01.jpg" />
+	<p>	</p>
+	<input id="x" type="image" name="imageField" src="images/dns/vbox02.jpg" />
+
+
+<p> 
+	Being a Lab setup, the most critical components of the Cloud becomes the least critical - ie. Security. So 
+	disable selinux, stop firewall and disable the Networkmanager and enable NTP
+</p>
+
+<p>	</p>
+	
+<pre>
+sed -i 's/enforcing/disabled/g' /etc/sysconfig/selinux ; cat /etc/sysconfig/selinux
+sed -i 's/timeout=5/timeout=-1/g' /boot/grub/menu.lst ; grep timeout /boot/grub/menu.lst
+service iptables stop; chkconfig iptables off
+service NetworkManager off
+chkconfig NetworkManager off
+chkconfig ntpd on
+service ntpd start
+</pre>				 
+				
+
+<p> 
+	PEERDNS=no will ensure that the /etc/resolv.conf is not overwritten
+	<p> </p>
+    NM_CONTROLLED=no will make sure	NetworkManager will no longer control the NIC's during service network restarts. 
+	So below outputs will show a bit more insight on the network specific configurations.
+</p>
+
+
+<p>	</p>
+	
+<pre>
+sed -i 's/NM_CONTROLLED=yes/NM_CONTROLLED=no/g' /etc/sysconfig/network-scripts/ifcfg-eth0
+sed -i 's/NM_CONTROLLED=yes/NM_CONTROLLED=no/g' /etc/sysconfig/network-scripts/ifcfg-eth1
+echo "PEERDNS=no" >> /etc/sysconfig/network-scripts/ifcfg-eth0
+echo "PEERDNS=no" >> /etc/sysconfig/network-scripts/ifcfg-eth1
+</pre>
+
+<p> 
+		Performed on Master & Slave
+		<p> </p>
+		Enable epel yum repo and do a yum update and restart the VM's.
+</p>
+
+<pre>
+yum install http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm -y
+yum update -y
+
+reboot
+</pre>	
+	
+<p> 		
+		Performed on Master & Slave
+		<p> </p>
+		Install bind and gcc.
+</p>
+
+<pre>
+mkdir -pv /u01/downloads; cd /u01/downloads ;
+cat > rpms.sh <<"EOF"
+yum install gcc -y
+yum install bind -y
+EOF
+sh rpms.sh
+</pre>	
+
+
+<p> 
+		Get the root cache file
+</p>
+
+<pre>
+cd /var/named ; 
+wget --user=ftp --password=ftp ftp://ftp.rs.internic.net/domain/db.cache -O db.cache
+</pre>	
+
+<p> 
+		Edit the /etc/named.conf file
+		<p> </p>
+		
+		By default you will see these two lines, which could result in timeouts. So I took those out 
+		and specificed the actual subnet. 
+		//listen-on port 53 { 127.0.0.1; };
+		//listen-on-v6 port 53 { ::1; };
+		<p> </p>
+			
+</p>
+
+
+<pre>
+[root@rbdns10 ~]# cat /etc/named.conf
+//
+// named.conf
+//
+// Provided by Red Hat bind package to configure the ISC BIND named(8) DNS
+// server as a caching only nameserver (as a localhost DNS resolver only).
+//
+// See /usr/share/doc/bind*/sample/ for example named configuration files.
+//
+options {
+        listen-on port 53 { 192.168.2/24; };
+        directory       "/var/named";
+        dump-file       "/var/named/data/cache_dump.db";
+        statistics-file "/var/named/data/named_stats.txt";
+        memstatistics-file "/var/named/data/named_mem_stats.txt";
+        allow-query     { any; };
+        recursion yes;
+        allow-transfer { 192.168.2.180; 192.168.2.181 ; };
+
+        dnssec-enable yes;
+        dnssec-validation yes;
+        dnssec-lookaside auto;
+
+        /* Path to ISC DLV key */
+        bindkeys-file "/etc/named.iscdlv.key";
+
+        managed-keys-directory "/var/named/dynamic";
+};
+
+logging {
+        channel default_debug {
+                file "data/named.run";
+                severity dynamic;
+        };
+};
+
+zone "." IN {
+        type hint;
+        file "db.cache";
+};
+
+include "/etc/named.rfc1912.zones";
+include "/etc/named.root.key";
+
+
+zone "intercloudzone.com" IN {
+        type master;
+        file "db.intercloudzone.com";
+};
+
+zone "2.168.192.in-addr.arpa" IN {
+        type master;
+        file "db.192.168.2";
+};
+
+</pre>	
+	
+
+
+<p> 
+		Create Master Zone files for forward lookup.
+</p>
+
+
+<pre>
+[root@rbdns10 named]# cat db.intercloudzone.com
+$TTL 1h
+
+@ IN SOA rbdns10.intercloudzone.com. raj.rbdns10.intercloudzone.com. (
+                                                        1 ; Serial
+                                                        3h ; Refresh after 3 hours
+                                                        1h ; Retry after 1 hour
+                                                        1w ; Expire after 1 week
+                                                        1h ) ; Negative caching TTL of 1 hour
+
+; Name Servers
+intercloudzone.com.               IN    NS      rbdns10.intercloudzone.com.
+intercloudzone.com.               IN    NS      rbdns11.intercloudzone.com.
+
+; Address records
+rbdns10.intercloudzone.com.       IN    A 192.168.2.180
+rbdns11.intercloudzone.com.       IN    A 192.168.2.181
+
+rbops00.intercloudzone.com.       IN    A 192.168.2.160
+rbops01.intercloudzone.com.       IN    A 192.168.2.161
+rbops02.intercloudzone.com.       IN    A 192.168.2.162
+rbops03.intercloudzone.com.       IN    A 192.168.2.163
+
+pri.rbdns10.intercloudzone.com.   IN    A 192.168.56.180
+pub.rbdns10.intercloudzone.com.   IN    A 192.168.2.180
+
+</pre>	
+	
+
+<p> 
+		Create the zone file for reverse lookup.
+</p>
+
+<pre>
+[root@rbdns10 named]# cat db.192.168.2
+$TTL 1h
+
+@ IN    SOA     2.168.192.in-addr.arpa. raj.rbdns10.intercloudzone.com. (
+                                                        1 ; Serial
+                                                        3h ; Refresh after 3 hours
+                                                        1h ; Retry after 1 hour
+                                                        1w ; Expire after 1 week
+                                                        1h ) ; Negative caching TTL of 1 hour
+
+; Name Servers
+2.168.192.in-addr.arpa.        IN      NS      rbdns10.intercloudzone.com.
+2.168.192.in-addr.arpa.        IN      NS      rbdns11.intercloudzone.com.
+
+; Address records
+180.2.168.192.in-addr.arpa.     IN      PTR     rbdns10.intercloudzone.com.
+181.2.168.192.in-addr.arpa.     IN      PTR     rbdns11.intercloudzone.com.
+
+160.2.168.192.in-addr.arpa.     IN      PTR     rbops00.intercloudzone.com.
+161.2.168.192.in-addr.arpa.     IN      PTR     rbops01.intercloudzone.com.
+162.2.168.192.in-addr.arpa.     IN      PTR     rbops02.intercloudzone.com.
+163.2.168.192.in-addr.arpa.     IN      PTR     rbops03.intercloudzone.com.
+
+</pre>	
+
+<p> 
+		Check the zone files for errors.
+</p>
+
+<pre>
+[root@rbdns10 named]# cd /var/named/; named-checkzone intercloudzone.com. db.intercloudzone.com
+zone intercloudzone.com/IN: loaded serial 1
+OK
+
+[root@rbdns10 named]#  named-checkzone 2.168.192.in-addr.arpa. db.192.168.2
+zone 2.168.192.in-addr.arpa/IN: loaded serial 1
+OK
+</pre>	
+
+<p> 		
+		Performed on Master & Slave
+		<p> </p>
+		Update hosts file with the IP's of both Master and Slave nodes.
+</p>
+
+<pre>
+[root@rbdns10 named]# cat /etc/hosts | grep intercloudzone.com
+192.168.2.180 rbdns10 rbdns10.intercloudzone.com
+192.168.2.181 rbdns11 rbdns11.intercloudzone.com
+
+</pre>	
+		
+		
+<p> 
+		Performed on Master & Slave
+		<p> </p>
+		Update resolv.conf
+</p>
+
+<pre>
+[root@rbdns10 named]# cat /etc/resolv.conf
+search intercloudzone.com
+nameserver 192.168.2.180
+nameserver 192.168.2.181
+
+</pre>	
+		
+
+<p> 
+		Performed on Master & Slave
+		<p> </p>
+		Generate RNDC key - if you don't the bind will prompt for the key during the initial startup and change ownership. 
+</p>
+
+<pre>
+rndc-confgen -a -r /dev/urandom
+chown named:named /etc/rndc.key
+chmod 644 /etc/rndc.key
+chown root:named /var/named/db.*
+chmod 755 /var/named/
+
+</pre>	
+		
+
+<p> 
+
+		Performed on Master & Slave
+		<p> </p>
+
+		Start bind and tail the /var/log/messages to see if the zones are loaded properly. I had to disable IPV6 
+		to get rid of the network unreachable messages specific to IPV6 addresses. This can be done by editing
+		/etc/sysconfig/named and adding OPTIONS=-4
+	
+</p>
+
+<pre>
+
+/etc/sysconfig/named 
+OPTIONS="-4"
+chkconfig named on
+service named restart	
+</pre>	
+		
+
+<p> 
+	Establish ssh trust between both Master Slave (optional)
+</p>
+
+<pre>
+ssh-keygen -t dsa
+ssh rbdns10 cat ~/.ssh/id_dsa.pub >> ~/.ssh/authorized_keys
+ssh rbdns11 cat ~/.ssh/id_dsa.pub >> ~/.ssh/authorized_keys
+
+scp ~/.ssh/authorized_keys rbdns11:~/.ssh/
+
+ssh rbdns10 -q "chmod 700 ~/.ssh/"
+ssh rbdns11 -q "chmod 700 ~/.ssh/"
+
+</pre>	
+		
+
+
+<p> 
+	Copy named.conf and db.cache files from Master to Slave.
+</p>
+
+<pre>
+scp /etc/named.conf rbdns11:/etc/
+scp /var/named/db.cache rbdns11:/var/named/
+</pre>	
+				
+<p> 
+	Edit /etc/named.conf to include the IP's for zone transfer and modify the zone to specify it's a "slave"
+</p>
+
+<pre>
+	allow-transfer { 192.168.2.180; 192.168.2.181 ; };
+    notify yes;
+	
+....
+
+zone "intercloudzone.com" IN {
+        type slave;
+        file "slaves/db.intercloudzone.com";
+        masters { 192.168.2.180; };
+};
+
+zone "2.168.192.in-addr.arpa" IN {
+        type slave;
+        file "slaves/db.192.168.2";
+        masters { 192.168.2.180; };
+};
+
+...
+	
+</pre>	
+				
+<p> 
+	Permissions may have been lost while SCP, chown it.
+</p>
+
+<pre>
+	chown root:named db.cache
+	chown root:named /etc/named.conf
+	chmod g+w /var/named
+	chkconfig named on;
+	service named restart
+</pre>	
+				
+<p> 
+	Zonefiles on slaves get's created during the restart of named.
+</p>
+
+<pre>
+[root@rbdns11 named]# ls -ltr slaves/
+total 8
+-rw-r--r--. 1 named named 642 Apr 22 13:58 db.intercloudzone.com
+-rw-r--r--. 1 named named 609 Apr 22 13:58 db.192.168.2
+
+</pre>	
+				
+<p> 
+	 Upload FILE
+</p>
+
+<pre>
+ [root@rbdns11 named]# dig www.openstack.org @rbdns10.intercloudzone.com.
+
+; <<>> DiG 9.8.2rc1-RedHat-9.8.2-0.23.rc1.el6_5.1 <<>> www.openstack.org @rbdns10.intercloudzone.com.
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 46563
+;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 2, ADDITIONAL: 0
+
+;; QUESTION SECTION:
+;www.openstack.org.             IN      A
+
+;; ANSWER SECTION:
+www.openstack.org.      3551    IN      A       174.143.194.225
+
+;; AUTHORITY SECTION:
+openstack.org.          86301   IN      NS      dns2.stabletransit.com.
+openstack.org.          86301   IN      NS      dns1.stabletransit.com.
+
+;; Query time: 0 msec
+;; SERVER: 192.168.2.180#53(192.168.2.180)
+;; WHEN: Tue Apr 22 19:33:34 2014
+;; MSG SIZE  rcvd: 106
+
+[root@rbdns11 named]# dig www.openstack.org @rbdns11.intercloudzone.com.
+
+; <<>> DiG 9.8.2rc1-RedHat-9.8.2-0.23.rc1.el6_5.1 <<>> www.openstack.org @rbdns11.intercloudzone.com.
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 60591
+;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 2, ADDITIONAL: 0
+
+;; QUESTION SECTION:
+;www.openstack.org.             IN      A
+
+;; ANSWER SECTION:
+www.openstack.org.      3600    IN      A       174.143.194.225
+
+;; AUTHORITY SECTION:
+openstack.org.          86288   IN      NS      dns1.stabletransit.com.
+openstack.org.          86288   IN      NS      dns2.stabletransit.com.
+
+;; Query time: 49 msec
+;; SERVER: 192.168.2.181#53(192.168.2.181)
+;; WHEN: Tue Apr 22 19:33:49 2014
+;; MSG SIZE  rcvd: 106
+
+</pre>	
+			
+<p> 
+		Test a zone transfer from slave.
+</p>
+
+<pre>
+
+[root@rbdns11 ~]# rndc retransfer intercloudzone.com.
+
+[root@rbdns11 named]# tail -f /var/log/messages
+Apr 22 19:34:47 rbdns11 named[1082]: received control channel command 'retransfer intercloudzone.com.'
+Apr 22 19:34:47 rbdns11 named[1082]: zone intercloudzone.com/IN: Transfer started.
+Apr 22 19:34:47 rbdns11 named[1082]: transfer of 'intercloudzone.com/IN' from 192.168.2.180#53: connected using 192.168.2.181#48276
+Apr 22 19:34:47 rbdns11 named[1082]: zone intercloudzone.com/IN: transferred serial 1
+Apr 22 19:34:47 rbdns11 named[1082]: transfer of 'intercloudzone.com/IN' from 192.168.2.180#53: Transfer completed: 1 messages, 12 records, 324 bytes, 0.001 secs (324000 bytes/sec)
+Apr 22 19:34:47 rbdns11 named[1082]: zone intercloudzone.com/IN: sending notifies (serial 1)
+
+[root@rbdns11 ~]# dig -t axfr intercloudzone.com.
+
+; <<>> DiG 9.8.2rc1-RedHat-9.8.2-0.23.rc1.el6_5.1 <<>> -t axfr intercloudzone.com.
+;; global options: +cmd
+intercloudzone.com.     3600    IN      SOA     rbdns10.intercloudzone.com. raj.rbdns10.intercloudzone.com. 1 10800 3600 604800 3600
+intercloudzone.com.     3600    IN      NS      rbdns10.intercloudzone.com.
+intercloudzone.com.     3600    IN      NS      rbdns11.intercloudzone.com.
+rbdns10.intercloudzone.com. 3600 IN     A       192.168.2.180
+pri.rbdns10.intercloudzone.com. 3600 IN A       192.168.56.180
+pub.rbdns10.intercloudzone.com. 3600 IN A       192.168.2.180
+rbdns11.intercloudzone.com. 3600 IN     A       192.168.2.181
+rbops00.intercloudzone.com. 3600 IN     A       192.168.2.160
+rbops01.intercloudzone.com. 3600 IN     A       192.168.2.161
+rbops02.intercloudzone.com. 3600 IN     A       192.168.2.162
+rbops03.intercloudzone.com. 3600 IN     A       192.168.2.163
+intercloudzone.com.     3600    IN      SOA     rbdns10.intercloudzone.com. raj.rbdns10.intercloudzone.com. 1 10800 3600 604800 3600
+;; Query time: 0 msec
+;; SERVER: 192.168.2.180#53(192.168.2.180)
+;; WHEN: Tue Apr 22 19:36:35 2014
+;; XFR size: 12 records (messages 1, bytes 324)
+
+
+</pre>	
+
+			
+	
+	
+<script>$( "pre" ).addClass( "prettyprint" );</script>	
+	
+	<div id="content">
+	<!-- end content -->
+	</div>
+<!-- end page -->
+<div id="footer">
+	<p class="legal">Copyright (c) 2015 InterCloudZone.com. All rights reserved.</p>
+</div>
+
+
+
+</body>
+
+</html>

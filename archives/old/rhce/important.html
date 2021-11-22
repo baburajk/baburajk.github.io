@@ -1,0 +1,607 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="Generator" content="EditPlus®">
+  <meta name="Author" content="">
+  <meta name="Keywords" content="">
+  <meta name="Description" content="">
+  <title>Notes</title>
+ <link rel="stylesheet" href="css/stylesheet1.css">
+ <link rel="stylesheet" href="css/stylesheet2.css">
+ <link rel="stylesheet" href="css/w3.css">
+
+ <style type="text/css" >
+	  
+ </style>
+<script Language="Javascript">
+function toggle() {
+    var x = document.getElementById('contents');
+    if (x.style.display === 'none') {
+		document.getElementById("togglelink").text = "hide"
+        x.style.display = 'block';
+    } else {
+        x.style.display = 'none';
+		document.getElementById("togglelink").text = "show"
+    }
+}
+</script>
+
+
+ </head>
+	<body> 
+		<div id="nav">
+			<div id="jumplinks"> Quick notes </div>
+		</div>
+    
+		<div id="body">
+			<div id="content" class="mw-body" role="main">
+ 				<div id="toc" class="toc"><div id="toctitle"><h2>Contents</h2><span class="toctoggle">&nbsp;[<a href="javascript:toggle()" id="togglelink">hide</a>]&nbsp;</span></div>
+					<div id="contents">
+						<ul>
+							<li> <a href="#Important">	 <span class="tocnumber">	1 </span> <span class="toctext"> Important 	</span></a> </li> 
+							<li> <a href="#Outages">	 <span class="tocnumber">	1 </span> <span class="toctext"> Outages 	</span></a> </li> 
+
+						</ul>
+					</div>
+				</div>
+
+				<style>
+					html,body,h1,h2,h3,h4,h5,h6 { font-family: "Comic Sans MS", cursive, sans-serif; }
+				</style>
+ 
+
+
+<div class="w3-container">
+	<h1><span class="mw-headline" id="Important"> Important</h1>	
+<p>
+
+</p>
+
+<pre> 
+https://www.redhat.com/rhtapps/certification/badge/verify/R3P4VUPCLDAUI4G2A2C6LNUWCQAEQU3CUPSQX2KSDXT6RW46LQ37ULE25V3KCXMMFRIX6PMBNQZGA4U5NQYTCNA62RUWOCM34WWBUYQ%3D/
+
+--For mounts (NFS, ISCSI) ensure _netdev is there on the /etc/fstab
+
+
+
+--RHEL7 subscription activation
+subscription-manager register --username=raj.anju --password='Kxxx' --force --auto-attach
+subscription-manager repos --list-enabled 
+yum update -y
+
+
+vol-create-as --pool virspd01 rhce4.img --capacity 12G 
+virt-install -n rhce4 --memory 1024 --vcpus 1 --os-variant rhel7 --disk vol=virspd01/rhce4.img --network network=default --location ftp://192.168.2.11/pub/rhel74 --extra-args ks=ftp://192.168.2.11/pub/ksconfig/rhce4.cfg
+ 
+
+--Syntax errors on the ifcfg* files, how to rectify them quick.
+
+-- To change default kernel order
+grub2-set-default index or grubby --set-default-index=entry-index
+
+
+--SELINUX
+matchpathcon -V filename
+
+
+--NETWORKS
+ 
+
+
+--RHCE
+Review the RHCSA notes, books (all chapters) - Must, especially the boot ones.
+
+https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/networking_guide/sec-configure_a_network_team_using-the_command_line
+https://www.linux.org/docs/man7/nmcli-examples.html
+ls -l /usr/share/doc/teamd-1.25/example_configs/
+
+
+
+--PENDING
+Learn Ruby/Python
+Edit Linkedin/Resume.
+All network tools
+Setting Up a TFTP and DHCP Server for PXE Boot
+Review all RHCSA, RHCE notes
+Python Tricks, Ruby Code
+
+
+
+
+</pre>
+
+
+
+</div>
+
+ <div class="w3-container">
+	<h1><span class="mw-headline" id="">  Key Points </h1>	
+<p>
+
+</p>
+
+<pre> 
+ 
+ Repository Syntax
+ [dvd]
+ name=dvd repo
+ baseurl=file:///tmp/mnt
+ enabled=1
+ gpgcheck=0
+ 
+
+ yum grouplist hidden
+
+ parted unit MB print free
+  dmsetup info -C
+
+   [root@rhce2 ~]# /etc/auto.net rhce1.intercloudzone.com -fstype=nfs /nfsdata
+-fstype=nfs,hard,intr,nodev,nosuid \
+	/common rhce1.intercloudzone.com:/common \
+	/nfsdata rhce1.intercloudzone.com:/nfsdata \
+	/nfskrb5 rhce1.intercloudzone.com:/nfskrb5 \
+	/nfsrhcsa rhce1.intercloudzone.com:/nfsrhcsa
+
+	
+--While attaching interface always supply --model=virtio
+attach-interface --domain rhce1 --type network --source virnet1 --model virtio --persistent --live --print-xml
+
+
+--Append inst.txt to vmlinuz for text based install.
+
+--Add bonded interface.
+virsh attach-interface( use the --model and do not use the target), nmcli d connect the interface ,  add bonded interface (nmcli con add type bond mode 0 ifname bond0 con-name bond0 autoconnect yes save yes ip4 192.168.110.13 gw4 192.168.110.1), edit eth1/eth2 (nmtui/nmcli con edit, set ipv4.master, ipv4.slave_type as bond )
+
+
+Hint: To know various modes use below
+[root@rhce1 ~]# modinfo bonding |grep operation
+parm:           mode:Mode of operation; 0 for balance-rr, 1 for active-backup, 2 for balance-xor, 3 for broadcast, 4 for 802.3ad, 5 for balance-tlb, 6 for balance-alb (charp)
+
+
+Create  ifcfg-ethX (manual)
+DEVICE=ethX
+NAME=ethX
+TYPE=Ethernet
+UUID= (use uuidgen eth1)
+MASTER=bond0
+SLAVE=yes
+
+Create ifcfg-bondX(manual)
+DEVICE=bondX
+NAME=bondX
+TYPE=Bond
+BONDING_MASTER="yes"
+BONDING_OPTS="mode=balance-rr"
+IPADDR=
+GATEWAY=
+
+Hint: To disable Network Manager updating resolv.conf
+
+[root@rhce1 network-scripts]# find /etc/ -name "NetworkManager.conf"
+/etc/NetworkManager/NetworkManager.conf
+
+Add below under the [main] section, cannot append.
+dns=none
+
+Hint: For adding team (do man -k team or cp /usr/share/doc/teamd-1.25/example_configs/*.conf  )
+nmcli con add type team config /root/backup/team0.json ifname team0 con-name team0 autoconnect yes ip4 192.168.110.23 gw4 192.168.110.1
+
+nmcli con edit eth3
+set connection.master team0
+set connection.slave-type team
+
+--For APACHE, things to remember to override for restricting pages..
+
+<Directory "/var/privgroup">
+    AllowOverride AuthConfig
+    AuthType Basic
+    AuthName "This is for prviate group DBA only"
+    AuthUserFile "/var/privgroup/userdb"
+    AuthGroupFile "/var/privgroup/groupdb"
+    Require group dba
+    # Allow open access:
+</Directory>
+
+--Example of generating a self-signed cert
+[root@rhce1 ~]# grep answers /etc/pki/tls/certs/make-dummy-cert
+answers() {
+	answers | /usr/bin/openssl req -newkey rsa:2048 -keyout $PEM1 -nodes -x509 -days 365 -out $PEM2 2> /dev/null
+
+--Without x509 here will generate a CSR and KEY.
+openssl req -newkey rsa:2048 -keyout rhce1.intercloudzone.com.key -nodes -x509 -days 365 -out rhce1.intercloudzone.com.crt
+openssl req -new -newkey rsa:4096 -days 365 -nodes -x509  -keyout test.key -out test.pem
+
+--3 Step process 
+
+a) Generate a key ( man genpkey)
+openssl genpkey -algorithm RSA -out key.pem -pkeyopt rsa_keygen_bits:2048
+
+b) Generate a CSR
+openssl req -new -key key.pem -out req.pem
+
+c) Generate a cert
+openssl x509 -req -in req.pem -signkey key.pem -out cert.pem
+
+or 
+
+--Generate key one shot
+genkey webserver.intercloudzone.com 
+
+Note: Make sure to give PortNumber on the ServerName directive.
+
+[root@rhce4 conf.d]# cat secure.conf
+<VirtualHost *:443>
+    ServerAdmin secure@webserver.intercloudzone.com
+    DocumentRoot "/var/www/html/secure"
+    ServerName webserver.intercloudzone.com:443
+    ErrorLog "/var/log/httpd/secure.error_log"
+    CustomLog "/var/log/httpd/secure-access_log" common
+    SSLCertificateFile /etc/pki/tls/certs/secure.pem
+    SSLCertificateKeyFile /etc/pki/tls/private/secure.key
+</VirtualHost>
+
+[root@rhce5 ~]# echo | openssl s_client -showcerts -servername webserver.intercloudzone.com -connect webserver.intercloudzone.com:443 > cert.pem
+
+[root@rhce5 ~]# curl --cacert cert.pem https://webserver.intercloudzone.com/index.html
+This is an ssl/tls protected page
+
+--Allows binary to bind on low numbered ports.
+
+setcap CAP_NET_BIND_SERVICE=+eip /path/to/binary
+</pre>	 
+
+--To install the man pages for httpd_linux
+
+yum install httpd-manual
+elinks http://localhost/manual
+
+
+yum install selinux-policy-devel -y
+sepolicy manpage -a -p /usr/share/man/man8
+mandb
+man httpd_selinux
+yum install -y httpd-manual
+man -k _selinux 
+
+--postfix
+
+# less /usr/share/doc/postfix-2.10.1/README_FILES/STANDARD_CONFIGURATION_README
+
+postfix check ( Syntax checks)
+postconfpost d ( Load defaults)
+
+postconf -e disable_dns_lookup=yes
+
+--Disable DNS lookups
+
+
+[root@rhce2 postfix]# postconf -e smtp_host_lookup=native
+[root@rhce2 postfix]# grep smtp_host main.cf
+smtp_host_lookup = native
+
+-Addition settings is above isn't working ( Square brakets prevents dns lookups)
+
+[root@rhce2 postfix]# tail -2 transport
+intercloudzone.com	:[rhce1.intercloudzone.com]
+
+[root@rhce2 postfix]# postmap transport
+
+
+--Null client configuration
+
+myhostname = rhce2.intercloudzone.com
+myorigin = $mydomain
+relayhost = [192.168.122.10]
+inet_interfaces = loopback-only
+mydestination =
+smtp_host_lookup = native 
+
+
+-Delete all
+postsuper -d ALL deferred
+
+-Delete all emails for a specific user.
+echo 'd *' | mail -N -u username
+
+
+--For Postfix settings
+
+man 5 postconf
+
+
+--Relayhost settings
+ 
+myhostname = rhce1.intercloudzone.com
+myorigin = $mydomain
+mydestination = $myhostname, localhost.$mydomain, localhost, $mydomain
+mynetworks = 192.168.122.0/24, 192.168.110.0/24, 127.0.0.0/8
+smtp_host_lookup = native
+disable_dns_lookups = yes # Deprecated from 2.11 onwards 
+aliases is in /etc and should be updated with newaliases instead of postmap
+smtp_dns_support_level = disabled # This parameter overrides all parameters and ensure DNS Looksps are disabled 
+reject all incoming email : inet_interfaces = loopback-only ( all means receive mails)
+
+The relayhost prevents mail from getting stuck on the null client if it is turned off while some remote destination is unreachable.
+
+The loopback-only tells to not accept mail from the network. Only messages that originate from the
+127.0.0.0/8 network and the [::1]/128 network are forwarded to the relay host by the null client.
+
+We prevent the local null client from sorting any mail into mailboxes by putting a local_transport parameter. We also disable local mail delivery by not specifying mydestination. All mail goes to the mail server as specified in relayhost. Note that we can also use a DNS name for the relayhost, as well as turn off MX lookups by putting a record in square brackets.
+
+
+</div>
+
+ <div class="w3-container">
+	<h1><span class="mw-headline" id="Outages"> Outages</h1>	
+<p>
+
+</p>
+
+<pre> 
+1. Zone was created, up until then the dotted records were resolving. Due to TTL's/-ive TTL's the resolution started failing from several resolvers but with gaps. Akamai/Dyn both had to look on their side until this was resolved.
+
+2. VM's from same network works, but some VM's didn't. The CIDR was /25 instead of /24 which took few VM's outside of the subnet.
+
+3. The pages stopped rendering from outside network but worked from intranet (Corporate). The result had to do  with a .js script load which occurs from a static site which was inherently blocked (cloud-sites-state.oracle.com) from within the application to the outside world.
+
+4. MTU size was different 
+
+
+</pre>	 
+
+<div class="w3-container">
+	<h1><span class="mw-headline" id="MariaDB"> MariaDB </h1>	
+<p>
+
+</p>
+
+<pre>  
+
+--Securing MySQL Installation
+
+[root@rhce1 ~]# mysql_secure_installation
+
+NOTE: RUNNING ALL PARTS OF THIS SCRIPT IS RECOMMENDED FOR ALL MariaDB
+      SERVERS IN PRODUCTION USE!  PLEASE READ EACH STEP CAREFULLY!
+
+In order to log into MariaDB to secure it, we'll need the current
+password for the root user.  If you've just installed MariaDB, and
+you haven't set the root password yet, the password will be blank,
+so you should just press enter here.
+
+Enter current password for root (enter for none):
+ERROR 1045 (28000): Access denied for user 'root'@'localhost' (using password: YES)
+
+--Work-around for the above..
+
+#Start on safe mode
+[root@rhce1 ~]# mysqld_safe --skip-grant-tables
+180409 09:28:51 mysqld_safe Logging to '/var/log/mariadb/mariadb.log'.
+
+
+#Login as root and switch to mysql database.
+
+[root@rhce1 ~]# mysql -u root
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MariaDB connection id is 1
+Server version: 5.5.56-MariaDB MariaDB Server
+
+Copyright (c) 2000, 2017, Oracle, MariaDB Corporation Ab and others.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+MariaDB [(none)]> use mysql
+
+# Update the password, flush and quit.
+MariaDB [mysql]> update user set password=password('oracle') where user='root';
+flush privileges;
+quit
+
+systemctl restart mariadb
+
+--Dict tables
+show variables
+use information_schema; show tables;
+select @@version;
+
+--Backup & restore
+mysqldump --databases rhce -u root -p  > /tmp/rhce.sql
+
+--Allow root/remote login
+grant all privileges on *.* to 'root'@'192.168.%.%' identified by 'oracle' with grant option;
+
+--Change password
+set password for 'kuttu'@'localhost' = password('oracle');
+
+flush privileges
+
+--Locate is run once daily
+
+root@mayura:~\> cat /etc/cron.daily/mlocate
+#!/bin/sh
+nodevs=$(< /proc/filesystems awk '$1 == "nodev" && $2 != "rootfs" { print $2 }')
+renice +19 -p $$ >/dev/null 2>&1
+ionice -c2 -n7 -p $$ >/dev/null 2>&1
+/usr/bin/updatedb -f "$nodevs"
+
+
+--sar vs sadf 
+sadf can display in multiple formats, to use options for sar in sadf use "--" followed by sar options
+
+sadf sa12 -- -A 
+
+--Enable IPV4 and IPV6 forwarding
+
+root@panchajanya:~\> sysctl -a |egrep -w 'net.ipv4.ip_forward|net.ipv6.conf.all.forwarding'
+net.ipv4.ip_forward = 1
+net.ipv6.conf.all.forwarding = 1
+
+--If IP Forwarding is enabled, below flag makes sure the packets coming in
+are from an external network are in fact external by doing a reverse path forwarding check.
+
+net.ipv4.conf.default.rp_filter = 1
+
+
+--Following setting avoids the overload or otherwise called 'ping of death', by flooding of SYN packets.
+net.ipv4.tcp_syncookies = 1
+
+The maximum allowable IP packet size is 65,535 bytes, including the packet header, which is typically 20 bytes.
+An ICMP echo request is an IP packet with a pseudo header, which is 8 bytes. 
+Therefore, the maximum allowable size of the data area of an ICMP echo request is 65,507 bytes (65,535 - 20 - 8 = 65,507).
+
+
+
+
+--Disable ICMP's from within the VM
+[root@rhce4 sysctl.d]# sysctl -w net.ipv4.icmp_echo_ignore_all=1
+net.ipv4.icmp_echo_ignore_all = 1
+
+--Disable ping broadcasts.
+[root@rhce4 sysctl.d]# sysctl -w net.ipv4.icmp_echo_ignore_broadcasts=1
+net.ipv4.icmp_echo_ignore_broadcasts = 1
+
+--Default configuration files are in /usr/lib/sysctl.d
+
+--If this directive is enabled , failure with IPV6 will result in interface being down even if IPV4 configuration is working fine.
+
+IPV6_FAILURE_FATAL=no
+
+--Error on the teamd configuration
+
+ set team-port.config '{ "runner" : "loadbalance" }'
+
+ 
+--postfix
+
+man 5 access 
+
+
+--Time out on DNS lookups
+Apr 18 18:53:28 rhce4 postfix/smtp[2882]: B1A97651073: to=<mailer1@intercloudzone.com>, orig_to=<mailer1>, relay=none, delay=60, delays=0.11/0.02/60/0, dsn=4.4.1, status=deferred (connect to mx.intercloudzone.com[66.96.140.122]:25: Connection timed out)
+
+[root@rhce4 ~]# postconf -d | grep dns
+disable_dns_lookups = no
+
+--Check queues
+mailq
+
+--Requeue
+[root@rhce4 postfix]# postsuper -r DE48A60CCBE
+postsuper: DE48A60CCBE: requeued
+
+
+--To relay mail from local clients only.
+
+ mynetworks = 192.168.1.0/28
+
+-- CGI Bin Setup.
+
+semanage boolean -m httpd_can_sendmail --on or setsebool 
+
+
+
+--Load CGI Scripts..
+
+
+[root@rhce4 ~]# cat /var/www/app/email.sh
+#!/bin/bash
+echo -e "Content-type: text/html \n\n";
+echo "<html>";
+echo "<body>";
+date | /usr/bin/mailx -s Test kuttu;
+echo "Email has been sent";
+echo "</body>";
+echo "</html>";
+
+type=AVC msg=audit(1524521548.542:560): avc:  denied  { read } for  pid=3224 comm="sendmail" path=2F746D702F527347797A764533202864656C6574656429 dev="dm-0" ino=6643073 scontext=system_u:system_r:system_mail_t:s0 tcontext=system_u:object_r:httpd_sys_rw_content_t:s0 tclass=file
+
+
+semanage fcontext -a -s system_u -t httpd_sys_script_exec_t -r s0 "/var/www/app(/.*)?"
+restorecon -vR /var/www/app
+semanage boolean -m httpd_can_sendmail --on
+
+
+
+[root@rhce4 ~]# ausearch -c 'sendmail' --raw | audit2allow -M my-sendmail
+******************** IMPORTANT ***********************
+To make this policy package active, execute:
+
+semodule -i my-sendmail.pp
+
+[root@rhce4 ~]# semodule -i my-sendmail.pp
+
+
+--Static Route to enable connection from VM2 to VM1 running on a different CIDR.
+
+root@panchajanya:~\> ip route show
+default via 192.168.2.1 dev br_fe
+default via 192.168.2.1 dev enp7s0  proto static  metric 100
+192.168.2.0/24 dev br_fe  proto kernel  scope link  src 192.168.2.11
+192.168.2.0/24 dev enp7s0  proto kernel  scope link  src 192.168.2.10  metric 100
+192.168.122.0/24 dev virbr0  proto kernel  scope link  src 192.168.122.1
+192.168.125.0/24 dev virbr1  proto kernel  scope link  src 192.168.125.1
+192.168.130.0/24 dev virbr2  proto kernel  scope link  src 192.168.130.1
+
+[root@rhce5 ~]# nc -v team0.intercloudzone.com 7777 -w 1
+Ncat: Version 7.50 ( https://nmap.org/ncat )
+Ncat: Connection refused.
+
+[root@rhce5 ~]# cat /etc/hosts
+192.168.130.40	team0.intercloudzone.com
+192.168.125.40	bond0.intercloudzone.com
+
+ip route add 192.168.130.40 via 192.168.122.1 dev virbr0
+ip route add 192.168.125.40 via 192.168.122.1 dev virbr0
+
+[root@rhce5 ~]# nc -v team0.intercloudzone.com 7777 -w 1
+Ncat: Version 7.50 ( https://nmap.org/ncat )
+Ncat: Connected to 192.168.130.40:7777.
+
+[root@rhce4 conf.d]# httpd -t -D DUMP_VHOSTS
+VirtualHost configuration:
+192.168.125.40:6666    bond0.intercloudzone.com (/etc/httpd/conf.d/bond0.conf:1)
+192.168.130.40:7777    team0.intercloudzone.com (/etc/httpd/conf.d/team0.conf:1)
+*:443                  webserver.intercloudzone.com (/etc/httpd/conf.d/ssl.conf:56)
+*:8888                 vhost1.intercloudzone.com (/etc/httpd/conf.d/vhost1.conf:1)
+
+[root@rhce4 conf.d]# cat team0.conf
+<VirtualHost 192.168.130.40:7777>
+    ServerAdmin team0@webserver.intercloudzone.com
+    DocumentRoot "/var/www/html/team0"
+    ServerName team0.intercloudzone.com
+    ErrorLog "/var/log/httpd/team0.error_log"
+    CustomLog "/var/log/httpd/team0-access_log" common
+</VirtualHost>
+
+[root@rhce4 conf.d]# cat bond0.conf
+<VirtualHost 192.168.125.40:6666>
+    ServerAdmin bond0@webserver.intercloudzone.com
+    DocumentRoot "/var/www/html/bond0"
+    ServerName bond0.intercloudzone.com
+    ErrorLog "/var/log/httpd/bond0.error_log"
+    CustomLog "/var/log/httpd/bond0-access_log" common
+</VirtualHost>
+
+[root@rhce4 conf.d]# grep ^Listen /etc/httpd/conf/httpd.conf
+Listen 80
+Listen 8888
+Listen 192.168.130.40:7777
+Listen 192.168.125.40:6666
+
+[root@rhce5 ~]# curl -s http://team0.intercloudzone.com:7777/index.html
+This is a landing page for team0
+[root@rhce5 ~]# curl -s http://bond0.intercloudzone.com:6666/index.html
+This is a landing page for bond0
+
+Note: Semanage add ports and also firewall-cmd ports..
+
+</pre>
+
+</div>
+
+
+
+	
+</body>
+</html>

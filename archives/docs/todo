@@ -1,0 +1,418 @@
+
+https://supportforums.cisco.com/t5/network-infrastructure-documents/how-to-configure-a-gre-tunnel/ta-p/3131970
+
+http://xmodulo.com/bgp-traffic-engineering-quagga-linux.html
+https://docs.aws.amazon.com/AmazonVPC/latest/NetworkAdminGuide/GenericConfig.html
+https://exain.wordpress.com/2017/08/02/use-amazons-aws-vpc-your-vpn-to-extend-your-server-infrastructure-using-static-routing/amp/
+http://xmodulo.com/filter-bgp-routes-quagga-bgp-router.html
+
+
+https://www.noction.com/blog/bgp-looking-glass-servers
+https://ripe70.ripe.net/presentations/55-bgpstream.pdf
+https://github.com/mehrdadrad/mylg
+$ whois -h whois.arin.net AS1712
+$ whois -h whois.ripe.net AS1712
+$ whois -h whois.afrinic.net AS1712
+$ whois -h whois.apnic.net AS1712
+$ whois -h whois.lacnic.net AS1712
+curl -O http://mylg.io/dl/linux/mylg && chmod u+s,+x mylg && mv mylg /usr/bin/
+
+http://www.radb.net/support/query2.php
+whois -h whois.radb.net '!gAS7160' | egrep '129.144|129.150'
+
+root@mayura:~\> whois -h whois.radb.net -T route 129.150.160.0
+Warning: RIPE flags used with a traditional server.
+route:      129.150.0.0/15
+
+--More specifics
+whois -h whois.radb.net -M 129.150.0.0/15
+
+
+https://linuxacademy.com/howtoguides/posts/show/topic/13750-managing-docker-containers-with-ansible
+https://blog.gruntwork.io/why-we-use-terraform-and-not-chef-puppet-ansible-saltstack-or-cloudformation-7989dad2865c?gi=67404216edb1
+
+-BGP -
+https://www.ripe.net/manage-ips-and-asns/db/support/security/maintainers
+http://www.stubarea51.net/2016/01/21/put-500000-bgp-routes-in-your-lab-network-download-this-vm-and-become-your-own-upstream-bgp-isp-for-testing/
+https://static.open-scap.org/ssg-guides/ssg-rhel7-guide-index.html
+
+GRE Tunnel
+https://static.open-scap.org/openscap-1.2/oscap_user_manual.html#_installation
+
+http://xmodulo.com/bgp-looking-glass-server-centos.html
+https://vincent.bernat.im/en/blog/2017-ipv4-route-lookup-linux
+
+whois -h whois.radb.net -- '-i origin AS7160'
+whois -h whois.radb.net '!gAS7160'
+
+https://dn42.net/Home?lipi=urn%3Ali%3Apage%3Ad_flagship3_pulse_read%3BQmOIQug%2FQzSDJyaFF1p5kg%3D%3D
+person with primary key "BK4727-RIPE"
+person:	BABURAJ KALLARAKKAL
+address:	3052 PORTULACA DR, ROUND ROCK, TX, 78681
+phone:	+2482293794
+nic-hdl:	BK4727-RIPE
+mnt-by:	BABURAJK-MNT
+created:	2018-02-15T03:25:49Z
+last-modified:	2018-02-15T03:25:49Z
+source:	RIPE
+
+mntner:	BABURAJK-MNT
+admin-c:	BK4727-RIPE
+upd-to:	raj.anju@gmail.com
+auth:	SSO raj.anju@gmail.com
+mnt-by:	BABURAJK-MNT
+created:	2018-02-15T03:25:49Z
+last-modified:	2018-02-15T03:25:49Z
+source:	RIPE
+
+http://docs.ansible.com/ansible-tower/3.2.1/html/towerapi/tower_cli.html#api-towercli
+http://tjheeta.github.io/2015/04/15/ansible-vs-chef/
+
+http://www.slac.stanford.edu/xorg/nmtf/nmtf-tools.html
+0. Check all the perf (PSR) tuning bench mark stuff..
+
+Python Networking book, BGP routing book.
+http://ddiguru.com/blog/45-dns/125-anycast-dns-part-5-using-bgp
+https://www.microfocus.co.jp/manuals/ED21/html/HHSTSTCERT06.htmlUDEMY BGP routing.
+https://easyipv6.wordpress.com/2013/06/28/building-a-fast-content-network-with-anycast/
+https://www.samir.ca/2016/12/11/build-your-own-anycast-network-in-9-steps.html
+https://stat.ripe.net
+
+katacoda (docker),  Python networking book.
+
+https://serverfault.com/questions/126243/finding-all-currently-used-ip-addresses-of-website
+https://www.arin.net/resources/services/whois_guide.html
+whois -h whois.radb.net -i origin -T route AS792 |grep route
+http://www.irr.net/docs/list.html#LEVEL3
+
+1. Check the ip-forwarding.
+
+root@panchajanya:~\> sysctl net.ipv4.ip_forward
+net.ipv4.ip_forward = 1
+
+
+sysctl -w net.ipv4.ip_forward=1
+
+
+root@mayura:~\> man semanage-fcontext
+root@mayura:~\> man semanage-port
+root@mayura:~\> man semanage-port
+root@mayura:~\> man semanage-fcontext
+root@mayura:~\> man nmcli-examples
+ 
+root@mayura:~\> less /etc/pki/tls/certs/make-dummy-cert
+root@mayura:~\> less /usr/share/doc/teamd-1*/example_configs/loadbalance_1.conf
+root@mayura:~\> less /usr/share/mysql/my-innodb-heavy-4G.cnf
+/usr/share/mysql/my-innodb-heavy-4G.cnf: No such file or directory
+
+Reivew all grub* commands ..
+whois -h whois.radb.net -i origin -T route AS792 |grep route
+connect_from_port_20=YES
+pasv_enable=YES
+pasv_min_port=50001
+pasv_max_port=50001
+
+firewall-cmd --add-port=50001/tcp
+
+http://tjheeta.github.io/2015/04/15/ansible-vs-chef/
+
+
+
+http://libguestfs.org/virt-resize.1.html
+Read more on xargs and options
+dstat
+fingerprinting (PKI)
+
+https://www.ibm.com/developerworks/aix/library/au-vitips.html
+
+nping
+mtr
+nmap
+refer cookbook linux security
+
+stress
+
+ hping3
+SlowHTTPTest
+FunkLoad
+ipv6-toolkit
+t50
+thc-ipv6
+thc-ssl-dos 
+
+hulk
+
+slowloris
+
+NOTE: Good site
+https://www.statdns.com/resources/
+Slowloris	
+slowhttptest -c 1000 -H -i 30 -r 200 -t GET -u https://adc-fap0070-gse.oracledemos.com/main.html -x 24 -p 3
+Lancope	Fail - no Lancope Alarm	
+ 
+  	HTTP Slow Post	slowhttptest -c 1000 -B -i 110 -r 200 -s 8192 -t FAKEVERB -u https://adc-fap0070-gse.oracledemos.com/main.html -x 10 -p 3 -l 360	Lancope	Fail - no Lancope  	 	 	
+ 
+ 	HTTP Slow Read	slowhttptest -c 10000 -X -r 200  -w 10 -y 20 -n 5 -z 32 -u https://adc-fap0070-gse.oracledemos.com/main.html -p 5 -l 360
+
+ 
+
+
+ 	port scanning	nmap	nmap -sT -p 22, 80, 443 10.10.10.10	 
+ssh brute force	ncrack	
+ncrack -p 22 --user root -P 500-worst-passwords.txt 10.10.10.10
+ web scanning	nikto	
+nikto.pl -host http://10.10.10.10
+ application denial of service	http slow post	slowhttptest -c 1000 -H -i 30 -r 200 -t GET -u https://10.10.10.10/main.html -x 24 -p 3	  
+web form brute force	Burp Intruder	https://support.portswigger.net/customer/portal/articles/1964020-using-burp-to-brute-force-a-login-page	 
+OS fingerprinting	nmap	nmap -O 10.10.10.10	Alien Vault
+Evasion (substitution, etc)	nitko/nmap	
+nikto.pl -h http://10.10.10.10 -evasion 1
+ nmap -sS -sV -T1 -f —mtu=24 —data-length=1227 10.10.10.10
+
+
+
+Alien Vault
+Web Backdoors	laudanum	https://sourceforge.net/projects/laudanum/	
+Alien Vault,  
+Tunneling	netcat/socat	socat TCP4-LISTEN:80,fork TCP4:10.10.10.10:80	 
+
+nping
+
+
+== Revision thorough.
+== DNS Latency Tools, nscd
+== Network Security Tools
+== Python, Ruby, Perl - Code snippets
+== Interview Book
+==
+
+
+Rview SELinux again
+Review PAM Modules
+Review tCPWrappers
+
+https://jamielinux.com/docs/libvirt-networking-handbook/custom-routed-network.html
+Review "LEarning RHEL networking"
+
+https://www.certdepot.net/rhel7-use-kerberos-control-access-nfs-network-shares/
+https://unix.stackexchange.com/questions/198590/what-is-a-bind-mount
+http://chschneider.eu/linux/server/nfs.shtml
+
+
+
+M1 - RHCA, RHCE
+M2 - Ruby, Python, Perl Alogs
+M3 - net-tools
+
+M4 - Interview Book
+M5 - Resume
+
+
+Things to go over..
+
+PENDING
+
+Chapter 10 NFS & Autofs after Chapter 20 , excercises pending too
+
+0. Check the routing/static routes between VM's on diff subnets via Brigge/NAT (SNAT, DNAT etc.)
+1. ldap configuration
+2. kerberos
+3. nmcli 
+4. ntp 
+5. Refresh tunneling/port-forwarding syntaxes
+6. nmcli/ virsh attach/detach interfaces.
+7. virsh snapshot backups.
+8. port forwarding
+9. Review all books/downloads
+10. Review Page-255
+11. Review commands lsmod, depmod etc.
+12. accessing vm console
+13. configure ntp & chronyd
+
+14. Boot when the initrd is corrupted. 
+	mkinitrd -f test-$(uname -r).img  $(uname -r)
+
+15. http://www.voleg.info/linux-mirror-system-disk.html
+
+
+root@panchajanya:~\> yum list installed |grep  qemu-guest-agent
+qemu-guest-agent.x86_64               10:2.3.0-4.el7                 @anaconda
+root@panchajanya:~\> systemctl status qemu-guest-agent.service
+● qemu-guest-agent.service - QEMU Guest Agent
+   Loaded: loaded (/usr/lib/systemd/system/qemu-guest-agent.service; enabled; vendor preset: enabled)
+   Active: inactive (dead)
+
+
+
+
+Interview
+1. Replay ssh 
+2. Security Tools/files
+3. Networking tools/utils.
+4. Python Algos
+5. Ruby Alogs
+6. Ansible 
+7. Read on docker.
+
+nana_ping, arp_pping, Linux Networking Cookbook, lft, whois
+
+
+
+
+#Review again 
+https://www.virtkick.com/docs/how-to-perform-a-live-backup-on-your-kvm-virtual-machines.html
+https://access.redhat.com/solutions/23016
+https://wiki.libvirt.org/page/VirtualNetworking
+https://libvirt.org/sources/virshcmdref/html/sect-net-create.html
+https://www.cyberciti.biz/faq/linux-ip-command-examples-usage-syntax/
+
+https://www.interviewcake.com/amazon-interview-questions
+https://www.centos.org/docs/5/html/5.2/Deployment_Guide/sec-sel-fsrelabel.html
+
+ http://brainscraps.wikia.com/wiki/Setup_Gateway_Routing_On_Multiple_Network_Interfaces
+https://github.com/luckylittle/RHCE/blob/master/RHCE_notes_v2.1.txt
+http://libvirt.org/archnetwork.html
+
+ 
+https://www.alteeve.com/w/Changing_Ethernet_Device_Names_in_EL7_and_Fedora_15+
+ https://www.certdepot.net/rhel7-access-virtual-machines-console/
+
+
+
+
+
+
+Systems -  Unix & Linux internals
+ 
+Modern Operating Systems
+Unix and Linux System Administration Handbook
+Essential System Administration, 3rd Edition
+Unix in a Nutshell, 4th Edition 
+Unix Power Tools 
+Linux Server Hacks
+Linux Quick Fix Notebook
+Advanced Programming in the UNIX Environment 
+UNIX Network Programming, Volume 2: Interprocess Communications, Second Edition
+The Unix Programming Environment
+How Linux Works: What Every Superuser Should Know
+ 
+Linux misc:
+http://www.tldp.org/guides.html
+http://www.linuxfromscratch.org/
+http://www.tldp.org/LDP/abs/html/index.html
+http://www.tldp.org/LDP/lkmpg/2.6/html/index.html
+http://www.tldp.org/LDP/sag/html/index.html
+http://www.tldp.org/LDP/Linux-Dictionary/html/index.html
+http://www.tldp.org/LDP/Linux-Filesystem-Hierarchy/html/index.html
+http://www.tldp.org/LDP/lki/index.html
+http://www.tldp.org/HOWTO/Unix-and-Internet-Fundamentals-HOWTO/index.html
+http://www.tldp.org/HOWTO/Linux+IPv6-HOWTO/index.html
+http://catb.org/esr/writings/taoup/html/
+http://linuxcommand.org/
+ 
+ 
+Coding
+Cracking the Coding Interview
+Problem Solving in Data Structures & Algorithms Using Python: Programming Interview Guide 
+Programming Pearls
+ 
+ 
+Networks
+TCP/IP Illustrated, Vol. 1: The Protocols
+Network Troubleshooting Tools 
+TCP/IP Network Administration, 3rd Edition
+ 
+Troubleshooting
+Self-Service Linux: Determining Problems and Finding Solutions (free ebook) 
+Linux Troubleshooting Bible
+DevOps Troubleshooting: Linux Server Best Practices
+Effective Debugging (Spinellis)
+ 
+Scalable Architectures
+Distributed systems for fun and profit (free, many digital formats)
+https://www.usenix.org/blog/non-abstract-large-system-design-sysadmins
+https://www.somethingsimilar.com/2013/01/14/notes-on-distributed-systems-for-young-bloods/
+http://www.rgoarchitects.com/Files/fallacies.pdf (free pdf)
+https://12factor.net/
+NoSQL Revolution: Under the Covers of Distributed Systems at Scale (SPOT401) | AWS re:Invent 2013
+https://github.com/donnemartin/system-design-primer
+ 
+SRE
+https://landing.google.com/sre/book.html  (free html)
+The Practice of System and Network Administration: Devops and Other Best Practices for Enterprise it Volume 1
+Practice of Cloud System Administration, The: Designing and Operating Large Distributed Systems, Volume 2
+ 
+Misc
+Time Management for System Administrators
+Learning the vi and Vim Editors, 7th Edition 
+sed & awk, 2nd Edition
+DNS and BIND, 5th Edition 
+bash Cookbook
+
+
+
+
+https://www.lisenet.com/2016/rhce-sample-exam-for-rhel-7/
+
+OS-X MAC
+
+Turn it off
+Shift + Ctrl + Option : Holddown Power Button 3-5 seconds
+
+NVRAM reset
+Turn on computer, immediately P , R, Commnd, Option - computer restarts two times..
+
+
+Reset bluetooth mouse.
+
+
+
+#Mount a CD/DVD
+
+blkid
+
+root@mayura:/data/sdc01/rhce-dvd\> dmesg | egrep -i --color 'cdrom|dvd|cd/rw|writer'
+[    1.277393] ata3.00: ATAPI: TSSTcorp CDDVDW SH-S202N, SB01, max UDMA/66
+[    1.437905] scsi 2:0:0:0: CD-ROM            TSSTcorp CDDVDW SH-S202N  SB01 PQ: 0 ANSI: 5
+[    1.467997] sr 2:0:0:0: [sr0] scsi3-mmc drive: 48x/48x writer dvd-ram cd/rw xa/form2 cdda tray
+[    1.467999] cdrom: Uniform CD-ROM driver Revision: 3.20
+
+root@mayura:/var/ftp/pub/ksconfig\> virsh vol-create-as vpoolsdd02 rhceuefi_hdd0.img 10G
+Vol rhceuefi_hdd0.img created
+
+virt-install --name=rhceuefi --ram=1024 --vcpus=1 --autostart --os-type=linux --os-variant=rhel7 --boot=uefi --location=https://dl.fedoraproject.org/pub/fedora/linux/releases/22/Workstation/x86_64/os/ --network bridge=br_fe --network bridge=virbr0 --network bridge=virbr1 --network bridge=virbr2 --disk vol=vpoolsdd02/rhceuefi_hdd0.img --extra-args ks=ftp://192.168.2.21/pub/ksconfig/rhceuefi.cfg
+
+
+
+
+
+[root@lab125a ~]# date ; stress -c 4 -t 30 ; date
+Mon Sep 25 08:37:16 CDT 2017
+stress: info: [2563] dispatching hogs: 4 cpu, 0 io, 0 vm, 0 hdd
+stress: info: [2563] successful run completed in 30s
+Mon Sep 25 08:37:46 CDT 2017
+
+
+[root@lab125a ~]# dstat -cmdnt
+----total-cpu-usage---- ------memory-usage----- -dsk/total- -net/total- ----system----
+usr sys idl wai hiq siq| used  buff  cach  free| read  writ| recv  send|     time
+  8   3  85   4   0   0| 158M  952k 89.6M  744M| 734k   72k|   0     0 |25-09 08:37:15
+  0   0 100   0   0   0| 158M  952k 89.6M  744M|   0     0 | 118B  102B|25-09 08:37:16
+ 29   0  71   0   0   0| 159M  952k 89.6M  744M|   0     0 | 418B  488B|25-09 08:37:17
+100   0   0   0   0   0| 159M  952k 89.6M  744M|   0     0 | 118B  118B|25-09 08:37:18
+100   0   0   0   0   0| 159M  952k 89.6M  744M|   0     0 | 118B  134B|25-09 08:37:19
+100   0   0   0   0   0| 159M  952k 89.6M  744M|   0     0 | 118B  118B|25-09 08:37:20
+....
+..
+
+100   0   0   0   0   0| 159M  952k 89.6M  744M|   0     0 | 118B  102B|25-09 08:37:44
+100   0   0   0   0   0| 159M  952k 89.6M  744M|   0     0 | 118B  102B|25-09 08:37:45
+100   0   0   0   0   0| 159M  952k 89.6M  744M|   0     0 | 118B  102B|25-09 08:37:46
+ 69   0  31   0   0   0| 159M  952k 89.6M  744M|   0     0 | 250B  338B|25-09 08:37:47
+  0   0 100   0   0   0| 159M  952k 89.6M  744M|   0     0 | 118B  118B|25-09 08:37:48
+  0   0 100   0   0   0| 159M  952k 89.6M  744M|   0     0 | 118B  134B|25-09 08:37:49
+  0   0 100   0   0   0| 159M  952k 89.6M  744M|   0     0 | 118B  118B|25-09 08:37:50^C
+
+
+
+  

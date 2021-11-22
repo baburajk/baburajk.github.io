@@ -1,0 +1,851 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="Generator" content="EditPlus®">
+  <meta name="Author" content="">
+  <meta name="Keywords" content="">
+  <meta name="Description" content="">
+  <title>Notes</title>
+ <link rel="stylesheet" href="css/stylesheet1.css">
+ <link rel="stylesheet" href="css/stylesheet2.css">
+ <link rel="stylesheet" href="css/w3.css">
+
+ <style type="text/css" >
+	  
+ </style>
+<script Language="Javascript">
+function toggle() {
+    var x = document.getElementById('contents');
+    if (x.style.display === 'none') {
+		document.getElementById("togglelink").text = "hide"
+        x.style.display = 'block';
+    } else {
+        x.style.display = 'none';
+		document.getElementById("togglelink").text = "show"
+    }
+}
+</script>
+
+
+ </head>
+	<body> 
+		<div id="nav">
+			<div id="jumplinks"> Quick notes </div>
+		</div>
+    
+		<div id="body">
+			<div id="content" class="mw-body" role="main">
+ 				<div id="toc" class="toc"><div id="toctitle"><h2>Contents</h2><span class="toctoggle">&nbsp;[<a href="javascript:toggle()" id="togglelink">hide</a>]&nbsp;</span></div>
+					<div id="contents">
+						<ul>
+							<li> <a href="#Bonding_Teaming">	 <span class="tocnumber">	1 </span> <span class="toctext"> Bonding/Teaming	</span></a> </li> 
+							<li> <a href="#NTP">	 <span class="tocnumber">	2 </span> <span class="toctext"> NTP	</span></a> </li> 
+							<li> <a href="#firewalld">	 <span class="tocnumber">	3 </span> <span class="toctext"> Firewalld 	</span></a> </li> 
+							<li> <a href="#IPv6">	 <span class="tocnumber">	2 </span> <span class="toctext"> IPv6 	</span></a> </li> 
+						</ul>
+					</div>
+				</div>
+
+				<style>
+					html,body,h1,h2,h3,h4,h5,h6 { font-family: "Comic Sans MS", cursive, sans-serif; }
+				</style>
+ 
+
+
+<div class="w3-container">
+	<h1><span class="mw-headline" id="Bonding_Teaming"> Bonding/Teaming </h1>	
+<p>
+
+</p>
+
+<pre> 
+
+--Run simple HTTP Server for testing
+
+python -m SimpleHTTPServer 8000
+
+
+--Things to remember 
+modprobe bonding
+ls -l /usr/share/doc/teamd-1.25/example_configs/
+man nmcli-examples
+nmcli con add help ( to check the different configurations)
+modinfo bonding
+cat /proc/net/bonding/bond1
+
+--Enable IPv4 forwarding.
+sysctl -w net.ipv4.ip_forward=1
+
+Note: Team ports should be down prior to adding to the Team Configuration
+ip link show
+
+
+--Add dummy interface and enforce static route to make it visible from the server.
+
+[root@rhce1 ~]# modprobe dummy
+
+[root@rhce1 ~]# ip link show dummy0
+9: dummy0: <BROADCAST,NOARP> mtu 1500 qdisc noop state DOWN mode DEFAULT qlen 1000
+    link/ether 8e:db:6e:b9:3c:51 brd ff:ff:ff:ff:ff:ff
+[root@rhce1 ~]# ip link set name ethx dev dummy0
+
+[root@rhce1 ~]# ip address add 192.168.123.123/24 dev ethx
+
+[root@rhce1 ~]# ip link set dev ethx up
+
+[root@rhce1 ~]# ip addr show ethx
+9: ethx: <BROADCAST,NOARP,UP,LOWER_UP> mtu 1500 qdisc noqueue state UNKNOWN qlen 1000
+    link/ether 8e:db:6e:b9:3c:51 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.123.123/24 scope global ethx
+       valid_lft forever preferred_lft forever
+    inet6 fe80::8cdb:6eff:feb9:3c51/64 scope link
+       valid_lft forever preferred_lft forever
+
+[root@rhce1 ~]# ping -c 1 192.168.123.123
+PING 192.168.123.123 (192.168.123.123) 56(84) bytes of data.
+64 bytes from 192.168.123.123: icmp_seq=1 ttl=64 time=0.049 ms
+
+--- 192.168.123.123 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 0.049/0.049/0.049/0.000 ms
+
+
+--Before adding the route
+root@mayura:/etc/sysconfig/network-scripts\> ping 192.168.123.123
+PING 192.168.123.123 (192.168.123.123) 56(84) bytes of data.
+^C
+--- 192.168.123.123 ping statistics ---
+4 packets transmitted, 0 received, 100% packet loss, time 2999ms
+
+--Add the route
+root@mayura:/etc/sysconfig/network-scripts\> ip route add 192.168.123.0/24 via 192.168.122.1 dev virbr0
+or 
+root@mayura:/etc/sysconfig/network-scripts\> ip route add 192.168.123.0/24 via 192.168.110.1 dev virbr1
+
+root@mayura:/etc/sysconfig/network-scripts\> ip route show
+default via 192.168.2.1 dev br_fe
+default via 192.168.2.1 dev enp7s0  proto static  metric 100
+192.168.2.0/24 dev br_fe  proto kernel  scope link  src 192.168.2.21
+192.168.2.0/24 dev enp7s0  proto kernel  scope link  src 192.168.2.20  metric 100
+192.168.110.0/24 dev virbr1  proto kernel  scope link  src 192.168.110.1
+192.168.120.0/24 dev virbr2  proto kernel  scope link  src 192.168.120.1
+192.168.122.0/24 dev virbr0  proto kernel  scope link  src 192.168.122.1
+192.168.130.0/24 dev virbr3  proto kernel  scope link  src 192.168.130.1
+192.168.123.0/24 via 192.168.122.1 dev virbr0
+
+root@mayura:/etc/sysconfig/network-scripts\> ping 192.168.123.123
+PING 192.168.123.123 (192.168.123.123) 56(84) bytes of data.
+64 bytes from 192.168.123.123: icmp_seq=1 ttl=64 time=0.185 ms
+
+
+--Two VM's ( modprobe dummy)
+
+Add 192.168.145.100 on rhce2 and 192.168.150.100 on rhce3. What requires to have these two networks talk to each other?
+The common nics on rhce2 and rhce3 are 192.168.122.20 and 192.168.122.30 
+
+#rhce2
+modprobe dummy
+ip addr add 192.168.145.100 dev dummy0
+
+
+#rhce3
+modprobe dummy
+ip addr add 192.168.150.100 dev dummy0
+
+
+#On Mayura/Hypervisor
+root@mayura:~\> ip route add 192.168.145.0/24 via 192.168.122.1
+root@mayura:~\> ip route add 192.168.150.0/24 via 192.168.122.1
+
+192.168.145.0/24 via 192.168.122.1 dev virbr0
+192.168.150.0/24 via 192.168.122.1 dev virbr0
+
+--Ensure ipv4_forward is enabled usually it is for virtalization
+echo "1" > /proc/sys/net/ipv4/ip_forward
+
+net.ipv4.ip_forward = 1
+
+
+</pre>
+
+</div>
+
+ 
+ <div class="w3-container">
+	<h1><span class="mw-headline" id="NTP"> NTP </h1>	
+<p>
+
+</p>
+
+<pre> 
+ 
+Broadcast client listens only within the subnet
+Multicast client can span the local subnet (similar to Broadcasti)
+
+--Broadcast server configuration.
+
+"restrict" is only inbound 
+
+
+
+[root@rhce1 ~]# cat /etc/ntp.conf |grep -v ^# |grep -v ^$
+driftfile /var/lib/ntp/drift
+restrict default nomodify notrap nopeer noquery
+restrict 127.0.0.1
+restrict ::1
+server 0.rhel.pool.ntp.org iburst
+server 1.rhel.pool.ntp.org iburst
+server 2.rhel.pool.ntp.org iburst
+server 3.rhel.pool.ntp.org iburst
+broadcast 192.168.122.255 iburst
+disable auth
+includefile /etc/ntp/crypto/pw
+keys /etc/ntp/keys
+disable monitor
+
+[root@rhce1 ~]# ntpq -p; ntpstat
+     remote           refid      st t when poll reach   delay   offset  jitter
+==============================================================================
+*up2.com         195.219.14.21    2 u   43   64    1   53.916   -7.959   2.288
+ orchid.sidereal 200.98.196.212   2 u   42   64    1   51.787  -10.519   5.668
+ static-96-244-9 192.168.10.254   2 u   41   64    1   60.231   -0.570   3.590
+ ns1.rx-name.net 193.190.147.153  3 u   40   64    1  172.425    1.124   2.824
+ 192.168.122.255 .BCST.          16 u    -   64    0    0.000    0.000   0.000
+synchronised to NTP server (216.6.2.70) at stratum 3
+   time correct to within 1043 ms
+   polling server every 64 s
+
+
+--Broadcast client should have the subnet restrict clause so it can use the broadcast server subnet.
+
+[root@rhce2 ~]# cat /etc/ntp.conf |grep -v ^# |grep -v ^$
+driftfile /var/lib/ntp/drift
+restrict default nomodify notrap nopeer noquery
+restrict 127.0.0.1
+restrict ::1
+restrict 192.168.122.0 mask 255.255.255.0 nomodify notrap
+broadcastclient
+disable auth
+includefile /etc/ntp/crypto/pw
+keys /etc/ntp/keys
+disable monitor
+
+[root@rhce2 ~]# ntpq -p ; ntpstat
+     remote           refid      st t when poll reach   delay   offset  jitter
+==============================================================================
+*rhce1           96.244.96.19     3 u   20   64    1    0.357  -28.578   0.061
+synchronised to NTP server (192.168.122.10) at stratum 4
+   time correct to within 1040 ms
+   polling server every 64 s
+
+
+
+</pre>
+
+</div>
+
+</div>
+
+ 
+ <div class="w3-container">
+	<h1><span class="mw-headline" id="firewalld-kerberos"> Firewalld-Kerberos </h1>	
+<p>
+
+</p>
+
+<pre> 
+
+
+--Update Host file Note (If DNS is not being used, make sure the FQDN is right after the IP in /etc/hosts)
+
+192.168.122.10 rhce1.intercloudzone.com rhce1
+192.168.122.20 rhce2.intercloudzone.com rhce2
+
+--Install Packages (On the Server)
+yum install -y krb5-server krb5-workstation pam_krb5
+
+
+Note: Without pam_krb5 module, the authconfig will fail
+[root@rhce2 ~]# authconfig --enablekrb5 --update
+authconfig: Authentication module /usr/lib64/security/pam_krb5.so is missing. Authentication process might not work correctly.
+
+
+--Edit /etc/krb5.conf to update realm
+
+--Update KDC configuration files with the FQDN (REALM)
+
+[root@rhce1 ~]# grep -i intercloudzone /etc/krb5.conf
+ default_realm = INTERCLOUDZONE.COM
+ INTERCLOUDZONE.COM = {
+  kdc = rhce1.intercloudzone.com
+  admin_server = rhce1.intercloudzone.com
+ .intercloudzone.com = INTERCLOUDZONE.COM
+ intercloudzone.com = INTERCLOUDZONE.COM
+
+
+-- Update ACL with the realm.
+[root@rhce1 ~]# sed -i 's/EXAMPLE/INTERCLOUDZONE/g' /var/kerberos/krb5kdc/kadm5.acl
+[root@rhce1 ~]# cat /var/kerberos/krb5kdc/kadm5.acl
+*/admin@INTERCLOUDZONE.COM  *
+
+
+-- Create krb5 DB
+
+[root@rhce1 ~]# kdb5_util create -s
+Loading random data
+Initializing database '/var/kerberos/krb5kdc/principal' for realm 'INTERCLOUDZONE.COM',
+master key name 'K/M@INTERCLOUDZONE.COM'
+You will be prompted for the database Master Password.
+It is important that you NOT FORGET this password.
+Enter KDC database master key:
+
+[root@rhce1 ~]# rpm -ql krb5-server-1.15.1-8.el7.x86_64 |grep systemd
+/usr/lib/systemd/system/kadmin.service
+/usr/lib/systemd/system/kprop.service
+/usr/lib/systemd/system/krb5kdc.service
+
+-Start admin & KDC
+
+For kerberos to work time sync should be working (chrony/ntp)
+systemctl start krb5kdc kadmin
+
+--Add services to firewall
+
+[root@rhce2 ~]# nc -v rhce1.intercloudzone.com 88  
+Ncat: Version 6.40 ( http://nmap.org/ncat )
+libnsock nsi_new2(): nsi_new (IOD #1)
+libnsock nsock_connect_tcp(): TCP connection requested to 192.168.122.10:88 (IOD #1) EID 8
+libnsock nsock_trace_handler_callback(): Callback: CONNECT ERROR [No route to host (113)] for EID 8 [192.168.122.10:88]
+Ncat: No route to host.
+
+--Enable kerberos with firewalld on rhce1 and retry
+
+
+[root@rhce1 icmptypes]# firewall-cmd --permanent --add-service kerberos
+success
+[root@rhce1 icmptypes]# firewall-cmd --permanent --add-service kadmin
+success
+[root@rhce1 icmptypes]# firewall-cmd --reload
+success
+
+
+
+--Create admin & users (to test) and add hosts
+
+kadmin.local:  addprinc root/admin
+kadmin.local:  addprinc kuttu
+kadmin.local: addprinc -randkey host/rhce1.intercloudzone.com
+kadmin.local: addprinc -randkey host/rhce2.intercloudzone.com
+useradd kuttu
+
+systemctl restart krb5kdc kadmin
+
+--Create a local copy stored by default in the /etc/krb5.keytab file:
+kadmin.local:  ktadd host/rhce1.intercloudzone.com
+
+
+--Test KDC on the server itself , add to /etc/ssh/sshd_config followed
+
+GSSAPIAuthentication yes
+GSSAPIDelegateCredentials yes
+
+systemctl reload sshd
+
+
+
+--On Client (Enable these)
+[root@rhce2 ~]# grep yes /etc/ssh/ssh_config
+ 
+   GSSAPIAuthentication yes
+   GSSAPIDelegateCredentials yes
+ 
+ --Test it on the server itself.
+
+
+[kuttu@rhce1 ~]$ kinit
+Password for kuttu@INTERCLOUDZONE.COM:
+[kuttu@rhce1 ~]$ klist
+Ticket cache: KEYRING:persistent:1002:1002
+Default principal: kuttu@INTERCLOUDZONE.COM
+
+Valid starting       Expires              Service principal
+01/19/2018 13:06:41  01/20/2018 13:06:41  krbtgt/INTERCLOUDZONE.COM@INTERCLOUDZONE.COM
+
+[kuttu@rhce1 ~]$ ssh rhce1.intercloudzone.com
+Last login: Fri Jan 19 13:06:39 2018
+
+
+[kuttu@rhce1 ~]$ kdestroy
+[kuttu@rhce1 ~]$ klist
+klist: Credentials cache keyring 'persistent:1002:1002' not found
+[kuttu@rhce1 ~]$ ssh rhce1.intercloudzone.com
+kuttu@rhce1.intercloudzone.com's password:
+
+
+
+--Setup Client
+
+
+#Note: On the Server the firewalls should be open else will encounter below error..
+
+[root@rhce2 ~]# kadmin -p root/admin
+Password for root/admin@INTERCLOUDZONE.COM:
+kadmin: Communication failure with server while initializing kadmin interface
+
+firewall-cmd --add-service kadmin kerberos
+
+
+ktadd -k /etc/krb5.keytab root
+
+Always tail /var/log/krb5kdc.log /var/log/secure /var/log/messages and /var/log/audit/audit.log
+
+Make sure to add root user , run ktadd -k /etc/krb5.keytab and ship the keytab file to client.
+
+Also add nfs/server and nfs/client.
+
+chronync tracking should show offsent close to 0
+
+Change the parameter : /etc/sysconfig/nfs 
+RPCGSSDARGS="-v -v -v "
+
+Restart the services
+systemctl restart nfs rpcbind
+
+
+
+[root@rhce1 exports.d]# klist -k /etc/krb5.keytab
+Keytab name: FILE:/etc/krb5.keytab
+KVNO Principal
+---- --------------------------------------------------------------------------
+   3 usera@INTERCLOUDZONE.COM
+   3 usera@INTERCLOUDZONE.COM
+   2 host/rhce2.intercloudzone.com@INTERCLOUDZONE.COM
+   2 host/rhce2.intercloudzone.com@INTERCLOUDZONE.COM
+   2 host/kerberos.intercloudzone.com@INTERCLOUDZONE.COM
+   2 host/kerberos.intercloudzone.com@INTERCLOUDZONE.COM
+   2 root/admin@INTERCLOUDZONE.COM
+   2 root/admin@INTERCLOUDZONE.COM
+
+[root@rhce2 ~]# yum -y install krb5-workstation pam_krb5
+
+
+--Add client host and principal user.
+
+kadmin -p root/admin
+kadmin: addprinc -randkey host/rhce2.intercloudzone.com
+kadmin: addprinc kannan/rhce2.intercloudzone.com
+
+-While logged in extract principal's key and store it locally in a keytab file called krb5.keytab
+
+kadmin:  ktadd -k /etc/krb5.keytab host/rhce2.intercloudzone.com
+
+authconfig --enablekrb5 --update --test
+authconfig --enablekrb5 --update
+
+--Backup
+kdb5_util dump -verbose /tmp/kdc.dump
+strings /backup/kdc.dump
+
+--Restore
+kdb5_util load /backup/kdc.dump
+
+--Display Keylist (Principals) in a Keytab File
+klist -kt /etc/krb5.keytab
+
+--Remove keylist (Principals) from a keytab file
+ktremove -k /etc/krb5.keytab usera
+
+
+--Troubleshoot
+# export KRB5_TRACE=/dev/stdout
+# kinit
+
+
+[kannan@rhce2 ~]$ ssh rhce2.intercloudzone.com
+kannan@rhce2.intercloudzone.com's password:
+
+[kannan@rhce2 ~]$ ssh rhce2.intercloudzone.com^C
+[kannan@rhce2 ~]$ kinit
+Password for kannan@INTERCLOUDZONE.COM:
+[kannan@rhce2 ~]$ klist
+Ticket cache: KEYRING:persistent:1000:1000
+Default principal: kannan@INTERCLOUDZONE.COM
+
+Valid starting       Expires              Service principal
+01/19/2018 13:15:43  01/20/2018 13:15:43  krbtgt/INTERCLOUDZONE.COM@INTERCLOUDZONE.COM
+[kannan@rhce2 ~]$ ssh rhce2.intercloudzone.com
+Last login: Fri Jan 19 13:15:33 2018 from rhce2.intercloudzone.com
+
+--Debug SSHD
+ /usr/sbin/sshd -d -p99
+ 
+
+</pre>
+
+
+<div class="w3-container">
+  <h1><span class="mw-headline" id="nfs"> NFS </h1> 
+<p>
+ 
+
+
+</p>
+
+<pre> 
+
+--install
+yum install nfs-utils
+systemctl enable rpcbind nfs nfs-server
+selinux
+firewall
+/etc/fstab ( _netdev)
+
+
+
+
+
+
+--Syntax
+export host1(options1) host2(options2) host3(options3)
+
+--Mounted directories in /var/lib/nfs/etab
+
+--Defaults
+ro,sync,wdelay,root_squash (Squashes power of root)
+
+--all_squash  
+To squash every remote user (including root), use all_squash. To specify the user and group IDs that the NFS server should assign to remote users from a particular host, use the anonuid and anongid options, respectively, as in:
+export host(anonuid=uid,anongid=gid)
+
+--syntax
+/home bob.example.com(rw) 
+/home bob.example.com (rw)
+
+The first line allows only users from bob.example.com read/write access to the /home directory. The second line allows users from bob.example.com to mount the directory as read-only (the default), while the rest of the world can mount it read/write.
+
+--rpcbind
+NFS requires rpcbind, which dynamically assigns ports for RPC services and can cause problems for configuring firewall rules. To allow clients to access NFS shares behind a firewall, edit the /etc/sysconfig/nfs file to set which ports the RPC services run on
+
+--Mounts listed
+cat /var/lib/nfs/etab (server) and /etc/mtab (on client)
+
+--NFS configuration
+/etc/sysconfig/nfs
+
+--Firewall
+firewall-cmd add-service nfs --add-service mountd --add-service rpc-bind
+
+--Check from client
+showmount -e rhce1
+
+--SElinux
+getsebool -a | egrep '^nfs|^use_nfs'
+
+Any directory/file to be exported on the network should have public_content_ro_t or public_content_rw_t applied if multiple services
+like FTP, HTTP etc share the same along with NFS.
+
+--nfs-secure-server (Kerberos)
+systemctl start kadmin krb5kdc
+
+
+https://www.certdepot.net/rhel7-use-kerberos-control-access-nfs-network-shares/
+
+
+
+kadmin:  addprinc -randkey nfs/rhce1.intercloudzone.com
+WARNING: no policy specified for nfs/rhce1.intercloudzone.com@INTERCLOUDZONE.COM; defaulting to no policy
+Principal "nfs/rhce1.intercloudzone.com@INTERCLOUDZONE.COM" created.
+
+kadmin:  addprinc -randkey nfs/rhce2.intercloudzone.com
+WARNING: no policy specified for nfs/rhce2.intercloudzone.com@INTERCLOUDZONE.COM; defaulting to no policy
+Principal "nfs/rhce2.intercloudzone.com@INTERCLOUDZONE.COM" created.
+
+[root@rhce1 ~]# systemctl enable nfs-secure
+[root@rhce1 ~]# systemctl start nfs-secure
+
+
+-rw-------. 1 root root 2258 Jan 19 13:10 /etc/krb5.keytab
+[root@rhce2 ~]# kadmin
+Authenticating as principal root/admin@INTERCLOUDZONE.COM with password.
+Password for root/admin@INTERCLOUDZONE.COM:
+kadmin:  ktadd nfs/rhce1.intercloudzone.com
+Entry for principal nfs/rhce1.intercloudzone.com with kvno 2, encryption type aes256-cts-hmac-sha1-96 added to keytab FILE:/etc/krb5.keytab
+..
+...
+Entry for principal nfs/rhce1.intercloudzone.com with kvno 2, encryption type des-cbc-md5 added to keytab FILE:/etc/krb5.keytab.
+kadmin:  quit
+[root@rhce2 ~]# ls -ltr /etc/krb5.keytab
+-rw-------. 1 root root 3002 Feb  1 17:02 /etc/krb5.keytab
+
+--Check the client for mounted directories
+[root@rhce2 ~]# showmount -e rhce1
+Export list for rhce1:
+/nfskrb5  rhce2.intercloudzone.com
+/nfsdata  rhce2.intercloudzone.com
+/nfsrhcsa rhce3.intercloudzone.com
+/common   rhce2.intercloudzone.com
+
+--
+[root@rhce2 ~]# rpcinfo -p rhce1.intercloudzone.com
+
+
+--samba 
+
+https://www.lisenet.com/2016/samba-server-on-rhel-7/
+Any directory/file system you want to share on the network with Samba alone needs to have samba_share_t type applied to it. IN case of 
+multiple file-sharing services, such as ny combination fo CIFS and NFS, FTP etc. on same system should have public_content_ro_t or rw_t applied to it.
+
+--Debug
+[root@rhce3 ~]# smbclient -k //rhce2/smbsdata -U user7 -d9
+
+[root@rhce3 samba]# smbclient -L //rhce2 -U user11
+Enter SAMBA\user11's password:
+session setup failed: NT_STATUS_LOGON_FAILURE
+
+* Change it to FQDN
+
+[root@rhce3 samba]# smbclient -L //rhce2.intercloudzone.com -U user11
+Enter SAMBA\user11's password:
+Domain=[RHCE2] OS=[Windows 6.1] Server=[Samba 4.6.2]
+
+
+--postix null client configuration
+
+myhostname = srv1.rhce.local
+mydomain = rhce.local
+myorigin = $mydomain
+relayhost = [10.8.8.70] # Disable MX lookups by using SQuare brackets.
+inet_interfaces = loopback-only #    Do not accept mail from the network.
+mydestination =           "Disable local mail delivery. All mail goes to the mail server s specified in relayhost"
+mynetworks = 127.0.0.0/8 [::]/128 #Only messages that originate from the 127.0.0.0/8 network and the [::1]/128 network are forwarded to the relay host by the null client.
+local_transport = error: local delivery disable # prevent the local null client from sorting any mail into mailboxes
+
+
+--DNS 
+
+
+--ALlows DNS connectivity from remote hosts as well. Without 'any' remote hosts, won't be able to query the serv
+listen-on port 53 { any ; };
+
+--Add ACL Trusted so remote servers on same subnet can query.
+
+acl "trusted" {
+  127.0.0.0/8;
+  192.168.122.0/24;
+};
+
+allow-query     { localhost; trusted ; };
+
+
+--General info
+acl black-hats {
+    10.0.2.0/24;
+    192.168.0.0/24;
+ };
+
+ acl red-hats {
+    10.0.1.0/24;
+ };
+
+ options {
+    blackhole { black-hats; };
+    allow-query { red-hats; };
+    allow-recursion { red-hats; };
+ }
+ 
+ 
+--Create master zone
+
+zone "intercloudzone.com" IN {
+  type master;
+  file "db.intercloudzone";
+};
+
+zone "122.168.192.in-addr.arpa" IN {
+  type master;
+  file "db.122.168.192.in-addr.arpa";
+};
+
+zone "110.168.192.in-addr.arpa" IN {
+  type master;
+  file "db.110.168.192.in-addr.arpa";
+};
+
+
+
+
+
+[root@rhce1 etc]# cat /var/named/db.intercloudzone
+$TTL 1D
+$ORIGIN intercloudzone.com.
+@ IN SOA  rhce1 raj.anju (
+          0 ; serial
+          1D  ; refresh
+          1H  ; retry
+          1W  ; expire
+          3H )  ; minimum
+  IN  NS  dns1
+dns1  IN  A 192.168.122.10
+dnsteam0 IN     A 192.168.110.23
+dnsbond0 IN A   192.168.110.13
+* IN  A   192.168.122.10
+
+named-checkconf -z
+chgrp named /var/named/db.122.168.192.in-addr.arpa
+
+
+[root@rhce1 etc]# cat /var/named/db.intercloudzone
+$TTL 1D
+$ORIGIN intercloudzone.com.
+@ IN SOA  rhce1 raj.anju (
+          0 ; serial
+          1D  ; refresh
+          1H  ; retry
+          1W  ; expire
+          3H )  ; minimum
+  IN  NS  dns1
+  IN      MX      10 email
+email   IN      A       192.168.122.10
+dns1  IN  A 192.168.122.10
+dnsteam0 IN     A 192.168.110.23
+dnsbond0 IN A   192.168.110.13
+* IN  A   192.168.122.10
+
+
+[root@rhce1 named]# cat db.122.168.192.in-addr.arpa
+$TTL 1D
+@ IN SOA  122.168.192.in-addr.arpa. raj.anju (
+          0 ; serial
+          1D  ; refresh
+          1H  ; retry
+          1W  ; expire
+          3H )  ; minimum
+  IN  NS  dns1.intercloudzone.com.
+10  IN  PTR dns1.intercloudzone.com.
+
+[root@rhce4 named]# cat 122.168.192.in-addr.arpa.db
+$TTL 1D
+$ORIGIN 122.168.192.in-addr.arpa.
+@ IN SOA  dns.intercloudzone.com. raj.anju.intercloudzone.com. (
+          0 ; serial
+          1D  ; refresh
+          1H  ; retry
+          1W  ; expire
+          3H )  ; minimum
+    NS  dns.intercloudzone.com.
+40  IN  PTR dns.intercloudzone.com.
+50  IN  PTR client.intercloudzone.com.
+
+
+[root@rhce4 named]# named-checkzone -D 122.168.192.in-addr.arpa 122.168.192.in-addr.arpa.db
+zone 122.168.192.in-addr.arpa/IN: loaded serial 0
+122.168.192.in-addr.arpa.         86400 IN SOA  dns.intercloudzone.com. raj.anju.intercloudzone.com. 0 86400 3600 604800 10800
+122.168.192.in-addr.arpa.         86400 IN NS dns.intercloudzone.com.
+40.122.168.192.in-addr.arpa.          86400 IN PTR  dns.intercloudzone.com.
+50.122.168.192.in-addr.arpa.          86400 IN PTR  client.intercloudzone.com.
+OK
+
+[root@rhce4 named]# named-checkconf -z /etc/named.conf
+zone intercloudzone.com/IN: loaded serial 0
+zone 122.168.192.in-addr.arpa/IN: loaded serial 0
+zone localhost.localdomain/IN: loaded serial 0
+zone localhost/IN: loaded serial 0
+zone 1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa/IN: loaded serial 0
+zone 1.0.0.127.in-addr.arpa/IN: loaded serial 0
+zone 0.in-addr.arpa/IN: loaded serial 0
+
+--Authoratative queries ( aa after the query output indicates the answer is from the Authoratative server)
+
+[root@rhce2 ~]# dig lbaas.balancer.oraclecloud.com @ns1.p10.dynect.net
+
+; <<>> DiG 9.9.4-RedHat-9.9.4-51.el7_4.2 <<>> lbaas.balancer.oraclecloud.com @ns1.p10.dynect.net
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 46958
+;; flags: qr aa rd; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1
+;; WARNING: recursion requested but not available
+ 
+
+--Note
+Ensure the '.' at the end : $ORIGIN intercloudzone.com.
+
+
+
+--To flush the local cache 
+rndc flush
+
+--Dump the database
+rndc dump
+rndc dumpdb -zones
+
+--Chown root:named, add the zone to /etc/named.conf 
+
+--Unbound (lightweight)
+
+ unbound-control-setup ( Set's up the cred keys)
+
+--Configs worth noting.
+inteface, access-control and forward-zone
+
+
+--Postfix/Sendmail.
+
+Only one service should be running, check via alternativies --list ( shutoff one) to avoid errors.
+
+--A user with /sbin/nologin can check mail due to the fact that the saslauth is configured..
+
+[root@rhce4 ~]# cat /etc/sasl2/smtpd.conf
+pwcheck_method: saslauthd
+mech_list: plain login
+
+--Apache (IncludeOptional does not generate errors if path specified does not match any file.)
+
+[root@rhce4 conf]# grep ^Include httpd.conf
+Include conf.modules.d/*.conf
+IncludeOptional conf.d/*.conf
+
+--In Directory Container ( to allow explicit access)
+
+Order Allow,Deny 
+Allow from intercloudzone.com
+Deny from all
+
+--Directive to list the files/dirs if index.html is absent
+
+Options Indexes FollowSymLinks
+
+--Search selinux alerts
+
+[root@rhce4 conf.d]# ausearch -m avc -c httpd
+----
+time->Fri Apr 20 19:42:26 2018
+type=PROCTITLE msg=audit(1524271346.864:748): proctitle=2F7573722F7362696E2F6874747064002D44464F524547524F554E44
+type=SYSCALL msg=audit(1524271346.864:748): arch=c000003e syscall=49 success=no exit=-13 a0=6 a1=563c8e71e7c0 a2=1c a3=7fff2ac8ad2c items=0 ppid=1 pid=9402 auid=4294967295 uid=0 gid=0 euid=0 suid=0 fsuid=0 egid=0 sgid=0 fsgid=0 tty=(none) ses=4294967295 comm="httpd" exe="/usr/sbin/httpd" subj=system_u:system_r:httpd_t:s0 key=(null)
+type=AVC msg=audit(1524271346.864:748): avc:  denied  { name_bind } for  pid=9402 comm="httpd" src=8888 scontext=system_u:system_r:httpd_t:s0 tcontext=system_u:object_r:unreserved_port_t:s0 tclass=tcp_socket
+----
+
+
+--Apache Manual
+
+elinks http://localhost/manual/vhosts
+
+--Samba 
+
+security = user (Checks local password database ) vs security = domain ( Checks the Domain Controller)
+
+passdb backend = smbpasswd  ( Stored in /etc/samba)
+passdb backend = tdbsam ( Stored in /var/lib/samba/private)
+
+journalctl -u smb -u nmb
+
+
+ 
+</pre>
+
+</div>
+
+	
+	
+</body>
+</html>

@@ -1,0 +1,97 @@
+dd
+==
+ 
+
+http://how-to.linuxcareer.com/learning-linux-commands-dd
+
+
+cpuinfo
+ 
+
+http://archive.richweb.com/cpu_info
+
+
+http://www.redhat.com/en/services/all-certifications-and-exams
+http://techbus.safaribooksonline.com/book/certification/rhce/9780071801607
+http://www.certdepot.net/rhel7-rhcsa-exam-objectives/
+
+
+TO-DO
+=====
+Created Wednesday 15 April 2015
+
+1. EBTABLES Page
+2. Edit all pages to add detailed content/description.
+3. Review the DataGuard 12c Training Material
+4. Check on Chef Setup
+5. Chefk ActiveMQ Setup/Mcollective
+6. Check Apache Setup and Rules
+7. Oracle 12 New features, Vault, Label Security.
+
+Ethernet Bridging - intercloudzone.com
+
+Bridge Configurations
+Active MQ
+DataGuard setup ( python scripts )
+Chef (solo & stuff)
+github
+Apache Rules
+Mcollective
+
+different database recovery techniques.
+
+http://dbaora.com/install-oracle-12c-release-1-12-1-on-centos-linux-7/
+
+DATABASE TESTS
+SQLNET.INBOUND_CONNECT_TIMEOUT AND OUTBOUND
+oTHER SQLNET PARAMETERS]
+
+http://techbus.safaribooksonline.com/video/databases/content-management-systems/9781783554133
+https://www3.ntu.edu.sg/home/ehchua/programming/java/JSPByExample.html
+
+
+http://career.guru99.com/
+
+
+multicast vs unicast
+
+
+http://www.netfilter.org/documentation/HOWTO/NAT-HOWTO-6.html
+http://www.microhowto.info/troubleshooting/troubleshooting_ethernet_bridging_on_linux.html
+
+http://www.microhowto.info/topic/networking.html#idp15712
+
+http://lartc.org/howto/lartc.kernel.obscure.html
+ 
+
+http://www.microhowto.info/howto/bridge_traffic_between_two_or_more_ethernet_interfaces_on_linux.html
+
+ 
+ 
+
+https://tournasdimitrios1.wordpress.com/2011/02/08/4426/
+
+https://sandilands.info/sgordon/arp-spoofing-on-wired-lan
+
+http://www.certdepot.net/rhel7-get-started-firewalld/
+
+Disable KVM
+
+http://www.cyberciti.biz/faq/linux-kvm-disable-virbr0-nat-interface/
+
+#FIREWALL-CMD
+http://ktaraghi.blogspot.com/2013/10/what-is-firewalld-and-how-it-works.html
+http://www.netfilter.org/documentation/HOWTO/NAT-HOWTO-6.html
+
+
+virsh net-destroy default
+virsh net-undefine default
+systemctl restart libvirtd 
+systemctl disable libvirtd 
+ifconfig
+
+
+#CONFIGURE NFS SERVER
+
+https://www.howtoforge.com/nfs-server-and-client-on-centos-7
+    

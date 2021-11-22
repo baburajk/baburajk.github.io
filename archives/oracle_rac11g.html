@@ -1,0 +1,3638 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>InterCloudZone</title>
+<meta name="keywords" content="" />
+<meta name="description" content="" />
+<link href="style.css" rel="stylesheet" type="text/css" media="screen" />
+<link href="google-code-prettify/sunburst.css" type="text/css" rel="stylesheet" />
+
+<!--[if IE]>
+<style type="text/css">
+#sidebar #calendar {
+	background-position: 0px 20px;
+}
+</style>
+<![endif]-->
+
+<script src="http://www.google.com/jsapi" type="text/javascript"></script>
+<script type="text/javascript">google.load("jquery", "1.3.2");</script>
+<script type="text/javascript" src="/google-code-prettify/prettify.js?autoload=true&;lang=css;skin=sunburst""></script>
+<script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js?autoload=true&amp;lang=css&amp;skin=sunburst"></script>
+</head>
+<body>
+<div id="logo">
+	<h1> InterCloudZone.com </h1>
+</div>
+<div id="menu">
+	<ul>
+		<li class="first"><a href="http://www.intercloudzone.com" accesskey="1" title="">Home</a></li>
+		<li><a href="http://sourceforge.net/projects/oraclerman/" accesskey="2" title="">OpenSource</a></li>
+		<li><a href="http://padmavyuha.blogspot.com/" accesskey="3" title="">Blogs</a></li>
+		<li><a href="http://www.linkedin.com/in/baburajkallarakkal" accesskey="4" title="">Profile</a></li>
+	</ul>
+	<div id="search">
+		<form method="get" action="">
+			<fieldset>
+			<input id="s" type="text" name="s" value="" />
+			<input id="x" type="image" name="imageField" src="images/img10.jpg" />
+			</fieldset>
+		</form>
+	</div>
+</div>
+<hr />
+<!-- div id="banner"><img src="images/img09.jpg" alt="" width="960" height="147" / ></div -->
+<!-- start page -->
+
+<div id="swift-page" class="default-page" >
+	<!-- start content -->
+	<h2 class="title"> Configuring Oracle Real Application Clusters on Linux (Oracle 11gR2 RAC on RHEL  5.8) using VirtualBox </h2>
+	
+	 
+	<p>	
+	Goal is to configure an Oracle 11gR2 (Real Application Cluster) on a single system, using Virtual Box. 
+	As long as your PC can support ~8GB Memory and a powerful CPU, the only two major components you need is the ISO file for RHEL 5.8/CentOS 5.8 and Virtual Box. 
+	There will be 3 nodes running RHEL 5.8/Cent OS 5.8 of which two of them will be configured to run RAC Instances and one will be used for the SAN/Shared Storage or otherwise called as iSCSI Target Node.
+	</p> 
+
+<p>	</p>
+
+<pre>
+RHEL 5.8/CentOS 5.8 - (x86_64)
+rhelnode00 - 512MB 
+rhelnode01 - 3.75GB		RACDB1		
+rhelnode02- 3.75GB		RACDB2										
+
+Database Name : racdb.intercloudzone.com
+Scan Name: racnode-cluster-scan
+
+Network Configuration						
+Node Name	Public IP	Private IP	Virtual IP 
+rhelnode00	192.168.56.200	192.168.99.200								 
+rhelnode01	192.168.56.101	192.168.99.101	192.168.56.111	 
+rhelnode02	192.168.56.102	192.168.99.102	192.168.56.112	 
+</pre>
+
+
+
+
+
+<p> 
+Download Centos 5.8 (64bit) : http://mirror.wiredtree.com/centos/5.8/isos/x86_64/
+Download Virtual Box : https://www.virtualbox.org/wiki/Downloads
+</p>
+<p>
+We need 3 different nodes  : Node 0 is named as rhelnode00 which I used for setting up iSCSI Target/SAN Storage. Node 1 & Node 2, named as rhelnode01 and rhelnode02 will run two RAC instances, 
+and make use of iSCSI initiators/clients.
+</p>
+<p>
+Network Configuration: You will need two network cards enabled, and you can pick either Host Only Adapter or Bridged Networking. I didn't want my Virtual Box to cause IP conflicts within the intranet (Work PC), so I configured both of them as Host Only Adapter to keep it out from the internal network. But if you are doing this at home, 
+I recommend making the primary NIC (Adapter 1) to be configured as 'Bridged Networking'. 
+
+Word of caution:  I had two NIC's/Network Adapters physical and one of them was connected to internet and 2nd one of them was used to connect to my 2nd server with an XO (Cross Over cable) for faster file transfers in a different subnet. While playing with the installation at home, as I recommended above, I used 'Bridged Networking' for one of the NIC's and that burned me,
+because virtual box picked the adapter that was configured as Cross Over and it can easily go un-noticed until you start with the network configuration after the Guest OS(Cent OS) installation.
+Note: Since I choose to go with 'Host only Adapter' which means no access to internet from Guest OS, I want to pick 192.168.56.0 network for the Public IP's and this by the way is the
+network being used by Virtual Box Interfaces. Doing so, I will have Guest OS visible to Host OS which will help in downloading files in Host OS and ftp'ing to-from the Guest and Host PC.
+</p>
+<p>
+
+Hard Drives:
+In all 3 nodes, I added multiple storage drives SATA using  VDI files. Virtual Disk Interface files, are basically sparse files so even if I defined them as 40GB, 80GB, 100GB, the 
+files will be created only in MB's and grow as needed. Much like the sparse files we use for TEMP TS on Oracle.
+
+SATA Port 0 Drive is used for installing the Guest OS,
+SATA Port 1 Drive is used for storing/ftping additional rpm files etc.
+SATA Port 2 Drive is defined only on the rhelnode00, which is used for the cluster/SAN storage.
+Here's a Preview of all 3 nodes from Virtual Box with Network and HD settings.
+
+</p>
+
+<input id="x" type="image" name="imageField" src="images/rac11g/clip_image002.jpg" />
+<p>	</p>
+<input id="x" type="image" name="imageField" src="images/rac11g/clip_image004.jpg" />
+<p>	</p>
+<input id="x" type="image" name="imageField" src="images/rac11g/clip_image006.jpg" />
+<p>	</p>
+<input id="x" type="image" name="imageField" src="images/rac11g/clip_image008.jpg" />
+<p>	</p>
+<input id="x" type="image" name="imageField" src="images/rac11g/clip_image010.jpg" />
+<p>	</p>
+<input id="x" type="image" name="imageField" src="images/rac11g/clip_image012.jpg" />
+<p>	</p>
+	
+<pre>
+# grub.conf generated by anaconda
+#
+# Note that you do not have to rerun grub after making changes to this file
+# NOTICE:  You have a /boot partition.  This means that
+#          all kernel and initrd paths are relative to /boot/, eg.
+#          root (hd0,0)
+#          kernel /vmlinuz-version ro root=/dev/VolGroup00/LogVol00
+#          initrd /initrd-version.img
+#boot=/dev/sda
+default=0
+timeout=0
+splashimage=(hd0,0)/grub/splash.xpm.gz
+hiddenmenu
+title CentOS (2.6.18-308.el5)
+        root (hd0,0)
+        kernel /vmlinuz-2.6.18-308.el5 ro root=/dev/VolGroup00/LogVol00 rhgb
+        initrd /initrd-2.6.18-308.el5.img
+</pre>				 
+				
+
+<p> 
+		Turn off firewalls, disable SELinux, Stop NTP on all 3 nodes. 
+</p>
+<p>	</p>
+	
+<pre>
+[root@rhelnode00~]# /etc/rc.d/init.d/iptables status
+Table: filter
+Chain INPUT (policy ACCEPT)
+num  target     prot opt source               destination
+1    RH-Firewall-1-INPUT  all  --  0.0.0.0/0            0.0.0.0/0
+ 
+Chain FORWARD (policy ACCEPT)
+num  target     prot opt source               destination
+1    RH-Firewall-1-INPUT  all  --  0.0.0.0/0            0.0.0.0/0
+ 
+Chain OUTPUT (policy ACCEPT)
+num  target     prot opt source               destination
+ 
+Chain RH-Firewall-1-INPUT (2 references)
+num  target     prot opt source               destination
+1    ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0
+2    ACCEPT     icmp --  0.0.0.0/0            0.0.0.0/0           icmp type 255
+3    ACCEPT     esp  --  0.0.0.0/0            0.0.0.0/0
+4    ACCEPT     ah   --  0.0.0.0/0            0.0.0.0/0
+5    ACCEPT     udp  --  0.0.0.0/0            224.0.0.251         udp dpt:5353
+6    ACCEPT     udp  --  0.0.0.0/0            0.0.0.0/0           udp dpt:631
+7    ACCEPT     tcp  --  0.0.0.0/0            0.0.0.0/0           tcp dpt:631
+8    ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0           state RELATED,ESTABLISHED
+9    ACCEPT     tcp  --  0.0.0.0/0            0.0.0.0/0           state NEW tcp dpt:21
+10   ACCEPT     tcp  --  0.0.0.0/0            0.0.0.0/0           state NEW tcp dpt:22
+11   REJECT     all  --  0.0.0.0/0            0.0.0.0/0           reject-with icmp-host-prohibited
+ 
+[root@rhelnode00~]# /etc/rc.d/init.d/iptables stop
+Flushing firewall rules:                                   [  OK  ]
+Setting chains to policy ACCEPT: filter                    [  OK  ]
+Unloading iptables modules:                                [  OK  ]
+ 
+[root@rhelnode00~]# chkconfig iptables off
+ 
+[root@rhelnode00~]# chkconfig --list iptables
+iptables        0:off   1:off   2:off   3:off   4:off   5:off   6:off
+[root@rhelnode00 ~]# cat /etc/sysconfig/selinux
+# This file controls the state of SELinux on the system.
+# SELINUX= can take one of these three values:
+#       enforcing - SELinux security policy is enforced.
+#       permissive - SELinux prints warnings instead of enforcing.
+#       disabled - SELinux is fully disabled.
+SELINUX=disabled
+# SELINUXTYPE= type of policy in use. Possible values are:
+#       targeted - Only targeted network daemons are protected.
+#       strict - Full SELinux protection.
+SELINUXTYPE=targeted
+ 
+[root@rhelnode00 ~]# chkconfig --list | grep ntpd
+ntpd            0:off   1:off   2:off   3:off   4:off   5:off   6:off
+ 
+[root@rhelnode00 ~]#  service ntpd status
+ntpd is stopped
+ 
+[root@rhelnode00 ~]#  mv /etc/ntp.conf /etc/ntp.conf.disable
+
+</pre>
+
+<p> 
+		Network Configuration on rhelnode00 
+</p>
+
+<pre>
+[root@rhelnode00 network-scripts]# ifconfig -a
+eth0      Link encap:Ethernet  HWaddr 08:00:27:0D:A1:95
+          inet addr:192.168.56.200  Bcast:192.168.56.255  Mask:255.255.255.0
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:708 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:797 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:66942 (65.3 KiB)  TX bytes:112877 (110.2 KiB)
+ 
+eth1      Link encap:Ethernet  HWaddr 08:00:27:15:56:71
+          inet addr:192.168.99.200  Bcast:192.168.99.255  Mask:255.255.255.0
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:70 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:41 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:8491 (8.2 KiB)  TX bytes:5481 (5.3 KiB)
+ 
+lo        Link encap:Local Loopback
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          UP LOOPBACK RUNNING  MTU:16436  Metric:1
+          RX packets:4864 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:4864 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:6835208 (6.5 MiB)  TX bytes:6835208 (6.5 MiB)
+ 
+[root@rhelnode00 network-scripts]# cat ifcfg-eth0
+# Intel Corporation 82540EM Gigabit Ethernet Controller
+DEVICE=eth0
+BOOTPROTO=static
+BROADCAST=192.168.56.255
+HWADDR=08:00:27:0D:A1:95
+IPADDR=192.168.56.200
+NETMASK=255.255.255.0
+NETWORK=192.168.56.0
+ONBOOT=yes
+ 
+[root@rhelnode00 network-scripts]# cat ifcfg-eth1
+# Intel Corporation 82540EM Gigabit Ethernet Controller
+DEVICE=eth1
+BOOTPROTO=static
+BROADCAST=192.168.99.255
+HWADDR=08:00:27:15:56:71
+IPADDR=192.168.99.200
+NETMASK=255.255.255.0
+NETWORK=192.168.99.0
+ONBOOT=yes
+</pre>
+
+
+<p> 
+	Edit /etc/host file to add the public, private, vip (Virtual IP’s). 
+</p>
+
+
+<pre>
+# /etc/hosts
+# IP-Address  Full-Qualified-Hostname  Short-Hostname
+#
+ 
+#Loopback
+127.0.0.1       localhost
+ 
+#Public IP Address - eth0
+192.168.56.200  rhelnode00      rhelnode00.intercloudzone.com
+192.168.56.101  rhelnode01      rhelnode01.intercloudzone.com
+192.168.56.102  rhelnode02      rhelnode02.intercloudzone.com
+ 
+#Private IP Address - eth1
+192.168.99.200  rhelnode00-priv rhelnode00-priv.intercloudzone.com
+192.168.99.101  rhelnode01-priv rhelnode01-priv.intercloudzone.com
+192.168.99.102  rhelnode02-priv rhelnode02-priv.intercloudzone.com
+ 
+#Virtual IP Address
+192.168.56.111  rhelnode01-vip  rhelnode01-vip.intercloudzone.com
+192.168.56.112  rhelnode02-vip  rhelnode02-vip.intercloudzone.com
+ 
+</pre>
+
+
+<p> 
+	Configure Local Repository on all 3 Nodes (Optional).
+	Since Guest OS was configured with Host Only Adapter” and so no internet access, the yum install started failing while trying 
+	to access network mirrors first before the local repository itself. If you using Bridged” with network access from Guest, you can skip this step
+</p>
+
+<pre>
+Mount the CD if it’s not mounted yet!
+ 
+[root@rhelnode00 ~]# ls -ltr /dev/hd*
+brw-rw---- 1 root disk 22, 0 Mar 15 10:42 /dev/hdc
+[root@rhelnode00 ~]# mount /dev/hdc /media/CentOS_5.8_Final/
+ 
+ 
+[root@rhelnode00 ]# cd /etc/yum.repos.d/
+[root@rhelnode00 yum.repos.d]# ls -ltr
+total 36
+-rw-r--r-- 1 root root 6118 Feb 25 03:20 CentOS-Vault.repo
+-rw-r--r-- 1 root root  626 Feb 25 03:20 CentOS-Media.repo
+-rw-r--r-- 1 root root  631 Feb 25 03:20 CentOS-Debuginfo.repo
+-rw-r--r-- 1 root root 1926 Feb 25 03:20 CentOS-Base.repo
+[root@rhelnode00 yum.repos.d]# mkdir -p OldRepos
+[root@rhelnode00 yum.repos.d]# mv CentOS-* OldRepos/
+[root@rhelnode00 yum.repos.d]# touch CentOS-Local.repo
+[root@rhelnode00 yum.repos.d]# cat >> CentOS-Local.repo <<EOF
+> name=LocalCDRepo
+> baseurl=file:///media/CentOS_5.8_Final/
+> enabled=1
+> gpgcheck=1
+> gpgkey=file:////media/CentOS_5.8_Final/RPM-GPG-KEY-CentOS-5
+> EOF
+[root@rhelnode00 yum.repos.d]# cat CentOS-Local.repo
+[local]
+name=LocalCDRepo
+baseurl=file:///media/CentOS_5.8_Final/
+enabled=1
+gpgcheck=1
+gpgkey=file:////media/CentOS_5.8_Final/RPM-GPG-KEY-CentOS-5
+ 
+[root@rhelnode00 yum.repos.d]# ls -ltr
+total 8
+drwxr-xr-x 2 root root 4096 Mar 16 11:13 OldRepos
+-rw-r--r-- 1 root root   65 Mar 16 11:13 CentOS-Local.repo
+ 
+[root@rhelnode00 CentOS_5.8_Final]# cd /media/CentOS_5.8_Final
+ 
+Or you can import the keyfile on-time.
+ 
+[root@rhelnode00 CentOS_5.8_Final]# rpm --import RPM-GPG-KEY-CentOS-5
+</pre>	
+	
+<p> 
+	Install Bind on rhelnode00 
+	Bind is the package required to install and configure the Name Server that’s required for Oracle Clusterware. Alternate option is to use GNS, which is not the option I’ve used here.
+</p>
+
+<pre>
+[root@rhelnode00 CentOS]# cd /media/CentOS_5.8_Final/CentOS
+[root@rhelnode00 CentOS]# rpm -qa | grep bind
+ypbind-1.19-12.el5_6.1
+bind-libs-9.3.6-20.P1.el5
+bind-9.3.6-20.P1.el5
+bind-utils-9.3.6-20.P1.el5
+ 
+[root@rhelnode00 CentOS]# yum install bind-9.3.6-20.P1.el5.x86_64.rpm
+</pre>	
+
+
+<p> 
+		Download and Install Openstack Swift from git on all 4 nodes.
+</p>
+
+<pre>
+mkdir -pv /opt/swift/bin
+cd /opt
+git clone git://github.com/openstack/swift.git
+cd swift
+python setup.py install
+</pre>	
+
+<p> 
+		Setup disks on all 3 Storage Nodes. 
+</p>
+
+
+<pre>
+mkfs.xfs -f -i size=512 -L d1 /dev/sdb
+mkdir -pv /srv/node/d1
+mount -t xfs -o noatime,nodiratime,logbufs=8 -L d1 /srv/node/d1/
+
+cat  >> /etc/fstab <<"EOF"
+/dev/sdb                /srv/node/d1            xfs     rw,seclabel,noatime,nodiratime,attr2,delaylog,logbufs=8,noquota 0 0
+EOF
+
+umount /srv/node/d1
+mount -a
+
+[root@rbops01 b848b7ff18455e701353a02a452f5ef4]# mount -l |grep srv
+/dev/sdb on /srv/node/d1 type xfs (rw,noatime,nodiratime,logbufs=8) [d1]
+</pre>	
+	
+
+
+<p> 
+	Configure bind/Name Server. 
+</p>
+
+
+<pre>
+Add below entry under /etc/named.conf
+[root@rhelnode00 named]
+zone "intercloudzone.com" in {
+        type master;
+        file "intercloudzone.com.zone";
+};
+ 
+zone "56.168.192.in-addr.arpa" in {
+        type master;
+        file "56.168.192.in-addr.arpa.zone";
+};
+[root@rhelnode00 named]# pwd
+/var/named
+[root@rhelnode00 named]# cat intercloudzone.com.zone
+$ORIGIN intercloudzone.com.
+ 
+$TTL 1D
+@               IN SOA          intercloudzone.com.   raj.intercloudzone.com. (
+                                42              ; serial (d. adams)
+                                2H              ; refresh
+                                5M              ; retry
+                                1W              ; expiry
+                                1M )            ; minimum
+ 
+                IN NS           rhelnode00.intercloudzone.com.
+localhost       IN A            127.0.0.1
+ 
+; Oracle RAC Nodes
+rhelnode01              IN      A       192.168.56.101
+rhelnode02              IN      A       192.168.56.102
+rhelnode01-vip          IN      A       192.168.56.111
+rhelnode02-vip          IN      A       192.168.56.112
+ 
+rhelnode00-priv         IN      A       192.168.99.200
+rhelnode01-priv         IN      A       192.168.99.101
+rhelnode02-priv         IN      A       192.168.99.102
+ 
+; SAN & NS
+rhelnode00              IN      A       192.168.56.200
+ 
+; Single Client Access Name (SCAN) virtual IP
+racnode-cluster-scan    IN      A       192.168.56.56
+racnode-cluster-scan    IN      A       192.168.56.57
+racnode-cluster-scan    IN      A       192.168.56.58
+ 
+; Miscellaneous Nodes
+packmule                IN      A       192.168.56.70
+domo                    IN      A       192.168.56.71
+switch1                 IN      A       192.168.56.72
+oemprod                 IN      A       192.168.56.73
+accesspoint             IN      A       192.168.56.74
+ 
+ 
+[root@rhelnode00 named]# cat 56.168.192.in-addr.arpa.zone
+$ORIGIN 56.168.192.in-addr.arpa.
+ 
+$TTL 1D
+@               IN SOA          intercloudzone.com.   raj.intercloudzone.com. (
+                                42              ; serial (d. adams)
+                                2H              ; refresh
+                                5M              ; retry
+                                1W              ; expiry
+                                1M )            ; minimum
+ 
+                IN NS           rhelnode00.intercloudzone.com.
+ 
+; Oracle RAC Nodes
+101                     IN      PTR     rhelnode01.intercloudzone.com.
+102                     IN      PTR     rhelnode02.intercloudzone.com.
+111                     IN      PTR     rhelnode01-vip.intercloudzone.com.
+112                     IN      PTR     rhelnode02-vip.intercloudzone.com.
+ 
+ 
+; SAN & NS
+200                     IN      PTR     rhelnode00.intercloudzone.com.
+ 
+; Single Client Access Name (SCAN) virtual IP
+56                      IN      PTR     racnode-cluster-scan.intercloudzone.com.
+57                      IN      PTR     racnode-cluster-scan.intercloudzone.com.
+58                      IN      PTR     racnode-cluster-scan.intercloudzone.com.
+ 
+; Miscellaneous Nodes
+70                      IN      PTR     packmule.intercloudzone.com.
+71                      IN      PTR     domo.intercloudzone.com.
+72                      IN      PTR     switch1.intercloudzone.com.
+73                      IN      PTR     oemprod.intercloudzone.com.
+74                      IN      PTR     accesspoint.intercloudzone.com.
+ 
+[root@rhelnode00 named]# service named start
+Starting named:                                            [  OK  ]
+[root@rhelnode00 named]#
+ 
+[root@rhelnode00 ~]# chkconfig --list | grep named
+named           0:off   1:off   2:off   3:off   4:off   5:off   6:off
+[root@rhelnode00 ~]# chkconfig named on
+[root@rhelnode00 ~]# chkconfig --list | grep named
+named           0:off   1:off   2:on    3:on    4:on    5:on    6:off
+ 
+ 
+You can check the named file syntax with these commands or alternatively check for the /var/log/msessages to see fi the zones has loaded properly.
+
+</pre>	
+	
+
+<p> 
+	You can check the named file syntax with the below commands or alternatively check for the /var/log/msessages to see fi the zones has loaded properly.
+</p>
+
+<pre>
+
+named-checkconf /etc/named.conf
+named-checkzone ha-clusters.zone. /var/named/intercloudzone.com.zone
+
+## do a tail –f /var/log/messages to look for any errors
+Mar 16 12:48:07 rhelnode00 named[7766]: starting BIND 9.3.6-P1-RedHat-9.3.6-20.P1.el5 -u named
+Mar 16 12:48:07 rhelnode00 named[7766]: adjusted limit on open files from 1024 to 1048576
+Mar 16 12:48:07 rhelnode00 named[7766]: found 1 CPU, using 1 worker thread
+Mar 16 12:48:07 rhelnode00 named[7766]: using up to 4096 sockets
+Mar 16 12:48:07 rhelnode00 named[7766]: loading configuration from '/etc/named.conf'
+Mar 16 12:48:07 rhelnode00 named[7766]: using default UDP/IPv4 port range: [1024, 65535]
+Mar 16 12:48:07 rhelnode00 named[7766]: using default UDP/IPv6 port range: [1024, 65535]
+Mar 16 12:48:07 rhelnode00 named[7766]: no IPv6 interfaces found
+Mar 16 12:48:07 rhelnode00 named[7766]: listening on IPv4 interface lo, 127.0.0.1#53
+Mar 16 12:48:07 rhelnode00 named[7766]: listening on IPv4 interface eth0, 192.168.56.200#53
+Mar 16 12:48:07 rhelnode00 named[7766]: listening on IPv4 interface eth1, 192.168.99.200#53
+Mar 16 12:48:07 rhelnode00 named[7766]: command channel listening on 127.0.0.1#953
+Mar 16 12:48:07 rhelnode00 named[7766]: zone 56.168.192.in-addr.arpa/IN: loaded serial 42
+Mar 16 12:48:07 rhelnode00 named[7766]: zone intercloudzone.com/IN: loaded serial 42
+Mar 16 12:48:07 rhelnode00 named[7766]: running
+Mar 16 12:48:07 rhelnode00 named[7766]: zone intercloudzone.com/IN: sending notifies (serial 42)
+Mar 16 12:48:07 rhelnode00 named[7766]: zone 56.168.192.in-addr.arpa/IN: sending notifies (serial 42)
+Mar 16 12:48:07 rhelnode00 named[7766]: client 192.168.56.200#62005: received notify for zone 'intercloudzone.com'
+Mar 16 12:48:07 rhelnode00 named[7766]: client 192.168.56.200#39222: received notify for zone '56.168.192.in-addr.arpa'
+
+</pre>	
+
+<p> 
+		 Establish ssh trust between all 3 nodes.
+
+ This makes life easier while trying to scp/ftp files between all 3 nodes.
+</p>
+
+<pre>
+[root@rhelnode00 ~]# ssh-keygen -t dsa
+Generating public/private dsa key pair.
+Enter file in which to save the key (/root/.ssh/id_dsa):
+Created directory '/root/.ssh'.
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in /root/.ssh/id_dsa.
+Your public key has been saved in /root/.ssh/id_dsa.pub.
+The key fingerprint is:
+a6:20:98:3f:88:35:8d:f6:d5:79:08:dc:9a:f1:77:ff root@rhelnode00
+ 
+[root@rhelnode01 ~]# ssh-keygen -t dsa
+Generating public/private dsa key pair.
+ 
+Enter file in which to save the key (/root/.ssh/id_dsa): Created directory '/root/.ssh'.
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in /root/.ssh/id_dsa.
+Your public key has been saved in /root/.ssh/id_dsa.pub.
+The key fingerprint is:
+a8:00:a4:c9:89:a7:31:fe:d0:db:7a:a5:a4:d0:06:b8 root@rhelnode01
+ 
+[root@rhelnode02 ~]# ssh-keygen -t dsa
+Generating public/private dsa key pair.
+Enter file in which to save the key (/root/.ssh/id_dsa):
+Created directory '/root/.ssh'.
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in /root/.ssh/id_dsa.
+Your public key has been saved in /root/.ssh/id_dsa.pub.
+The key fingerprint is:
+2b:5a:25:0f:f4:4e:76:1e:fd:33:47:ff:be:e6:ad:76 root@rhelnode02
+ 
+[root@rhelnode00 ~]# ssh rhelnode00 cat ~/.ssh/id_dsa.pub >> ~/.ssh/authorized_keys
+root@rhelnode00's password:
+[root@rhelnode00 ~]# ssh rhelnode01 cat ~/.ssh/id_dsa.pub >> ~/.ssh/authorized_keys
+root@rhelnode01's password:
+[root@rhelnode00 ~]# ssh rhelnode02 cat ~/.ssh/id_dsa.pub >> ~/.ssh/authorized_keys
+root@rhelnode02's password:
+ 
+[root@rhelnode00 ~]# scp .ssh/authorized_keys rhelnode01:~/.ssh/authorized_keys
+root@rhelnode01's password:
+authorized_keys                                                             100% 1815     1.8KB/s   00:00
+[root@rhelnode00 ~]# scp .ssh/authorized_keys rhelnode02:~/.ssh/authorized_keys
+root@rhelnode02's password:
+authorized_keys                                                             100% 1815     1.8KB/s   00:00
+[root@rhelnode00 ~]#
+ 
+ 
+[root@rhelnode00 ~]# ssh rhelnode00 "chmod 700 -R ~/.ssh/; ls -ld ~/.ssh; ls -ltR ~/.ssh"
+drwx------ 2 root root 4096 Mar 15 11:09 /root/.ssh
+/root/.ssh:
+total 16
+-rwx------ 1 root root 1815 Mar 15 11:09 authorized_keys
+-rwx------ 1 root root 1221 Mar 15 11:02 known_hosts
+-rwx------ 1 root root  668 Mar 15 11:00 id_dsa
+-rwx------ 1 root root  605 Mar 15 11:00 id_dsa.pub
+ 
+[root@rhelnode00 ~]# ssh rhelnode01 "chmod 700 -R ~/.ssh/; ls -ld ~/.ssh; ls -ltR ~/.ssh"
+drwx------ 2 root root 4096 Mar 15 11:11 /root/.ssh
+/root/.ssh:
+total 12
+-rwx------ 1 root root 1815 Mar 15 11:11 authorized_keys
+-rwx------ 1 root root  668 Mar 15 11:04 id_dsa
+-rwx------ 1 root root  605 Mar 15 11:04 id_dsa.pub
+ 
+[root@rhelnode00 ~]# ssh rhelnode02 "chmod 700 -R ~/.ssh/; ls -ld ~/.ssh; ls -ltR ~/.ssh"
+drwx------ 2 root root 4096 Mar 15 11:11 /root/.ssh
+/root/.ssh:
+total 12
+-rwx------ 1 root root 1815 Mar 15 11:11 authorized_keys
+-rwx------ 1 root root  668 Mar 15 11:04 id_dsa
+-rwx------ 1 root root  605 Mar 15 11:04 id_dsa.pub
+ 
+ 
+From here you should be able to ssh rhelnode01 and ssh rhelnode02 without being prompted for a password.
+</pre>	
+
+<p> 
+	Create File System to Store ftp’d files.
+	This again is optional, but since I had to transfer files between Guest and Host OS, this new FS will serve as the landing place for these files.
+</p>
+
+<pre>
+[root@rhelnode00 ~]# fdisk -l
+ 
+Disk /dev/sda: 42.9 GB, 42949672960 bytes
+255 heads, 63 sectors/track, 5221 cylinders
+Units = cylinders of 16065 * 512 = 8225280 bytes
+ 
+   Device Boot      Start         End      Blocks   Id  System
+/dev/sda1   *           1          13      104391   83  Linux
+/dev/sda2              14        5221    41833260   8e  Linux LVM
+ 
+Disk /dev/sdb: 85.8 GB, 85899345920 bytes
+255 heads, 63 sectors/track, 10443 cylinders
+Units = cylinders of 16065 * 512 = 8225280 bytes
+ 
+   Device Boot      Start         End      Blocks   Id  System
+/dev/sdb1               1       10443    83883366   83  Linux
+[root@rhelnode00 ~]# pvcreate /dev/sdb1
+  Writing physical volume data to disk "/dev/sdb1"
+  Physical volume "/dev/sdb1" successfully created
+[root@rhelnode00 ~]# vgcreate vgSAN /dev/sdb1
+  Volume group "vgSAN" successfully created
+ 
+[root@rhelnode00 ~]# lvcreate --name lvSAN01 --size 40G vgSAN
+  Logical volume "lvSAN01" created
+[root@rhelnode00 ~]# lvs
+  LV       VG         Attr   LSize  Origin Snap%  Move Log Copy%  Convert
+  LogVol00 VolGroup00 -wi-ao 38.88G
+  LogVol01 VolGroup00 -wi-ao  1.00G
+  lvSAN01  vgSAN      -wi-a- 40.00G
+ 
+# Created an LV only with 40GB, so I can resize it or create a new one with a different one for some other purpose, if need be.
+ 
+[root@rhelnode00 ~]# mkfs.ext3 /dev/vgSAN/lvSAN01
+mke2fs 1.39 (29-May-2006)
+Filesystem label=
+OS type: Linux
+Block size=4096 (log=2)
+Fragment size=4096 (log=2)
+5242880 inodes, 10485760 blocks
+524288 blocks (5.00%) reserved for the super user
+First data block=0
+Maximum filesystem blocks=4294967296
+320 block groups
+32768 blocks per group, 32768 fragments per group
+16384 inodes per group
+Superblock backups stored on blocks:
+        32768, 98304, 163840, 229376, 294912, 819200, 884736, 1605632, 2654208,
+        4096000, 7962624
+ 
+Writing inode tables: done
+Creating journal (32768 blocks): done
+Writing superblocks and filesystem accounting information: done
+ 
+This filesystem will be automatically checked every 22 mounts or
+180 days, whichever comes first.  Use tune2fs -c or -i to override.
+ 
+#Edit /etc/fstab to add below line
+ 
+[root@rhelnode00 ~]# mkdir -p /u99/software
+ 
+[root@rhelnode00 ~]# grep vgSAN /etc/fstab
+/dev/vgSAN/lvSAN01      /u99/software           ext3    defaults        0 0
+ 
+[root@rhelnode00 ~]# mount -all
+[root@rhelnode00 ~]# mount | grep vgSAN
+/dev/mapper/vgSAN-lvSAN01 on /u99/software type ext3 (rw)
+</pre>	
+		
+		
+<p> 
+		 Sync /etc/hosts file and /etc/resolv.conf on all 3 nodes.
+
+Scp the /etc/hosts file from rhelnode00 to rhelnode01 and rhelnode02 
+</p>
+
+<pre>
+[root@rhelnode00 ~]# scp /etc/hosts rhelnode01:/etc/hosts
+hosts                                                                       100%  653     0.6KB/s   00:00
+[root@rhelnode00 ~]# scp /etc/hosts rhelnode02:/etc/hosts
+hosts                                                                       100%  653     0.6KB/s   00:00
+ 
+[root@rhelnode00 scripts]# cat /etc/resolv.conf
+search intercloudzone.com
+nameserver 192.168.56.200
+[root@rhelnode00 scripts]# scp /etc/resolv.conf rhelnode01:/etc/resolv.conf
+resolv.conf                                                                 100%   50     0.1KB/s   00:00
+[root@rhelnode00 scripts]# scp /etc/resolv.conf rhelnode02:/etc/resolv.conf
+resolv.conf                                                                 100%   50     0.1KB/s   00:00
+ 
+[root@rhelnode00 ~]# ifconfig -a
+eth0      Link encap:Ethernet  HWaddr 08:00:27:0D:A1:95
+          inet addr:192.168.56.200  Bcast:192.168.56.255  Mask:255.255.255.0
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:10168 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:10887 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:1044285 (1019.8 KiB)  TX bytes:1210857 (1.1 MiB)
+ 
+eth1      Link encap:Ethernet  HWaddr 08:00:27:15:56:71
+          inet addr:192.168.99.200  Bcast:192.168.99.255  Mask:255.255.255.0
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:307 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:42 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:47783 (46.6 KiB)  TX bytes:3803 (3.7 KiB)
+ 
+lo        Link encap:Local Loopback
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          UP LOOPBACK RUNNING  MTU:16436  Metric:1
+          RX packets:2077 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:2077 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:3043458 (2.9 MiB)  TX bytes:3043458 (2.9 MiB)
+ 
+[root@rhelnode01 ~]# ifconfig -a
+eth0      Link encap:Ethernet  HWaddr 08:00:27:8B:58:4A
+          inet addr:192.168.56.101  Bcast:192.168.56.255  Mask:255.255.255.0
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:1719 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:1772 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:153685 (150.0 KiB)  TX bytes:225200 (219.9 KiB)
+ 
+eth1      Link encap:Ethernet  HWaddr 08:00:27:CB:1E:CA
+          inet addr:192.168.99.101  Bcast:192.168.99.255  Mask:255.255.255.0
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:724 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:23 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:102265 (99.8 KiB)  TX bytes:2939 (2.8 KiB)
+ 
+lo        Link encap:Local Loopback
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          UP LOOPBACK RUNNING  MTU:16436  Metric:1
+          RX packets:1795 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:1795 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:5192793 (4.9 MiB)  TX bytes:5192793 (4.9 MiB)
+ 
+[root@rhelnode02 ~]# ifconfig -a
+eth0      Link encap:Ethernet  HWaddr 08:00:27:DF:0F:BB
+          inet addr:192.168.56.102  Bcast:192.168.56.255  Mask:255.255.255.0
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:1674 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:1636 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:147089 (143.6 KiB)  TX bytes:198609 (193.9 KiB)
+ 
+eth1      Link encap:Ethernet  HWaddr 08:00:27:CB:88:04
+          inet addr:192.168.99.102  Bcast:192.168.99.255  Mask:255.255.255.0
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:485 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:20 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:66259 (64.7 KiB)  TX bytes:2685 (2.6 KiB)
+ 
+lo        Link encap:Local Loopback
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          UP LOOPBACK RUNNING  MTU:16436  Metric:1
+          RX packets:1833 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:1833 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:4179881 (3.9 MiB)  TX bytes:4179881 (3.9 MiB)
+</pre>	
+		
+
+<p> 
+	Directory for Customized Scripts (Optional).	Scp the /etc/hosts file from rhelnode00 to rhelnode01 and rhelnode02 
+</p>
+
+<pre>
+[root@rhelnode00 ~]# mkdir -p /home/scripts
+[root@rhelnode01 ~]# mkdir -p /home/scripts
+[root@rhelnode02 ~]# mkdir -p /home/scripts
+</pre>	
+		
+
+<p> 
+	Install RPM Packages/Libraries required for Oracle 11gR2 RAC and Clusterware. 
+</p>
+
+<pre>
+[root@rhelnode01 scripts]# cat yum-x86_64.sh
+cd /media/CentOS_5.8_Final/CentOS
+yum -y install    binutils-2.*
+yum -y install    elfutils-libelf-0.*
+yum -y install    glibc-2.*
+yum -y install    glibc-common-2.*
+yum -y install    ksh-2*
+yum -y install    libaio-0.*
+yum -y install    libgcc-4.*
+yum -y install    libstdc++-4.*
+yum -y install    make-3.*
+yum -y install    elfutils-libelf-devel-*
+yum -y install    gcc-4.*
+yum -y install    gcc-c++-4.*
+yum -y install    glibc-devel-2.*
+yum -y install    glibc-headers-2.*
+yum -y install    libstdc++-devel-4.*
+yum -y install    unixODBC-2.*
+yum -y install    compat-libstdc++-33*
+yum -y install    libaio-devel-0.*
+yum -y install    pdksh-5.*
+yum -y install    unixODBC-devel-2.*
+yum -y install    sysstat-7.*
+yum -y install    xterm-*
+yum -y install    lsscsi*
+yum -y install    kernel-devel*
+yum -y install    openssl-devel*
+yum -y install    gcc*
+ 
+[root@rhelnode01 scripts]# cat yum-i386.sh
+yum -y install   compat-libstdc++-*i386*
+yum -y install   glibc-*i386*
+yum -y install   glibc-devel-*i386*
+yum -y install   libaio-*i386*
+yum -y install   libaio-devel-*i386*
+yum -y install   libgcc-*i386*
+yum -y install   libstdc++-*i386*
+yum -y install   unixODBC-*i386*
+yum -y install   unixODBC-devel-*i386*
+ 
+</pre>	
+		
+
+<p> 
+	Again, the yum commands are bundled in a script to make life easier to run. You can find the output of yum install here, 
+	with the exception of kernel-devel*, openssl-devel* and gcc* which I did include in the script later. These 3 are required 
+	for installing the iSCSI target which is explained later in the section.
+	Install 64bit Libraries for Oracle.
+</p>
+
+<pre>
+[root@rhelnode01 scripts]# sh yum-x86_64.sh 
+See log/output @ work-yum_x86_64.out
+</pre>	
+		
+
+<p> 
+	Install 32 bit libraries for Oracle.
+</p>
+
+<pre>
+[root@rhelnode01 scripts]# sh yum-i386.sh
+See log/output @ work-yum_i386
+</pre>	
+				
+		
+<p> 
+	Install iSCSI Target on rhelnode00. 
+	Download iSCSITarget from sourceforge : http://sourceforge.net/projects/iscsitarget/files/latest/download?source=files
+	Rhelnode00 is the node which will be served as the SAN storage and as well the Name Server. Since iSCSI target doesn’t come with Cent OS 5.8, it needs to be compiled and installed.
+</p>
+
+<pre>
+[root@rhelnode00 software]# cd /u99/software/
+[root@rhelnode00 software]# ls -ltr iscsitarget-1.4.20.2.tar.gz
+-rw-r--r-- 1 root root 138464 Mar 19 16:46 iscsitarget-1.4.20.2.tar.gz
+[root@rhelnode00 software]# tar xvf iscsitarget-1.4.20.2.tar.gz
+ 
+[root@rhelnode00 CentOS]# yum -y install kernel-devel openssl-devel gcc
+
+[root@rhelnode00 CentOS]# yum install scsi-target-utils-1.0.14-2.el5.x86_64.rpm
+
+ 
+[root@rhelnode00 CentOS]# cd /u99/software/
+[root@rhelnode00 software]# cd iscsitarget-1.4.20.2
+[root@rhelnode00 iscsitarget-1.4.20.2]# make
+Applying Patch compat-2.6.32.patch
+patching file kernel/conn.c
+Applying Patch compat-2.6.31.patch
+patching file kernel/file-io.c
+Applying Patch compat-2.6.30.patch
+patching file kernel/block-io.c
+Hunk #1 succeeded at 280 with fuzz 2.
+Applying Patch compat-2.6.29.patch
+patching file kernel/config.c
+Applying Patch compat-2.6.28.patch
+patching file kernel/conn.c
+Applying Patch compat-2.6.25-2.6.27.patch
+patching file kernel/block-io.c
+Applying Patch compat-2.6.24.patch
+patching file kernel/event.c
+Applying Patch compat-2.6.23.patch
+patching file kernel/block-io.c
+patching file kernel/config.c
+patching file kernel/digest.c
+patching file kernel/event.c
+patching file kernel/volume.c
+Hunk #1 succeeded at 91 (offset -1 lines).
+Applying Patch compat-2.6.22.patch
+patching file kernel/volume.c
+Hunk #1 succeeded at 10 (offset -1 lines).
+patching file kernel/seq_list.c
+patching file kernel/target.c
+patching file kernel/seq_list.h
+patching file kernel/Makefile
+Applying Patch compat-2.6.19-2.6.21.patch
+patching file kernel/event.c
+patching file kernel/iscsi.c
+patching file kernel/tio.c
+patching file kernel/ua.c
+Applying Patch compat-2.6.14-2.6.18.patch
+patching file kernel/iscsi.h
+Hunk #1 succeeded at 262 (offset 1 line).
+patching file kernel/digest.c
+patching file kernel/iscsi.c
+patching file kernel/tio.c
+patching file kernel/wthread.c
+patching file kernel/volume.c
+Hunk #1 succeeded at 83 (offset -1 lines).
+make -C usr
+make[1]: Entering directory `/u99/software/iscsitarget-1.4.20.2/usr'
+make[1]: Nothing to be done for `all'.
+make[1]: Leaving directory `/u99/software/iscsitarget-1.4.20.2/usr'
+make -C /lib/modules/2.6.18-308.el5/build SUBDIRS=/u99/software/iscsitarget-1.4.20.2/kernel modules
+make[1]: Entering directory `/usr/src/kernels/2.6.18-308.el5-x86_64'
+  CC [M]  /u99/software/iscsitarget-1.4.20.2/kernel/tio.o
+  CC [M]  /u99/software/iscsitarget-1.4.20.2/kernel/iscsi.o
+  CC [M]  /u99/software/iscsitarget-1.4.20.2/kernel/nthread.o
+  CC [M]  /u99/software/iscsitarget-1.4.20.2/kernel/wthread.o
+  CC [M]  /u99/software/iscsitarget-1.4.20.2/kernel/config.o
+  CC [M]  /u99/software/iscsitarget-1.4.20.2/kernel/digest.o
+  CC [M]  /u99/software/iscsitarget-1.4.20.2/kernel/conn.o
+  CC [M]  /u99/software/iscsitarget-1.4.20.2/kernel/session.o
+  CC [M]  /u99/software/iscsitarget-1.4.20.2/kernel/target.o
+  CC [M]  /u99/software/iscsitarget-1.4.20.2/kernel/volume.o
+  CC [M]  /u99/software/iscsitarget-1.4.20.2/kernel/iotype.o
+  CC [M]  /u99/software/iscsitarget-1.4.20.2/kernel/file-io.o
+  CC [M]  /u99/software/iscsitarget-1.4.20.2/kernel/null-io.o
+  CC [M]  /u99/software/iscsitarget-1.4.20.2/kernel/target_disk.o
+  CC [M]  /u99/software/iscsitarget-1.4.20.2/kernel/event.o
+  CC [M]  /u99/software/iscsitarget-1.4.20.2/kernel/param.o
+  CC [M]  /u99/software/iscsitarget-1.4.20.2/kernel/block-io.o
+  CC [M]  /u99/software/iscsitarget-1.4.20.2/kernel/ua.o
+  CC [M]  /u99/software/iscsitarget-1.4.20.2/kernel/seq_list.o
+  LD [M]  /u99/software/iscsitarget-1.4.20.2/kernel/iscsi_trgt.o
+  Building modules, stage 2.
+  MODPOST
+  CC      /u99/software/iscsitarget-1.4.20.2/kernel/iscsi_trgt.mod.o
+  LD [M]  /u99/software/iscsitarget-1.4.20.2/kernel/iscsi_trgt.ko
+make[1]: Leaving directory `/usr/src/kernels/2.6.18-308.el5-x86_64'
+[root@rhelnode00 iscsitarget-1.4.20.2]# make install
+`usr/ietd' -> `/usr/sbin/ietd'
+`usr/ietadm' -> `/usr/sbin/ietadm'
+`etc/initd/initd.redhat' -> `/etc/rc.d/init.d/iscsi-target'
+install: creating directory `/etc/iet'
+`etc/ietd.conf' -> `/etc/iet/ietd.conf'
+`etc/initiators.allow' -> `/etc/iet/initiators.allow'
+`etc/targets.allow' -> `/etc/iet/targets.allow'
+`doc/manpages/ietadm.8' -> `/usr/share/man/man8/ietadm.8'
+`doc/manpages/ietd.8' -> `/usr/share/man/man8/ietd.8'
+`doc/manpages/ietd.conf.5' -> `/usr/share/man/man5/ietd.conf.5'
+install: creating directory `/usr/share/doc/iscsitarget'
+`ChangeLog' -> `/usr/share/doc/iscsitarget/ChangeLog'
+`COPYING' -> `/usr/share/doc/iscsitarget/COPYING'
+`RELEASE_NOTES' -> `/usr/share/doc/iscsitarget/RELEASE_NOTES'
+`README' -> `/usr/share/doc/iscsitarget/README'
+`README.vmware' -> `/usr/share/doc/iscsitarget/README.vmware'
+`README.initiators' -> `/usr/share/doc/iscsitarget/README.initiators'
+install: creating directory `/lib/modules/2.6.18-308.el5/extra/iscsi'
+`kernel/iscsi_trgt.ko' -> `/lib/modules/2.6.18-308.el5/extra/iscsi/iscsi_trgt.ko'
+Running depmod
+</pre>	
+					
+
+<p> 
+	Establish ssh trust between all 3 nodes for Oracle and Grid user id’s. 
+</p>
+
+<pre>
+[root@rhelnode01 scripts]# su - grid
+[grid@rhelnode01 ~]$ ssh-keygen -t dsa
+Generating public/private dsa key pair.
+Enter file in which to save the key (/home/grid/.ssh/id_dsa):
+Created directory '/home/grid/.ssh'.
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in /home/grid/.ssh/id_dsa.
+Your public key has been saved in /home/grid/.ssh/id_dsa.pub.
+The key fingerprint is:
+c3:95:af:c4:61:22:57:d2:6d:ba:db:b9:fd:2e:e5:6c grid@rhelnode01
+ 
+[root@rhelnode02 scripts]# su - grid
+[grid@rhelnode02 ~]$ ssh-keygen -t dsa
+Generating public/private dsa key pair.
+Enter file in which to save the key (/home/grid/.ssh/id_dsa):
+Created directory '/home/grid/.ssh'.
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in /home/grid/.ssh/id_dsa.
+Your public key has been saved in /home/grid/.ssh/id_dsa.pub.
+The key fingerprint is:
+c3:95:af:c4:61:22:57:d2:6d:ba:db:b9:fd:2e:e5:6c grid@rhelnode02
+ 
+[grid@rhelnode01 ~]$ ssh rhelnode01 cat ~/.ssh/id_dsa.pub >> ~/.ssh/authorized_keys
+The authenticity of host 'rhelnode01 (192.168.56.101)' can't be established.
+RSA key fingerprint is 97:9d:de:f7:0a:47:8e:b8:64:01:8d:d8:53:4f:fa:0d.
+Are you sure you want to continue connecting (yes/no)? yes
+Warning: Permanently added 'rhelnode01,192.168.56.101' (RSA) to the list of known hosts.
+grid@rhelnode01's password:
+ 
+[grid@rhelnode01 ~]$ ssh rhelnode02 cat ~/.ssh/id_dsa.pub >> ~/.ssh/authorized_keys
+grid@rhelnode02's password:
+ 
+[grid@rhelnode01 ~]$ scp ~/.ssh/authorized_keys rhelnode02:~/.ssh/authorized_keys
+grid@rhelnode02's password:
+authorized_keys                                                             100% 1210     1.2KB/s   00:00
+ 
+[grid@rhelnode01 ~]$ ssh rhelnode01 "chmod 700 -R .ssh/"
+[grid@rhelnode01 ~]$ ssh rhelnode02 "chmod 700 -R .ssh/"
+ 
+</pre>	
+
+
+
+<p> 
+	Edit .bash_profile for setting environment variables for “grid” user. 
+	Grid user is going to own ASM piece and more information on ASM can be found here
+
+	http://www.oracle.com/technetwork/server-storage/linux/install-082632.html
+	.bash_profile is read or the commands in it is executed any time you log in and .bashrc is read/executed when you start a subshell. 
+</p>
+
+<pre>
+[grid@rhelnode01 ~]$ cat ~/.bash_profile
+# .bash_profile
+ 
+# Get the aliases and functions
+if [ -f ~/.bashrc ]; then
+        . ~/.bashrc
+fi
+ 
+# User specific environment and startup programs
+# User specific aliases and functions
+# ASM SID for RHELNODE01 =  +ASM1
+ORACLE_SID=+ASM1 ; export ORACLE_SID
+ 
+JAVA_HOME=/etc/alternatives/java; export JAVA_HOME
+ORACLE_HOME=/u01/app/11.2.0/grid; export ORACLE_HOME
+ORACLE_PATH=/u01/app/oracle/dba_scripts/common/sql; export ORACLE_PATH
+SQLPATH=/u01/app/oracle/dba_scripts/common/sql; export SQLPATH
+ORACLE_TERM=xterm; export ORACLE_TERM
+NLS_DATE_FORMAT="DD-MON-YYYY HH24:MI:SS" ; export NLS_DATE_FORMAT
+TNS_ADMIN=$ORACLE_HOME/network/admin; export TNS_ADMIN
+ORA_NLS11=$ORACLE_HOME/nls/data; export ORA_NLS11
+LD_LIBRARY_PATH=$ORACLE_HOME/lib
+LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$ORACLE_HOME/oracm/lib
+LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/lib:/usr/lib:/usr/local/lib
+export LD_LIBRARY_PATH
+ 
+PATH=$PATH:$HOME/bin
+PATH=.${JAVA_HOME}/bin:$PATH:$HOME/bin:$ORACLE_HOME/bin
+PATH=${PATH}:/u01/app/oracle/dba_scripts/common/bin
+export PATH
+ 
+CLASSPATH=$ORACLE_HOME/JRE
+CLASSPATH=${CLASSPATH}:$ORACLE_HOME/jlib
+CLASSPATH=${CLASSPATH}:$ORACLE_HOME/rdbms/jlib
+CLASSPATH=${CLASSPATH}:$ORACLE_HOME/network/jlib
+export CLASSPATH
+ 
+THREADS_FLAG=native; export THREADS_FLAG
+ 
+export TEMP=/tmp
+export TMPDIR=/tmp
+ 
+# ---------------------------------------------------
+# UMASK
+# ---------------------------------------------------
+# Set the default file mode creation mask
+# (umask) to 022 to ensure that the user performing
+# the Oracle software installation creates files
+# with 644 permissions.
+# ---------------------------------------------------
+umask 022
+ 
+ 
+[grid@rhelnode01 ~]$ scp .bash_profile rhelnode02:~
+.bash_profile                                                               100% 1281     1.3KB/s   00:00
+ 
+[root@rhelnode02 scripts]# su - grid
+[grid@rhelnode02 ~]$ vi .bash_profile
+[grid@rhelnode02 ~]$ grep ASM2 .bash_profile
+# ASM SID for RHELNODE2 =  +ASM2
+ORACLE_SID=+ASM2 ; export ORACLE_SID
+Now sudo to oracle and edit the .bash_profile to change PATH, SID etc.
+[oracle@rhelnode01 ~]$ cat .bash_profile
+
+# .bash_profile
+
+# Get the aliases and functions
+
+if [ -f ~/.bashrc ]; then
+
+        . ~/.bashrc
+
+fi
+
+# User specific aliases and functions
+
+# SID for RHELNODE01 =  RACDB1
+ORACLE_SID=RACDB1 ; export ORACLE_SID
+ORACLE_UNQNAME=RACDB; export ORACLE_UNQNAME
+ORACLE_BASE=/u01/app/oracle; export ORACLE_BASE
+ORACLE_HOME=$ORACLE_BASE/product/11.2.0/dbhome_1; export ORACLE_HOME
+ORACLE_PATH=/u01/app/oracle/dba_scripts/sql:$ORACLE_HOME/rdbms/admin; export ORACLE_PATH
+JAVA_HOME=/etc/alternatives/java; export JAVA_HOME
+SQLPATH=/u01/app/oracle/dba_scripts/sql; export SQLPATH
+ORACLE_TERM=xterm; export ORACLE_TERM
+NLS_DATE_FORMAT="DD-MON-YYYY HH24:MI:SS" ; export NLS_DATE_FORMAT
+TNS_ADMIN=$ORACLE_HOME/network/admin; export TNS_ADMIN
+ORA_NLS11=$ORACLE_HOME/nls/data; export ORA_NLS11
+LD_LIBRARY_PATH=$ORACLE_HOME/lib
+LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$ORACLE_HOME/oracm/lib
+LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/lib:/usr/lib:/usr/local/lib
+export LD_LIBRARY_PATH
+PATH=$PATH:$HOME/bin
+PATH=.${JAVA_HOME}/bin:$PATH:$HOME/bin:$ORACLE_HOME/bin
+PATH=${PATH}:/u01/app/oracle/dba_scripts/bin
+export PATH
+CLASSPATH=$ORACLE_HOME/JRE
+CLASSPATH=${CLASSPATH}:$ORACLE_HOME/jlib
+CLASSPATH=${CLASSPATH}:$ORACLE_HOME/rdbms/jlib
+CLASSPATH=${CLASSPATH}:$ORACLE_HOME/network/jlib
+export CLASSPATH
+THREADS_FLAG=native; export THREADS_FLAG
+export TEMP=/tmp
+export TMPDIR=/tmp
+
+# ---------------------------------------------------
+# UMASK
+# ---------------------------------------------------
+# Set the default file mode creation mask
+# (umask) to 022 to ensure that the user performing
+# the Oracle software installation creates files
+# with 644 permissions.
+# ---------------------------------------------------
+
+umask 022
+
+[root@rhelnode01 ~]# su - oracle
+[oracle@rhelnode01 ~]$ grep ORACLE_SID .bash_profile
+# ORACLE_SID for RHELNODE01 =  RACDB1
+ORACLE_SID=RACDB1 ; export ORACLE_SID
+ 
+[root@rhelnode02 ~]# su - oracle
+[oracle@rhelnode02 ~]$ grep ORACLE_SID .bash_profile
+# ORACLE_SID for RHELNODE01 =  RACDB2
+ORACLE_SID=RACDB2 ; export ORACLE_SID
+</pre>	
+
+
+<p> 
+	Kernel parameters on RAC nodes
+	Setup kernel limits required for Oracle Installation. Perform it on both nodes – rhelnode01 and rhelnode02. You can find more about limits on
+	http://docs.oracle.com/cd/E11882_01/install.112/e24326/toc.htm#BHCCADGD 
+</p>
+
+<pre>
+[root@rhelnode01 scripts]# echo "session    required    pam_limits.so" >> /etc/pam.d/login
+[root@rhelnode01 scripts]# echo "session  required       pam_limits.so" >> /etc/pam.d/su
+ 
+[root@rhelnode02 scripts]# echo "session    required    pam_limits.so" >> /etc/pam.d/login
+[root@rhelnode02 scripts]# echo "session  required       pam_limits.so" >> /etc/pam.d/su
+ 
+[root@rhelnode01 scripts]# id nobody
+uid=99(nobody) gid=99(nobody) groups=99(nobody)
+ 
+[root@rhelnode02 scripts]# id nobody
+uid=99(nobody) gid=99(nobody) groups=99(nobody)
+ 
+Add below to /etc/security/limits.conf
+ 
+oracle              soft    nproc   2047
+oracle              hard    nproc   16384
+oracle              soft    nofile  1024
+oracle              hard    nofile  65536
+oracle              soft    stack   10240
+grid                hard    nofile  65536 
+  
+[root@rhelnode01 scripts]# cat >> /etc/security/limits.conf  <<EOF
+> oracle              soft    nproc   2047
+> oracle              hard    nproc   16384
+> oracle              soft    nofile  1024
+> oracle              hard    nofile  65536
+> oracle              soft    stack   10240
+> grid                hard    nofile  65536 
+> EOF
+ 
+ 
+[root@rhelnode02 scripts]# cat >> /etc/security/limits.conf <<EOF
+> oracle              soft    nproc   2047
+> oracle              hard    nproc   16384
+> oracle              soft    nofile  1024
+> oracle              hard    nofile  65536
+> oracle              soft    stack   10240
+> grid                hard    nofile  65536 
+> EOF
+ 
+
+[root@rhelnode01 scripts]# grep kernel.shm /etc/sysctl.conf
+kernel.shmmax = 68719476736
+kernel.shmall = 4294967296
+ 
+[root@rhelnode02 scripts]# grep kernel.shm /etc/sysctl.conf
+kernel.shmmax = 68719476736
+kernel.shmall = 4294967296
+ 
+[root@rhelnode01 scripts]# cat >> /etc/sysctl.conf <<EOF
+> 
+> # Controls the maximum number of shared memory segments system wide
+> kernel.shmmni = 4096
+> 
+> # Sets the following semaphore values:
+> # SEMMSL_value  SEMMNS_value  SEMOPM_value  SEMMNI_value
+> kernel.sem = 250 32000 100 128
+> 
+> # Sets the maximum number of file-handles that the Linux kernel will allocate
+> fs.file-max = 6815744
+> 
+> # Defines the local port range that is used by TCP and UDP
+> # traffic to choose the local port
+> net.ipv4.ip_local_port_range = 9000 65500
+> 
+> # Default setting in bytes of the socket "receive" buffer which
+> # may be set by using the SO_RCVBUF socket option
+> net.core.rmem_default=262144
+> 
+> # Maximum setting in bytes of the socket "receive" buffer which
+> # may be set by using the SO_RCVBUF socket option
+> net.core.rmem_max=4194304
+> 
+> # Default setting in bytes of the socket "send" buffer which
+> # may be set by using the SO_SNDBUF socket option
+> net.core.wmem_default=262144
+> 
+> # Maximum setting in bytes of the socket "send" buffer which
+> # may be set by using the SO_SNDBUF socket option
+> net.core.wmem_max=1048576
+> 
+> # Maximum number of allowable concurrent asynchronous I/O requests requests
+> fs.aio-max-nr=1048576
+> EOF
+ 
+[root@rhelnode01 scripts]# cat check-parms.sh
+sysctl -a | grep s[eh]m
+sysctl -a | grep file-max
+sysctl -a | grep ip_local_port_range
+sysctl -a | grep core.[rw]mem
+sysctl -a | grep aio-max-nr
+ 
+[root@rhelnode01 scripts]# sh check-parms.sh
+vm.hugetlb_shm_group = 0
+kernel.sem = 250        32000   32      128
+kernel.shmmni = 4096
+kernel.shmall = 4294967296
+kernel.shmmax = 68719476736
+fs.file-max = 279911
+net.ipv4.ip_local_port_range = 32768    61000
+net.core.rmem_default = 129024
+net.core.wmem_default = 129024
+net.core.rmem_max = 131071
+net.core.wmem_max = 131071
+fs.aio-max-nr = 65536
+</pre>	
+
+<p> 
+	Create swap file if you are short of memory. You will need approx. 4GB total to run both Cluster and RAC. 
+</p>
+
+<pre>
+[root@rhelnode01 scripts]# free -g
+             total       used       free     shared    buffers     cached
+Mem:             2          0          1          0          0          0
+-/+ buffers/cache:          0          2
+Swap:            4          0          4
+ 
+Here’s how you create a swap file.
+ 
+[root@rhelnode01 /]# cd /
+[root@rhelnode01 /]# dd if=/dev/zero of=swapfile bs=1k count=2000000
+2000000+0 records in
+2000000+0 records out
+2048000000 bytes (2.0 GB) copied, 16.0459 seconds, 128 MB/s
+[root@rhelnode01 /]# mkswap swapfile
+Setting up swapspace version 1, size = 2047995 kB
+[root@rhelnode01 /]# swapon swapfile
+[root@rhelnode01 /]# free -g
+             total       used       free     shared    buffers     cached
+Mem:             2          2          0          0          0          2
+-/+ buffers/cache:          0          2
+Swap:            6          0          6
+ 
+[root@rhelnode01 /]# grep swapfile /etc/fstab
+/swapfile               none                    swap    defaults        0 0
+</pre>	
+
+<p> 
+	Set “ulimit” on both RAC nodes
+</p>
+
+<pre>
+# Run below on both nodes
+ 
+cat >> /etc/profile <<EOF
+if [ \$USER = "oracle" ] || [ \$USER = "grid" ]; then
+    if [ \$SHELL = "/bin/ksh" ]; then
+        ulimit -p 16384
+        ulimit -n 65536
+    else
+        ulimit -u 16384 -n 65536
+    fi
+    umask 022
+fi
+EOF
+ 
+[root@rhelnode01 scripts]# cat >> /etc/profile <<EOF
+> if [ \$USER = "oracle" ] || [ \$USER = "grid" ]; then
+>     if [ \$SHELL = "/bin/ksh" ]; then
+>         ulimit -p 16384
+>         ulimit -n 65536
+>     else
+>         ulimit -u 16384 -n 65536
+>     fi
+>     umask 022
+> fi
+> EOF
+ 
+ 
+[root@rhelnode02 scripts]# cat >> /etc/profile <<EOF
+> if [ \$USER = "oracle" ] || [ \$USER = "grid" ]; then
+>     if [ \$SHELL = "/bin/ksh" ]; then
+>         ulimit -p 16384
+>         ulimit -n 65536
+>     else
+>         ulimit -u 16384 -n 65536
+>     fi
+>     umask 022
+> fi
+> EOF
+[root@rhelnode02 scripts]#
+</pre>	
+
+<p> 
+	Setup FTP to ftp files between Host and Guest OS’s or between VM’s. 
+</p>
+
+<pre>
+[root@rhelnode01 software]# cd /media/CentOS_5.8_Final/CentOS
+[root@rhelnode01 CentOS]# rpm -Uvh vsftpd-2.0.5-24.el5.x86_64.rpm
+Preparing...                ########################################### [100%]
+   1:vsftpd                 ########################################### [100%]
+ 
+[root@rhelnode01 CentOS]# chkconfig vsftpd on
+[root@rhelnode01 CentOS]# chkconfig --list | grep vsftp
+vsftpd          0:off   1:off   2:on    3:on    4:on    5:on    6:off
+ 
+[root@rhelnode01 CentOS]# service vsftpd start
+Starting vsftpd for vsftpd:                                [  OK  ]
+ 
+FTP the linux* files downloaded from Oracle/OTN website.
+ 
+[root@rhelnode01 software]# ls -ltr
+total 3327348
+drwx------ 2 root root      16384 Mar 15 12:32 lost+found
+-rw-r--r-- 1 root root     137897 Mar 16 16:19 oracleasm-2.6.18-308.el5-2.0.5-1.el5.x86_64.rpm
+-rw-r--r-- 1 root root      91430 Mar 16 16:19 oracleasm-support-2.1.7-1.el5.x86_64.rpm
+-rw-r--r-- 1 root root      14176 Mar 16 16:19 oracleasmlib-2.0.4-1.el5.x86_64.rpm
+-rw-r--r-- 1 root root 1111416131 Mar 16 16:30 linux.x64_11gR2_database_2of2.zip
+-rw-r--r-- 1 root root 1239269270 Mar 16 16:33 linux.x64_11gR2_database_1of2.zip
+-rw-r--r-- 1 root root 1052897657 Mar 16 16:35 linux.x64_11gR2_grid.zip
+</pre>	
+
+
+<p> 
+	Configure Storage/SAN for iSCSI Target. 
+	Remember the 100GB added /dev/hdc on rhelnode00 when Virtual Box was configured. Three primary partitions will be created on this.
+</p>
+
+<pre>
+
+	/dev/sdc1 – OCR Voting/Cluster Registry Files.
+	/dev/sdc2 – Data File System (DFS) for Oracle Data Files
+	/dev/sdc3 -  Fast Recovery Area ( FRA) for Backup Files.
+
+[root@rhelnode00 ~]# fdisk /dev/sdc
+Device contains neither a valid DOS partition table, nor Sun, SGI or OSF disklabel
+Building a new DOS disklabel. Changes will remain in memory only,
+until you decide to write them. After that, of course, the previous
+content won't be recoverable.
+ 
+ 
+The number of cylinders for this disk is set to 13054.
+There is nothing wrong with that, but this is larger than 1024,
+and could in certain setups cause problems with:
+1) software that runs at boot time (e.g., old versions of LILO)
+2) booting and partitioning software from other OSs
+   (e.g., DOS FDISK, OS/2 FDISK)
+Warning: invalid flag 0x0000 of partition table 4 will be corrected by w(rite)
+ 
+Command (m for help): n
+Command action
+   e   extended
+   p   primary partition (1-4)
+p
+Partition number (1-4): 1
+First cylinder (1-13054, default 1):
+Using default value 1
+Last cylinder or +size or +sizeM or +sizeK (1-13054, default 13054): +3GB
+ 
+Command (m for help): p
+ 
+Disk /dev/sdc: 107.3 GB, 107374182400 bytes
+255 heads, 63 sectors/track, 13054 cylinders
+Units = cylinders of 16065 * 512 = 8225280 bytes
+ 
+   Device Boot      Start         End      Blocks   Id  System
+/dev/sdc1               1         366     2939863+  83  Linux
+ 
+Command (m for help): n
+Command action
+   e   extended
+   p   primary partition (1-4)
+p
+Partition number (1-4): 2
+First cylinder (367-13054, default 367):
+Using default value 367
+Last cylinder or +size or +sizeM or +sizeK (367-13054, default 13054): +40G
+ 
+Command (m for help): p
+ 
+Disk /dev/sdc: 107.3 GB, 107374182400 bytes
+255 heads, 63 sectors/track, 13054 cylinders
+Units = cylinders of 16065 * 512 = 8225280 bytes
+ 
+   Device Boot      Start         End      Blocks   Id  System
+/dev/sdc1               1         366     2939863+  83  Linux
+/dev/sdc2             367        5230    39070080   83  Linux
+ 
+Command (m for help): n
+Command action
+   e   extended
+   p   primary partition (1-4)
+p
+Partition number (1-4): 3
+First cylinder (5231-13054, default 5231):
+Using default value 5231
+Last cylinder or +size or +sizeM or +sizeK (5231-13054, default 13054):
+Using default value 13054
+ 
+Command (m for help): p
+ 
+Disk /dev/sdc: 107.3 GB, 107374182400 bytes
+255 heads, 63 sectors/track, 13054 cylinders
+Units = cylinders of 16065 * 512 = 8225280 bytes
+ 
+   Device Boot      Start         End      Blocks   Id  System
+/dev/sdc1               1         366     2939863+  83  Linux
+/dev/sdc2             367        5230    39070080   83  Linux
+/dev/sdc3            5231       13054    62846280   83  Linux
+ 
+Command (m for help): w
+The partition table has been altered!
+ 
+Calling ioctl() to re-read partition table.
+ 
+WARNING: Re-reading the partition table failed with error 16: Device or resource busy.
+The kernel still uses the old table.
+The new table will be used at the next reboot.
+Syncing disks.
+ 
+[root@rhelnode00 ~]# mkfs.ext3 /dev/sdc1
+mke2fs 1.39 (29-May-2006)
+Filesystem label=
+OS type: Linux
+Block size=4096 (log=2)
+Fragment size=4096 (log=2)
+368000 inodes, 734965 blocks
+36748 blocks (5.00%) reserved for the super user
+First data block=0
+Maximum filesystem blocks=754974720
+23 block groups
+32768 blocks per group, 32768 fragments per group
+16000 inodes per group
+Superblock backups stored on blocks:
+        32768, 98304, 163840, 229376, 294912
+ 
+Writing inode tables: done
+Creating journal (16384 blocks): done
+Writing superblocks and filesystem accounting information: done
+ 
+This filesystem will be automatically checked every 23 mounts or
+180 days, whichever comes first.  Use tune2fs -c or -i to override.
+[root@rhelnode00 ~]# mkfs.ext3 /dev/sdc2
+ 
+[root@rhelnode00 ~]# mkfs.ext3 /dev/sdc3
+</pre>	
+
+
+
+
+<p> 
+	Configure iSCSI Target on rhelnode00.
+</p>
+
+<pre>
+[root@rhelnode00 iscsitarget-1.4.20.2]# chkconfig --add iscsi-target
+ 
+[root@rhelnode00 iscsitarget-1.4.20.2]# chkconfig iscsi-target on
+[root@rhelnode00 iscsitarget-1.4.20.2]# chkconfig --list iscsi-target
+iscsi-target    0:off   1:off   2:on    3:on    4:on    5:on    6:off
+[root@rhelnode00 iscsitarget-1.4.20.2]# service iscsi-target start
+Starting iSCSI Target:                                     [  OK  ]
+ 
+[root@rhelnode00 iscsitarget-1.4.20.2]# service iscsi-target status
+iSCSI Target (pid 3867) is running...
+</pre>	
+
+
+
+
+<p> 
+	Edit the /etc/iet/ietd.conf file to add below entries. Restart the iscsi-target to enable the volume.
+</p>
+
+<pre>
+[root@rhelnode00 scripts]# tail -f /etc/iet/ietd.conf
+Target iqn.2012-04.info.ha-clusters:san.crs1
+        Lun 0 Path=/dev/sdc1
+Target iqn.2012-04.info.ha-clusters:san.dfs1
+        Lun 1 Path=/dev/sdc2
+Target iqn.2012-04.info.ha-clusters:san.fra1
+        Lun 2 Path=/dev/sdc3
+ 
+ 
+root@rhelnode00 iscsitarget-1.4.20.2]# service iscsi-target restart
+ 
+[root@rhelnode00 scripts]# cat /proc/net/iet/volume
+tid:3 name:iqn.2012-04.info.ha-clusters:san.fra1
+        lun:2 state:0 iotype:fileio iomode:wt blocks:125692560 blocksize:512 path:/dev/sdc3
+tid:2 name:iqn.2012-04.info.ha-clusters:san.dfs1
+        lun:1 state:0 iotype:fileio iomode:wt blocks:78140160 blocksize:512 path:/dev/sdc2
+tid:1 name:iqn.2012-04.info.ha-clusters:san.crs1
+        lun:0 state:0 iotype:fileio iomode:wt blocks:5879727 blocksize:512 path:/dev/sdc1
+</pre>	
+
+
+
+
+<p> 
+	Configure iSCSI Initiator on RAC nodes – rhelnode01 and rhelnode02 
+</p>
+
+<pre>
+[root@rhelnode01 ~]# cat /etc/iscsi/initiatorname.iscsi
+InitiatorName=iqn.2012-04.info.ha-clusters:rhelnode01
+  
+[root@rhelnode01 ~]# service iscsi restart
+iscsiadm: No matching sessions found
+Stopping iSCSI daemon:
+iscsid is stopped                                          [  OK  ]
+Starting iSCSI daemon:                                     [  OK  ]
+                                                           [  OK  ]
+Setting up iSCSI targets: iscsiadm: No records found
+                                                           [  OK  ]
+ 
+[root@rhelnode02 ~]# cat /etc/iscsi/initiatorname.iscsi
+InitiatorName=iqn.2012-04.info.ha-clusters:rhelnode02
+ 
+[root@rhelnode02 ~]# service iscsi restart
+iscsiadm: No matching sessions found
+Stopping iSCSI daemon:
+iscsid is stopped                                          [  OK  ]
+Starting iSCSI daemon:                                     [  OK  ]
+                                                           [  OK  ]
+Setting up iSCSI targets: iscsiadm: No records found
+                                                           [  OK  ]
+</pre>	
+
+
+
+
+<p> 
+	Do discovery of targets on rhelnode00 from rhelnode01 and rhelnode02. 
+</p>
+
+<pre>
+[root@rhelnode01 ~]# iscsiadm --mode discoverydb --type sendtargets --portal rhelnode00-priv --discover
+192.168.99.200:3260,1 iqn.2012-04.info.ha-clusters:san.fra1
+192.168.56.200:3260,1 iqn.2012-04.info.ha-clusters:san.fra1
+192.168.99.200:3260,1 iqn.2012-04.info.ha-clusters:san.dfs1
+192.168.56.200:3260,1 iqn.2012-04.info.ha-clusters:san.dfs1
+192.168.99.200:3260,1 iqn.2012-04.info.ha-clusters:san.crs1
+192.168.56.200:3260,1 iqn.2012-04.info.ha-clusters:san.crs1
+ 
+ 
+[root@rhelnode02 ~]# iscsiadm --mode discoverydb --type sendtargets --portal rhelnode00-priv --discover
+192.168.99.200:3260,1 iqn.2012-04.info.ha-clusters:san.fra1
+192.168.56.200:3260,1 iqn.2012-04.info.ha-clusters:san.fra1
+192.168.99.200:3260,1 iqn.2012-04.info.ha-clusters:san.dfs1
+192.168.56.200:3260,1 iqn.2012-04.info.ha-clusters:san.dfs1
+192.168.99.200:3260,1 iqn.2012-04.info.ha-clusters:san.crs1
+192.168.56.200:3260,1 iqn.2012-04.info.ha-clusters:san.crs1
+</pre>	
+
+
+
+
+<p> 
+	Login to target from first node – rhelnode01. Notice the IET disks; which is basically the 3 partitions we created on the target.
+</p>
+
+<pre>
+[root@rhelnode01 scripts]# cat iscsi-login.sh
+iscsiadm --mode node --targetname iqn.2012-04.info.ha-clusters:san.crs1 --portal 192.168.99.200:3260 --login
+iscsiadm --mode node --targetname iqn.2012-04.info.ha-clusters:san.dfs1 --portal 192.168.99.200:3260 --login
+iscsiadm --mode node --targetname iqn.2012-04.info.ha-clusters:san.fra1 --portal 192.168.99.200:3260 –login
+ 
+[root@rhelnode01 scripts]# sh iscsi-login.sh
+Logging in to [iface: default, target: iqn.2012-04.info.ha-clusters:san.crs1, portal: 192.168.99.200,3260] (multiple)
+Login to [iface: default, target: iqn.2012-04.info.ha-clusters:san.crs1, portal: 192.168.99.200,3260] successful.
+Logging in to [iface: default, target: iqn.2012-04.info.ha-clusters:san.dfs1, portal: 192.168.99.200,3260] (multiple)
+Login to [iface: default, target: iqn.2012-04.info.ha-clusters:san.dfs1, portal: 192.168.99.200,3260] successful.
+Logging in to [iface: default, target: iqn.2012-04.info.ha-clusters:san.fra1, portal: 192.168.99.200,3260] (multiple)
+Login to [iface: default, target: iqn.2012-04.info.ha-clusters:san.fra1, portal: 192.168.99.200,3260] successful.
+ 
+[root@rhelnode01 scripts]# lsscsi
+[0:0:0:0]    disk    ATA      VBOX HARDDISK    1.0   /dev/sda
+[1:0:0:0]    disk    ATA      VBOX HARDDISK    1.0   /dev/sdb
+[11:0:0:0]   disk    IET      VIRTUAL-DISK     0     /dev/sdc
+[12:0:0:1]   disk    IET      VIRTUAL-DISK     0     /dev/sdd
+[13:0:0:2]   disk    IET      VIRTUAL-DISK     0     /dev/sde
+</pre>	
+
+
+
+<p> 
+	Verify on the target if the sessions are logged on.
+</p>
+
+<pre>
+[root@rhelnode00 ~]# cat /proc/net/iet/session
+tid:3 name:iqn.2012-04.info.ha-clusters:san.fra1
+        sid:3377699925852672 initiator:iqn.2012-04.info.ha-clusters:rhelnode01
+                cid:0 ip:192.168.99.101 state:active hd:none dd:none
+tid:2 name:iqn.2012-04.info.ha-clusters:san.dfs1
+        sid:3096224932364800 initiator:iqn.2012-04.info.ha-clusters:rhelnode01
+                cid:0 ip:192.168.99.101 state:active hd:none dd:none
+tid:1 name:iqn.2012-04.info.ha-clusters:san.crs1
+        sid:2814749938876928 initiator:iqn.2012-04.info.ha-clusters:rhelnode01
+                cid:0 ip:192.168.99.101 state:active hd:none dd:none
+</pre>	
+
+<p> 
+	Login to target from second node - rhelnode02
+</p>
+
+<pre>
+[root@rhelnode02 scripts]# sh iscsi-login.sh
+Logging in to [iface: default, target: iqn.2012-04.info.ha-clusters:san.crs1, portal: 192.168.99.200,3260] (multiple)
+Login to [iface: default, target: iqn.2012-04.info.ha-clusters:san.crs1, portal: 192.168.99.200,3260] successful.
+Logging in to [iface: default, target: iqn.2012-04.info.ha-clusters:san.dfs1, portal: 192.168.99.200,3260] (multiple)
+Login to [iface: default, target: iqn.2012-04.info.ha-clusters:san.dfs1, portal: 192.168.99.200,3260] successful.
+Logging in to [iface: default, target: iqn.2012-04.info.ha-clusters:san.fra1, portal: 192.168.99.200,3260] (multiple)
+Login to [iface: default, target: iqn.2012-04.info.ha-clusters:san.fra1, portal: 192.168.99.200,3260] successful.
+ 
+[root@rhelnode02 scripts]# lsscsi
+[0:0:0:0]    disk    ATA      VBOX HARDDISK    1.0   /dev/sda
+[1:0:0:0]    disk    ATA      VBOX HARDDISK    1.0   /dev/sdb
+[2:0:0:0]    disk    IET      VIRTUAL-DISK     0     /dev/sdc
+[3:0:0:1]    disk    IET      VIRTUAL-DISK     0     /dev/sdd
+[4:0:0:2]    disk    IET      VIRTUAL-DISK     0     /dev/sde
+</pre>	
+
+<p> 
+	Now run the verification again on the target to see the sessions that are logged on.
+</p>
+
+<pre>
+[root@rhelnode00 ~]# cat /proc/net/iet/session
+tid:3 name:iqn.2012-04.info.ha-clusters:san.fra1
+        sid:4222124704989696 initiator:iqn.2012-04.info.ha-clusters:rhelnode02
+                cid:0 ip:192.168.99.102 state:active hd:none dd:none
+        sid:3377699925852672 initiator:iqn.2012-04.info.ha-clusters:rhelnode01
+                cid:0 ip:192.168.99.101 state:active hd:none dd:none
+tid:2 name:iqn.2012-04.info.ha-clusters:san.dfs1
+        sid:3940649711501824 initiator:iqn.2012-04.info.ha-clusters:rhelnode02
+                cid:0 ip:192.168.99.102 state:active hd:none dd:none
+        sid:3096224932364800 initiator:iqn.2012-04.info.ha-clusters:rhelnode01
+                cid:0 ip:192.168.99.101 state:active hd:none dd:none
+tid:1 name:iqn.2012-04.info.ha-clusters:san.crs1
+        sid:3659174718013952 initiator:iqn.2012-04.info.ha-clusters:rhelnode02
+                cid:0 ip:192.168.99.102 state:active hd:none dd:none
+        sid:2814749938876928 initiator:iqn.2012-04.info.ha-clusters:rhelnode01
+                cid:0 ip:192.168.99.101 state:active hd:none dd:none
+</pre>	
+
+
+<p> 
+	Configure the iSCSI initiators for automatic login.
+</p>
+
+<pre>
+[root@rhelnode01 scripts]# iscsiadm --mode node --targetname iqn.2012-04.info.ha-clusters:san.crs1 --portal 192.168.99.200:3260  --op update --name=node.startup --value=automatic
+[root@rhelnode01 scripts]# iscsiadm --mode node --targetname iqn.2012-04.info.ha-clusters:san.dfs1 --portal 192.168.99.200:3260  --op update --name=node.startup --value=automatic
+[root@rhelnode01 scripts]# iscsiadm --mode node --targetname iqn.2012-04.info.ha-clusters:san.fra1 --portal 192.168.99.200:3260  --op update --name=node.startup --value=automatic
+ 
+[root@rhelnode02 scripts]# iscsiadm --mode node --targetname iqn.2012-04.info.ha-clusters:san.crs1 --portal 192.168.99.200:3260  --op update --name=node.startup --value=automatic
+[root@rhelnode02 scripts]# iscsiadm --mode node --targetname iqn.2012-04.info.ha-clusters:san.dfs1 --portal 192.168.99.200:3260  --op update --name=node.startup --value=automatic
+[root@rhelnode02 scripts]# iscsiadm --mode node --targetname iqn.2012-04.info.ha-clusters:san.fra1 --portal 192.168.99.200:3260  --op update --name=node.startup --value=automatic
+</pre>	
+
+
+<p> 
+	Create Partitions and File Systems on discovered IET nodes. DO this ONLY on ONE NODE – rhelnode01 
+</p>
+
+<pre>
+[root@rhelnode01 scripts]# lsscsi
+[0:0:0:0]    disk    ATA      VBOX HARDDISK    1.0   /dev/sda
+[1:0:0:0]    disk    ATA      VBOX HARDDISK    1.0   /dev/sdb
+[20:0:0:0]   disk    IET      VIRTUAL-DISK     0     /dev/sdc
+[21:0:0:1]   disk    IET      VIRTUAL-DISK     0     /dev/sdd
+[22:0:0:2]   disk    IET      VIRTUAL-DISK     0     /dev/sde
+[root@rhelnode01 scripts]# fdisk /dev/sdc
+Device contains neither a valid DOS partition table, nor Sun, SGI or OSF disklabel
+Building a new DOS disklabel. Changes will remain in memory only,
+until you decide to write them. After that, of course, the previous
+content won't be recoverable.
+ 
+Warning: invalid flag 0x0000 of partition table 4 will be corrected by w(rite)
+ 
+Command (m for help): n
+Command action
+   e   extended
+   p   primary partition (1-4)
+p
+Partition number (1-4): 1
+First cylinder (1-1019, default 1):
+Using default value 1
+Last cylinder or +size or +sizeM or +sizeK (1-1019, default 1019):
+Using default value 1019
+ 
+Command (m for help): w
+The partition table has been altered!
+ 
+Calling ioctl() to re-read partition table.
+ 
+WARNING: Re-reading the partition table failed with error 16: Device or resource busy.
+The kernel still uses the old table.
+The new table will be used at the next reboot.
+Syncing disks.
+[root@rhelnode01 scripts]# fdisk /dev/sdd
+Device contains neither a valid DOS partition table, nor Sun, SGI or OSF disklabel
+Building a new DOS disklabel. Changes will remain in memory only,
+until you decide to write them. After that, of course, the previous
+content won't be recoverable.
+ 
+ 
+The number of cylinders for this disk is set to 38154.
+There is nothing wrong with that, but this is larger than 1024,
+and could in certain setups cause problems with:
+1) software that runs at boot time (e.g., old versions of LILO)
+2) booting and partitioning software from other OSs
+   (e.g., DOS FDISK, OS/2 FDISK)
+Warning: invalid flag 0x0000 of partition table 4 will be corrected by w(rite)
+ 
+Command (m for help): n
+Command action
+   e   extended
+   p   primary partition (1-4)
+p
+Partition number (1-4): 1
+First cylinder (1-38154, default 1):
+Using default value 1
+Last cylinder or +size or +sizeM or +sizeK (1-38154, default 38154):
+Using default value 38154
+ 
+Command (m for help): w
+The partition table has been altered!
+ 
+Calling ioctl() to re-read partition table.
+Syncing disks.
+[root@rhelnode01 scripts]# fdisk /dev/sde
+Device contains neither a valid DOS partition table, nor Sun, SGI or OSF disklabel
+Building a new DOS disklabel. Changes will remain in memory only,
+until you decide to write them. After that, of course, the previous
+content won't be recoverable.
+ 
+ 
+The number of cylinders for this disk is set to 61373.
+There is nothing wrong with that, but this is larger than 1024,
+and could in certain setups cause problems with:
+1) software that runs at boot time (e.g., old versions of LILO)
+2) booting and partitioning software from other OSs
+   (e.g., DOS FDISK, OS/2 FDISK)
+Warning: invalid flag 0x0000 of partition table 4 will be corrected by w(rite)
+ 
+Command (m for help): n
+Command action
+   e   extended
+   p   primary partition (1-4)
+p
+Partition number (1-4): 1
+First cylinder (1-61373, default 1):
+Using default value 1
+Last cylinder or +size or +sizeM or +sizeK (1-61373, default 61373):
+Using default value 61373
+ 
+Command (m for help): w
+The partition table has been altered!
+ 
+Calling ioctl() to re-read partition table.
+Syncing disks.
+</pre>	
+
+
+<p> 
+	Verify the partitions, notice the ones ../../sdc1, ../../sdd1, ../../sde1
+</p>
+
+<pre>
+[root@rhelnode01 scripts]# ls -ltr /dev/disk/by-id/
+total 0
+lrwxrwxrwx 1 root root  9 Mar 19 15:22 ata-VBOX_CD-ROM_VB2-01700376 -> ../../hdc
+lrwxrwxrwx 1 root root  9 Mar 19 15:22 scsi-SATA_VBOX_HARDDISK_VB7ecdd2b9-af3fb37e -> ../../sdb
+lrwxrwxrwx 1 root root  9 Mar 19 15:22 scsi-SATA_VBOX_HARDDISK_VB56a10ae4-8ef0a788 -> ../../sda
+lrwxrwxrwx 1 root root 10 Mar 19 15:22 scsi-SATA_VBOX_HARDDISK_VB7ecdd2b9-af3fb37e-part1 -> ../../sdb1
+lrwxrwxrwx 1 root root 10 Mar 19 15:22 scsi-SATA_VBOX_HARDDISK_VB56a10ae4-8ef0a788-part2 -> ../../sda2
+lrwxrwxrwx 1 root root 10 Mar 19 15:22 scsi-SATA_VBOX_HARDDISK_VB56a10ae4-8ef0a788-part1 -> ../../sda1
+lrwxrwxrwx 1 root root  9 Mar 20 10:38 scsi-14945540000000000ec4aea3a4fc6c427a9a4e6fafb94cb3e -> ../../sdc
+lrwxrwxrwx 1 root root  9 Mar 20 10:38 scsi-14945540000000000e2a1d0483c233a813518c5dddd6dd7f1 -> ../../sdd
+lrwxrwxrwx 1 root root  9 Mar 20 10:38 scsi-14945540000000000d09bc9b2eef5ee97c3b5ec9904c79b29 -> ../../sde
+lrwxrwxrwx 1 root root 10 Mar 20 10:40 scsi-14945540000000000ec4aea3a4fc6c427a9a4e6fafb94cb3e-part1 -> ../../sdc1
+lrwxrwxrwx 1 root root 10 Mar 20 10:41 scsi-14945540000000000e2a1d0483c233a813518c5dddd6dd7f1-part1 -> ../../sdd1
+lrwxrwxrwx 1 root root 10 Mar 20 10:41 scsi-14945540000000000d09bc9b2eef5ee97c3b5ec9904c79b29-part1 -> ../../sde1
+ 
+[root@rhelnode01 scripts]# ls -ltr /dev/disk/by-path/ | grep iqn. | awk '{FS=" "; print $9 " " $10 " " $11}'
+ip-192.168.99.200:3260-iscsi-iqn.2012-04.info.ha-clusters:san.crs1-lun-0 -> ../../sdc
+ip-192.168.99.200:3260-iscsi-iqn.2012-04.info.ha-clusters:san.dfs1-lun-1 -> ../../sdd
+ip-192.168.99.200:3260-iscsi-iqn.2012-04.info.ha-clusters:san.fra1-lun-2 -> ../../sde
+ip-192.168.99.200:3260-iscsi-iqn.2012-04.info.ha-clusters:san.crs1-lun-0-part1 -> ../../sdc1
+ip-192.168.99.200:3260-iscsi-iqn.2012-04.info.ha-clusters:san.dfs1-lun-1-part1 -> ../../sdd1
+ip-192.168.99.200:3260-iscsi-iqn.2012-04.info.ha-clusters:san.fra1-lun-2-part1 -> ../../sde1
+</pre>	
+
+
+<p> 
+	Inform partition changes to rhelnode02 ( 2nd Node). Notice the IET partitions being mounted in rhelnode02. 
+</p>
+
+<pre>
+[root@rhelnode02 scripts]# partprobe
+Warning: Unable to open /dev/hdc read-write (Read-only file system).  /dev/hdc has been opened read-only.
+[root@rhelnode02 scripts]# ls -ltr /dev/disk/by-id/
+total 0
+lrwxrwxrwx 1 root root  9 Mar 19 15:22 ata-VBOX_CD-ROM_VB2-01700376 -> ../../hdc
+lrwxrwxrwx 1 root root  9 Mar 19 15:22 scsi-SATA_VBOX_HARDDISK_VB1c211c36-ae232806 -> ../../sda
+lrwxrwxrwx 1 root root  9 Mar 19 15:22 scsi-SATA_VBOX_HARDDISK_VB587cd9c8-b28179cd -> ../../sdb
+lrwxrwxrwx 1 root root 10 Mar 19 15:22 scsi-SATA_VBOX_HARDDISK_VB1c211c36-ae232806-part2 -> ../../sda2
+lrwxrwxrwx 1 root root 10 Mar 19 15:22 scsi-SATA_VBOX_HARDDISK_VB1c211c36-ae232806-part1 -> ../../sda1
+lrwxrwxrwx 1 root root 10 Mar 19 15:22 scsi-SATA_VBOX_HARDDISK_VB587cd9c8-b28179cd-part1 -> ../../sdb1
+lrwxrwxrwx 1 root root  9 Mar 20 10:31 scsi-14945540000000000ec4aea3a4fc6c427a9a4e6fafb94cb3e -> ../../sdc
+lrwxrwxrwx 1 root root  9 Mar 20 10:31 scsi-14945540000000000e2a1d0483c233a813518c5dddd6dd7f1 -> ../../sdd
+lrwxrwxrwx 1 root root  9 Mar 20 10:31 scsi-14945540000000000d09bc9b2eef5ee97c3b5ec9904c79b29 -> ../../sde
+lrwxrwxrwx 1 root root 10 Mar 20 10:44 scsi-14945540000000000ec4aea3a4fc6c427a9a4e6fafb94cb3e-part1 -> ../../sdc1
+lrwxrwxrwx 1 root root 10 Mar 20 10:44 scsi-14945540000000000e2a1d0483c233a813518c5dddd6dd7f1-part1 -> ../../sdd1
+lrwxrwxrwx 1 root root 10 Mar 20 10:44 scsi-14945540000000000d09bc9b2eef5ee97c3b5ec9904c79b29-part1 -> ../../sde1
+ 
+ 
+[root@rhelnode02 scripts]# ls -ltr /dev/disk/by-path/ | grep iqn. | awk '{FS=" "; print $9 " " $10 " " $11}'
+ip-192.168.99.200:3260-iscsi-iqn.2012-04.info.ha-clusters:san.crs1-lun-0 -> ../../sdc
+ip-192.168.99.200:3260-iscsi-iqn.2012-04.info.ha-clusters:san.dfs1-lun-1 -> ../../sdd
+ip-192.168.99.200:3260-iscsi-iqn.2012-04.info.ha-clusters:san.fra1-lun-2 -> ../../sde
+ip-192.168.99.200:3260-iscsi-iqn.2012-04.info.ha-clusters:san.crs1-lun-0-part1 -> ../../sdc1
+ip-192.168.99.200:3260-iscsi-iqn.2012-04.info.ha-clusters:san.dfs1-lun-1-part1 -> ../../sdd1
+ip-192.168.99.200:3260-iscsi-iqn.2012-04.info.ha-clusters:san.fra1-lun-2-part1 -> ../../sde1
+</pre>	
+
+
+<p> 
+	Install ASM Library on both nodes. 
+</p>
+
+<pre>
+[root@rhelnode01 software]# uname -a
+Linux rhelnode01 2.6.18-308.el5 #1 SMP Tue Feb 21 20:06:06 EST 2012 x86_64 x86_64 x86_64 GNU/Linux
+ 
+[root@rhelnode01 software]# rpm -Uvh oracleasm-support-2.1.7-1.el5.x86_64.rpm
+warning: oracleasm-support-2.1.7-1.el5.x86_64.rpm: Header V3 DSA signature: NOKEY, key ID 1e5e0159
+Preparing...                ########################################### [100%]
+   1:oracleasm-support      ########################################### [100%]
+[root@rhelnode01 software]# rpm -Uvh oracleasm-2.6.18-308.el5-2.0.5-1.el5.x86_64.rpm
+warning: oracleasm-2.6.18-308.el5-2.0.5-1.el5.x86_64.rpm: Header V3 DSA signature: NOKEY, key ID 1e5e0159
+Preparing...                ########################################### [100%]
+   1:oracleasm-2.6.18-308.el########################################### [100%]
+[root@rhelnode01 software]# rpm -Uvh oracleasmlib-2.0.4-1.el5.x86_64.rpm
+warning: oracleasmlib-2.0.4-1.el5.x86_64.rpm: Header V3 DSA signature: NOKEY, key ID 1e5e0159
+Preparing...                ########################################### [100%]
+   1:oracleasmlib           ########################################### [100%]
+ 
+[root@rhelnode01 software]# scp oracleasm* rhelnode02:/u99/software/
+oracleasm-2.6.18-308.el5-2.0.5-1.el5.x86_64.rpm                             100%  135KB 134.7KB/s   00:00
+oracleasmlib-2.0.4-1.el5.x86_64.rpm                                         100%   14KB  13.8KB/s   00:00
+oracleasm-support-2.1.7-1.el5.x86_64.rpm                                    100%   89KB  89.3KB/s   00:00
+ 
+[root@rhelnode02 software]# rpm -Uvh oracleasm-support-2.1.7-1.el5.x86_64.rpm
+warning: oracleasm-support-2.1.7-1.el5.x86_64.rpm: Header V3 DSA signature: NOKEY, key ID 1e5e0159
+Preparing...                ########################################### [100%]
+   1:oracleasm-support      ########################################### [100%]
+[root@rhelnode02 software]# rpm -Uvh oracleasm-2.6.18-308.el5-2.0.5-1.el5.x86_64.rpm
+warning: oracleasm-2.6.18-308.el5-2.0.5-1.el5.x86_64.rpm: Header V3 DSA signature: NOKEY, key ID 1e5e0159
+Preparing...                ########################################### [100%]
+   1:oracleasm-2.6.18-308.el########################################### [100%]
+[root@rhelnode02 software]# rpm -Uvh oracleasmlib-2.0.4-1.el5.x86_64.rpm
+warning: oracleasmlib-2.0.4-1.el5.x86_64.rpm: Header V3 DSA signature: NOKEY, key ID 1e5e0159
+Preparing...                ########################################### [100%]
+   1:oracleasmlib           ########################################### [100%]
+[root@rhelnode02 software]#
+</pre>	
+
+
+<p> 
+	Configure ASM on both nodes. 
+	Initialize the oracleasm with oracleasm –i option.
+</p>
+
+<pre>
+[root@rhelnode01 scripts]# which oracleasm
+/usr/sbin/oracleasm
+ 
+[root@rhelnode01 scripts]# oracleasm configure -i
+Configuring the Oracle ASM library driver.
+ 
+This will configure the on-boot properties of the Oracle ASM library
+driver.  The following questions will determine whether the driver is
+loaded on boot and what permissions it will have.  The current values
+will be shown in brackets ('[]').  Hitting <ENTER> without typing an
+answer will keep that current value.  Ctrl-C will abort.
+ 
+Default user to own the driver interface []: grid
+Default group to own the driver interface []: asmadmin
+Start Oracle ASM library driver on boot (y/n) [n]: y
+Scan for Oracle ASM disks on boot (y/n) [y]: y
+Writing Oracle ASM library driver configuration: done
+ 
+[root@rhelnode02 scripts]# /usr/sbin/oracleasm configure
+ORACLEASM_ENABLED=true
+ORACLEASM_UID=grid
+ORACLEASM_GID=asmadmin
+ORACLEASM_SCANBOOT=true
+ORACLEASM_SCANORDER=""
+ORACLEASM_SCANEXCLUDE=""
+ 
+[root@rhelnode01 scripts]# oracleasm configure -i
+Configuring the Oracle ASM library driver.
+ 
+This will configure the on-boot properties of the Oracle ASM library
+driver.  The following questions will determine whether the driver is
+loaded on boot and what permissions it will have.  The current values
+will be shown in brackets ('[]').  Hitting <ENTER> without typing an
+answer will keep that current value.  Ctrl-C will abort.
+ 
+Default user to own the driver interface []: grid
+Default group to own the driver interface []: asmadmin
+Start Oracle ASM library driver on boot (y/n) [n]: y
+Scan for Oracle ASM disks on boot (y/n) [y]: y
+Writing Oracle ASM library driver configuration: done
+ 
+[root@rhelnode01 scripts]# /usr/sbin/oracleasm configure
+ORACLEASM_ENABLED=true
+ORACLEASM_UID=grid
+ORACLEASM_GID=asmadmin
+ORACLEASM_SCANBOOT=true
+ORACLEASM_SCANORDER=""
+ORACLEASM_SCANEXCLUDE=""
+</pre>	
+
+
+<p> 
+	Load the oracleasm kernel module.
+</p>
+
+<pre>
+[root@rhelnode01 scripts]# /usr/sbin/oracleasm init
+Creating /dev/oracleasm mount point: /dev/oracleasm
+Loading module "oracleasm": oracleasm
+Mounting ASMlib driver filesystem: /dev/oracleasm
+ 
+[root@rhelnode01 scripts]# ls -ltr /dev/oracleasm
+total 0
+drwxrwx--- 1 grid asmadmin 0 Mar 19 16:08 iid
+drwxr-xr-x 1 root root     0 Mar 19 16:08 disks
+[root@rhelnode01 scripts]#
+</pre>	
+
+
+<p> 
+	Create ASM disks.
+</p>
+
+<pre>
+[root@rhelnode01 grid]# oracleasm createdisk CRSVOL1 /dev/sdc1
+Writing disk header: done
+Instantiating disk: done
+[root@rhelnode01 grid]# oracleasm createdisk DFSVOL1 /dev/sdd1
+Writing disk header: done
+Instantiating disk: done
+[root@rhelnode01 grid]# oracleasm createdisk FRAVOL1 /dev/sde1
+Writing disk header: done
+Instantiating disk: done
+ 
+[root@rhelnode01 grid]# ls -ltr /dev/oracleasm/disks/
+total 0
+brw-rw---- 1 grid asmadmin 8, 33 Mar 20 13:24 CRSVOL1
+brw-rw---- 1 grid asmadmin 8, 49 Mar 20 13:25 DFSVOL1
+brw-rw---- 1 grid asmadmin 8, 65 Mar 20 13:25 FRAVOL1
+ 
+[root@rhelnode01 grid]# /usr/sbin/oracleasm listdisks
+CRSVOL1
+DFSVOL1
+FRAVOL1
+</pre>	
+
+
+<p> 
+	Run this on 2nd Node : To make the volumes available to 2nd node, run this from rhelnode02.
+</p>
+
+<pre>
+[root@rhelnode02 grid]# oracleasm scandisks
+Reloading disk partitions: done
+Cleaning any stale ASM disks...
+Scanning system for ASM disks...
+Instantiating disk "CRSVOL1"
+Instantiating disk "DFSVOL1"
+Instantiating disk "FRAVOL1"
+ 
+[root@rhelnode02 grid]# ls -ltr /dev/oracleasm/disks/
+total 0
+brw-rw---- 1 grid asmadmin 8, 33 Mar 20 13:27 CRSVOL1
+brw-rw---- 1 grid asmadmin 8, 49 Mar 20 13:27 DFSVOL1
+brw-rw---- 1 grid asmadmin 8, 65 Mar 20 13:27 FRAVOL1
+ 
+[root@rhelnode02 grid]# /usr/sbin/oracleasm listdisks
+CRSVOL1
+DFSVOL1
+FRAVOL1
+</pre>	
+
+
+<p> 
+	Verify SSH trust for grid and oracle once again. 
+	Test ssh trust between all nodes under all id’s at least once so, the cluster verification utility check on ssh trust will not fail.
+</p>
+
+<pre>
+[root@rhelnode01 ~]# su - grid
+[grid@rhelnode01 ~]$ ssh rhelnode01
+Last login: Fri Mar 16 14:59:33 2012 from rhelnode02
+[grid@rhelnode01 ~]$ ssh rhelnode02
+Last login: Tue Mar 20 11:47:04 2012 from rhelnode02
+[grid@rhelnode02 ~]$ ssh rhelnode02
+Last login: Thu Mar 22 15:29:27 2012 from rhelnode01
+ 
+[root@rhelnode01 ~]# su - oracle
+[oracle@rhelnode01 ~]$ ssh rhelnode01
+Last login: Wed Mar 21 13:23:15 2012 from rhelnode01
+[oracle@rhelnode01 ~]$ ssh rhelnode02
+Last login: Wed Mar 21 13:44:40 2012 from rhelnode01
+[oracle@rhelnode02 ~]$ ssh rhelnode02
+Last login: Thu Mar 22 15:31:35 2012 from rhelnode01
+</pre>	
+
+
+<p> 
+	Verify SCAN resolution with dig or nslookup from both nodes – rhelnode01 and rhelnode02 
+</p>
+
+<pre>
+[root@rhelnode01 ~]# dig racnode-cluster-scan.intercloudzone.com
+ 
+; <<>> DiG 9.3.6-P1-RedHat-9.3.6-20.P1.el5 <<>> racnode-cluster-scan.intercloudzone.com
+;; global options:  printcmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 60147
+;; flags: qr aa rd ra; QUERY: 1, ANSWER: 3, AUTHORITY: 1, ADDITIONAL: 1
+ 
+;; QUESTION SECTION:
+;racnode-cluster-scan.intercloudzone.com. IN A
+ 
+;; ANSWER SECTION:
+racnode-cluster-scan.intercloudzone.com. 86400 IN A 192.168.56.57
+racnode-cluster-scan.intercloudzone.com. 86400 IN A 192.168.56.58
+racnode-cluster-scan.intercloudzone.com. 86400 IN A 192.168.56.56
+ 
+;; AUTHORITY SECTION:
+intercloudzone.com.       86400   IN      NS      rhelnode00.intercloudzone.com.
+ 
+;; ADDITIONAL SECTION:
+rhelnode00.intercloudzone.com. 86400 IN   A       192.168.56.200
+ 
+;; Query time: 8 msec
+;; SERVER: 192.168.56.200#53(192.168.56.200)
+;; WHEN: Thu Mar 22 15:40:16 2012
+;; MSG SIZE  rcvd: 144
+</pre>	
+
+
+<p> 
+	Run Cluster Verification Utility. 
+</p>
+
+<pre>
+[root@rhelnode01 software]# cd /u99/software/
+[root@rhelnode01 software]# unzip linux.x64_11gR2_grid.zip
+[root@rhelnode01 grid]# su – grid
+ 
+[grid@rhelnode01 ~]$ cd /u99/software/grid/
+
+[grid@rhelnode01 grid]$ ./runcluvfy.sh stage -pre crsinst -n rhelnode01,rhelnode02 -fixup -verbose
+ 
+Performing pre-checks for cluster services setup
+ 
+Checking node reachability...
+ 
+Check: Node reachability from node "rhelnode01"
+  Destination Node                      Reachable?
+  ------------------------------------  ------------------------
+  rhelnode01                            yes
+  rhelnode02                            yes
+Result: Node reachability check passed from node "rhelnode01"
+ 
+ 
+Checking user equivalence...
+ 
+Check: User equivalence for user "grid"
+  Node Name                             Comment
+  ------------------------------------  ------------------------
+  rhelnode02                            passed
+  rhelnode01                            passed
+Result: User equivalence check passed for user "grid"
+ 
+Checking node connectivity...
+ 
+Checking hosts config file...
+  Node Name     Status                    Comment
+  ------------  ------------------------  ------------------------
+  rhelnode02    passed
+  rhelnode01    passed
+ 
+Verification of the hosts config file successful
+ 
+ 
+Interface information for node "rhelnode02"
+ Name   IP Address      Subnet          Gateway         Def. Gateway    HW Address        MTU
+ ------ --------------- --------------- --------------- --------------- ----------------- ------
+ eth0   192.168.56.102  192.168.56.0    0.0.0.0         UNKNOWN         08:00:27:DF:0F:BB 1500
+ eth1   192.168.99.102  192.168.99.0    0.0.0.0         UNKNOWN         08:00:27:CB:88:04 1500
+ 
+ 
+Interface information for node "rhelnode01"
+ Name   IP Address      Subnet          Gateway         Def. Gateway    HW Address        MTU
+ ------ --------------- --------------- --------------- --------------- ----------------- ------
+ eth0   192.168.56.101  192.168.56.0    0.0.0.0         UNKNOWN         08:00:27:8B:58:4A 1500
+ eth1   192.168.99.101  192.168.99.0    0.0.0.0         UNKNOWN         08:00:27:CB:1E:CA 1500
+ 
+ 
+Check: Node connectivity of subnet "192.168.56.0"
+  Source                          Destination                     Connected?
+  ------------------------------  ------------------------------  ----------------
+  rhelnode02:eth0                 rhelnode01:eth0                 yes
+Result: Node connectivity passed for subnet "192.168.56.0" with node(s) rhelnode02,rhelnode01
+ 
+ 
+Check: TCP connectivity of subnet "192.168.56.0"
+  Source                          Destination                     Connected?
+  ------------------------------  ------------------------------  ----------------
+  rhelnode01:192.168.56.101       rhelnode02:192.168.56.102       passed
+Result: TCP connectivity check passed for subnet "192.168.56.0"
+ 
+ 
+Check: Node connectivity of subnet "192.168.99.0"
+  Source                          Destination                     Connected?
+  ------------------------------  ------------------------------  ----------------
+  rhelnode02:eth1                 rhelnode01:eth1                 yes
+Result: Node connectivity passed for subnet "192.168.99.0" with node(s) rhelnode02,rhelnode01
+ 
+ 
+Check: TCP connectivity of subnet "192.168.99.0"
+  Source                          Destination                     Connected?
+  ------------------------------  ------------------------------  ----------------
+  rhelnode01:192.168.99.101       rhelnode02:192.168.99.102       passed
+Result: TCP connectivity check passed for subnet "192.168.99.0"
+ 
+ 
+Interfaces found on subnet "192.168.56.0" that are likely candidates for a private interconnect are:
+rhelnode02 eth0:192.168.56.102
+rhelnode01 eth0:192.168.56.101
+ 
+Interfaces found on subnet "192.168.99.0" that are likely candidates for a private interconnect are:
+rhelnode02 eth1:192.168.99.102
+rhelnode01 eth1:192.168.99.101
+ 
+WARNING:
+Could not find a suitable set of interfaces for VIPs
+ 
+Result: Node connectivity check passed
+ 
+ 
+Check: Total memory
+  Node Name     Available                 Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    2.7GB (2831384.0KB)       1.5GB (1572864.0KB)       passed
+  rhelnode01    2.7GB (2831384.0KB)       1.5GB (1572864.0KB)       passed
+Result: Total memory check passed
+ 
+Check: Available memory
+  Node Name     Available                 Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    2.41GB (2524296.0KB)      50MB (51200.0KB)          passed
+  rhelnode01    2.36GB (2471284.0KB)      50MB (51200.0KB)          passed
+Result: Available memory check passed
+ 
+Check: Swap space
+  Node Name     Available                 Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    6.56GB (6882416.0KB)      2.7GB (2831384.0KB)       passed
+  rhelnode01    6.56GB (6882416.0KB)      2.7GB (2831384.0KB)       passed
+Result: Swap space check passed
+ 
+Check: Free disk space for "rhelnode02:/tmp"
+  Path              Node Name     Mount point   Available     Required      Comment
+  ----------------  ------------  ------------  ------------  ------------  ------------
+  /tmp              rhelnode02    /             28.4GB        1GB           passed
+Result: Free disk space check passed for "rhelnode02:/tmp"
+ 
+Check: Free disk space for "rhelnode01:/tmp"
+  Path              Node Name     Mount point   Available     Required      Comment
+  ----------------  ------------  ------------  ------------  ------------  ------------
+  /tmp              rhelnode01    /             28.41GB       1GB           passed
+Result: Free disk space check passed for "rhelnode01:/tmp"
+ 
+Check: User existence for "grid"
+  Node Name     Status                    Comment
+  ------------  ------------------------  ------------------------
+  rhelnode02    exists                    passed
+  rhelnode01    exists                    passed
+Result: User existence check passed for "grid"
+ 
+Check: Group existence for "oinstall"
+  Node Name     Status                    Comment
+  ------------  ------------------------  ------------------------
+  rhelnode02    exists                    passed
+  rhelnode01    exists                    passed
+Result: Group existence check passed for "oinstall"
+ 
+Check: Group existence for "dba"
+  Node Name     Status                    Comment
+  ------------  ------------------------  ------------------------
+  rhelnode02    exists                    passed
+  rhelnode01    exists                    passed
+Result: Group existence check passed for "dba"
+ 
+Check: Membership of user "grid" in group "oinstall" [as Primary]
+  Node Name         User Exists   Group Exists  User in Group  Primary       Comment
+  ----------------  ------------  ------------  ------------  ------------  ------------
+  rhelnode02        yes           yes           yes           yes           passed
+  rhelnode01        yes           yes           yes           yes           passed
+Result: Membership check for user "grid" in group "oinstall" [as Primary] passed
+ 
+Check: Membership of user "grid" in group "dba"
+  Node Name         User Exists   Group Exists  User in Group  Comment
+  ----------------  ------------  ------------  ------------  ----------------
+  rhelnode02        yes           yes           yes           passed
+  rhelnode01        yes           yes           yes           passed
+Result: Membership check for user "grid" in group "dba" passed
+ 
+Check: Run level
+  Node Name     run level                 Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    5                         3,5                       passed
+  rhelnode01    5                         3,5                       passed
+Result: Run level check passed
+ 
+Check: Hard limits for "maximum open file descriptors"
+  Node Name         Type          Available     Required      Comment
+  ----------------  ------------  ------------  ------------  ----------------
+  rhelnode02        hard          65536         65536         passed
+  rhelnode01        hard          65536         65536         passed
+Result: Hard limits check passed for "maximum open file descriptors"
+ 
+Check: Soft limits for "maximum open file descriptors"
+  Node Name         Type          Available     Required      Comment
+  ----------------  ------------  ------------  ------------  ----------------
+  rhelnode02        soft          1024          1024          passed
+  rhelnode01        soft          65536         1024          passed
+Result: Soft limits check passed for "maximum open file descriptors"
+ 
+Check: Hard limits for "maximum user processes"
+  Node Name         Type          Available     Required      Comment
+  ----------------  ------------  ------------  ------------  ----------------
+  rhelnode02        hard          22527         16384         passed
+  rhelnode01        hard          16384         16384         passed
+Result: Hard limits check passed for "maximum user processes"
+ 
+Check: Soft limits for "maximum user processes"
+  Node Name         Type          Available     Required      Comment
+  ----------------  ------------  ------------  ------------  ----------------
+  rhelnode02        soft          22527         2047          passed
+  rhelnode01        soft          16384         2047          passed
+Result: Soft limits check passed for "maximum user processes"
+ 
+Check: System architecture
+  Node Name     Available                 Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    x86_64                    x86_64                    passed
+  rhelnode01    x86_64                    x86_64                    passed
+Result: System architecture check passed
+ 
+Check: Kernel version
+  Node Name     Available                 Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    2.6.18-308.el5            2.6.9                     passed
+  rhelnode01    2.6.18-308.el5            2.6.9                     passed
+Result: Kernel version check passed
+ 
+Check: Kernel parameter for "semmsl"
+  Node Name     Configured                Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    250                       250                       passed
+  rhelnode01    250                       250                       passed
+Result: Kernel parameter check passed for "semmsl"
+ 
+Check: Kernel parameter for "semmns"
+  Node Name     Configured                Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    32000                     32000                     passed
+  rhelnode01    32000                     32000                     passed
+Result: Kernel parameter check passed for "semmns"
+ 
+Check: Kernel parameter for "semopm"
+  Node Name     Configured                Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    100                       100                       passed
+  rhelnode01    100                       100                       passed
+Result: Kernel parameter check passed for "semopm"
+ 
+Check: Kernel parameter for "semmni"
+  Node Name     Configured                Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    128                       128                       passed
+  rhelnode01    128                       128                       passed
+Result: Kernel parameter check passed for "semmni"
+ 
+Check: Kernel parameter for "shmmax"
+  Node Name     Configured                Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    68719476736               536870912                 passed
+  rhelnode01    68719476736               536870912                 passed
+Result: Kernel parameter check passed for "shmmax"
+ 
+Check: Kernel parameter for "shmmni"
+  Node Name     Configured                Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    4096                      4096                      passed
+  rhelnode01    4096                      4096                      passed
+Result: Kernel parameter check passed for "shmmni"
+ 
+Check: Kernel parameter for "shmall"
+  Node Name     Configured                Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    4294967296                2097152                   passed
+  rhelnode01    4294967296                2097152                   passed
+Result: Kernel parameter check passed for "shmall"
+ 
+Check: Kernel parameter for "file-max"
+  Node Name     Configured                Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    6815744                   6815744                   passed
+  rhelnode01    6815744                   6815744                   passed
+Result: Kernel parameter check passed for "file-max"
+ 
+Check: Kernel parameter for "ip_local_port_range"
+  Node Name     Configured                Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    between 9000 & 65500      between 9000 & 65500      passed
+  rhelnode01    between 9000 & 65500      between 9000 & 65500      passed
+Result: Kernel parameter check passed for "ip_local_port_range"
+ 
+Check: Kernel parameter for "rmem_default"
+  Node Name     Configured                Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    262144                    262144                    passed
+  rhelnode01    262144                    262144                    passed
+Result: Kernel parameter check passed for "rmem_default"
+ 
+Check: Kernel parameter for "rmem_max"
+  Node Name     Configured                Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    4194304                   4194304                   passed
+  rhelnode01    4194304                   4194304                   passed
+Result: Kernel parameter check passed for "rmem_max"
+ 
+Check: Kernel parameter for "wmem_default"
+  Node Name     Configured                Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    262144                    262144                    passed
+  rhelnode01    262144                    262144                    passed
+Result: Kernel parameter check passed for "wmem_default"
+ 
+Check: Kernel parameter for "wmem_max"
+  Node Name     Configured                Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    1048576                   1048576                   passed
+  rhelnode01    1048576                   1048576                   passed
+Result: Kernel parameter check passed for "wmem_max"
+ 
+Check: Kernel parameter for "aio-max-nr"
+  Node Name     Configured                Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    1048576                   1048576                   passed
+  rhelnode01    1048576                   1048576                   passed
+Result: Kernel parameter check passed for "aio-max-nr"
+ 
+Check: Package existence for "make-3.80"
+  Node Name     Available                 Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    make-3.81-3.el5           make-3.80                 passed
+  rhelnode01    make-3.81-3.el5           make-3.80                 passed
+Result: Package existence check passed for "make-3.80"
+ 
+Check: Package existence for "binutils-2.15.92.0.2"
+  Node Name     Available                 Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    binutils-2.17.50.0.6-20.el5  binutils-2.15.92.0.2      passed
+  rhelnode01    binutils-2.17.50.0.6-20.el5  binutils-2.15.92.0.2      passed
+Result: Package existence check passed for "binutils-2.15.92.0.2"
+ 
+Check: Package existence for "gcc-3.4.6"
+  Node Name     Available                 Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    gcc-4.1.2-52.el5          gcc-3.4.6                 passed
+  rhelnode01    gcc-4.1.2-52.el5          gcc-3.4.6                 passed
+Result: Package existence check passed for "gcc-3.4.6"
+ 
+Check: Package existence for "libaio-0.3.105 (i386)"
+  Node Name     Available                 Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    libaio-0.3.106-5 (i386)   libaio-0.3.105 (i386)     passed
+  rhelnode01    libaio-0.3.106-5 (i386)   libaio-0.3.105 (i386)     passed
+Result: Package existence check passed for "libaio-0.3.105 (i386)"
+ 
+Check: Package existence for "libaio-0.3.105 (x86_64)"
+  Node Name     Available                 Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    libaio-0.3.106-5 (x86_64)  libaio-0.3.105 (x86_64)   passed
+  rhelnode01    libaio-0.3.106-5 (x86_64)  libaio-0.3.105 (x86_64)   passed
+Result: Package existence check passed for "libaio-0.3.105 (x86_64)"
+ 
+Check: Package existence for "glibc-2.3.4-2.41 (i686)"
+  Node Name     Available                 Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    glibc-2.5-81 (i686)       glibc-2.3.4-2.41 (i686)   passed
+  rhelnode01    glibc-2.5-81 (i686)       glibc-2.3.4-2.41 (i686)   passed
+Result: Package existence check passed for "glibc-2.3.4-2.41 (i686)"
+ 
+Check: Package existence for "glibc-2.3.4-2.41 (x86_64)"
+  Node Name     Available                 Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    glibc-2.5-81 (x86_64)     glibc-2.3.4-2.41 (x86_64)  passed
+  rhelnode01    glibc-2.5-81 (x86_64)     glibc-2.3.4-2.41 (x86_64)  passed
+Result: Package existence check passed for "glibc-2.3.4-2.41 (x86_64)"
+ 
+Check: Package existence for "compat-libstdc++-33-3.2.3 (i386)"
+  Node Name     Available                 Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    compat-libstdc++-33-3.2.3-61 (i386)  compat-libstdc++-33-3.2.3 (i386)  passed
+  rhelnode01    compat-libstdc++-33-3.2.3-61 (i386)  compat-libstdc++-33-3.2.3 (i386)  passed
+Result: Package existence check passed for "compat-libstdc++-33-3.2.3 (i386)"
+ 
+Check: Package existence for "compat-libstdc++-33-3.2.3 (x86_64)"
+  Node Name     Available                 Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    compat-libstdc++-33-3.2.3-61 (x86_64)  compat-libstdc++-33-3.2.3 (x86_64)  passed
+  rhelnode01    compat-libstdc++-33-3.2.3-61 (x86_64)  compat-libstdc++-33-3.2.3 (x86_64)  passed
+Result: Package existence check passed for "compat-libstdc++-33-3.2.3 (x86_64)"
+ 
+Check: Package existence for "elfutils-libelf-0.97 (x86_64)"
+  Node Name     Available                 Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    elfutils-libelf-0.137-3.el5 (x86_64)  elfutils-libelf-0.97 (x86_64)  passed
+  rhelnode01    elfutils-libelf-0.137-3.el5 (x86_64)  elfutils-libelf-0.97 (x86_64)  passed
+Result: Package existence check passed for "elfutils-libelf-0.97 (x86_64)"
+ 
+Check: Package existence for "elfutils-libelf-devel-0.97"
+  Node Name     Available                 Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    elfutils-libelf-devel-0.137-3.el5  elfutils-libelf-devel-0.97  passed
+  rhelnode01    elfutils-libelf-devel-0.137-3.el5  elfutils-libelf-devel-0.97  passed
+ 
+WARNING:
+PRVF-7584 : Multiple versions of package "elfutils-libelf-devel" found on node rhelnode02: elfutils-libelf-devel-0.137-3.el5 (i386),elfutils-libelf-devel-0.137-3.el5 (x86_64)
+ 
+WARNING:
+PRVF-7584 : Multiple versions of package "elfutils-libelf-devel" found on node rhelnode01: elfutils-libelf-devel-0.137-3.el5 (i386),elfutils-libelf-devel-0.137-3.el5 (x86_64)
+Result: Package existence check passed for "elfutils-libelf-devel-0.97"
+ 
+Check: Package existence for "glibc-common-2.3.4"
+  Node Name     Available                 Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    glibc-common-2.5-81       glibc-common-2.3.4        passed
+  rhelnode01    glibc-common-2.5-81       glibc-common-2.3.4        passed
+Result: Package existence check passed for "glibc-common-2.3.4"
+ 
+Check: Package existence for "glibc-devel-2.3.4 (x86_64)"
+  Node Name     Available                 Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    glibc-devel-2.5-81 (x86_64)  glibc-devel-2.3.4 (x86_64)  passed
+  rhelnode01    glibc-devel-2.5-81 (x86_64)  glibc-devel-2.3.4 (x86_64)  passed
+Result: Package existence check passed for "glibc-devel-2.3.4 (x86_64)"
+ 
+Check: Package existence for "glibc-headers-2.3.4"
+  Node Name     Available                 Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    glibc-headers-2.5-81      glibc-headers-2.3.4       passed
+  rhelnode01    glibc-headers-2.5-81      glibc-headers-2.3.4       passed
+Result: Package existence check passed for "glibc-headers-2.3.4"
+ 
+Check: Package existence for "gcc-c++-3.4.6"
+  Node Name     Available                 Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    gcc-c++-4.1.2-52.el5      gcc-c++-3.4.6             passed
+  rhelnode01    gcc-c++-4.1.2-52.el5      gcc-c++-3.4.6             passed
+Result: Package existence check passed for "gcc-c++-3.4.6"
+ 
+Check: Package existence for "libaio-devel-0.3.105 (i386)"
+  Node Name     Available                 Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    libaio-devel-0.3.106-5 (i386)  libaio-devel-0.3.105 (i386)  passed
+  rhelnode01    libaio-devel-0.3.106-5 (i386)  libaio-devel-0.3.105 (i386)  passed
+Result: Package existence check passed for "libaio-devel-0.3.105 (i386)"
+ 
+Check: Package existence for "libaio-devel-0.3.105 (x86_64)"
+  Node Name     Available                 Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    libaio-devel-0.3.106-5 (x86_64)  libaio-devel-0.3.105 (x86_64)  passed
+  rhelnode01    libaio-devel-0.3.106-5 (x86_64)  libaio-devel-0.3.105 (x86_64)  passed
+Result: Package existence check passed for "libaio-devel-0.3.105 (x86_64)"
+ 
+Check: Package existence for "libgcc-3.4.6 (i386)"
+  Node Name     Available                 Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    libgcc-4.1.2-52.el5 (i386)  libgcc-3.4.6 (i386)       passed
+  rhelnode01    libgcc-4.1.2-52.el5 (i386)  libgcc-3.4.6 (i386)       passed
+Result: Package existence check passed for "libgcc-3.4.6 (i386)"
+ 
+Check: Package existence for "libgcc-3.4.6 (x86_64)"
+  Node Name     Available                 Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    libgcc-4.1.2-52.el5 (x86_64)  libgcc-3.4.6 (x86_64)     passed
+  rhelnode01    libgcc-4.1.2-52.el5 (x86_64)  libgcc-3.4.6 (x86_64)     passed
+Result: Package existence check passed for "libgcc-3.4.6 (x86_64)"
+ 
+Check: Package existence for "libstdc++-3.4.6 (i386)"
+  Node Name     Available                 Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    libstdc++-4.1.2-52.el5 (i386)  libstdc++-3.4.6 (i386)    passed
+  rhelnode01    libstdc++-4.1.2-52.el5 (i386)  libstdc++-3.4.6 (i386)    passed
+Result: Package existence check passed for "libstdc++-3.4.6 (i386)"
+ 
+Check: Package existence for "libstdc++-3.4.6 (x86_64)"
+  Node Name     Available                 Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    libstdc++-4.1.2-52.el5 (x86_64)  libstdc++-3.4.6 (x86_64)  passed
+  rhelnode01    libstdc++-4.1.2-52.el5 (x86_64)  libstdc++-3.4.6 (x86_64)  passed
+Result: Package existence check passed for "libstdc++-3.4.6 (x86_64)"
+ 
+Check: Package existence for "libstdc++-devel-3.4.6 (x86_64)"
+  Node Name     Available                 Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    libstdc++-devel-4.1.2-52.el5 (x86_64)  libstdc++-devel-3.4.6 (x86_64)  passed
+  rhelnode01    libstdc++-devel-4.1.2-52.el5 (x86_64)  libstdc++-devel-3.4.6 (x86_64)  passed
+Result: Package existence check passed for "libstdc++-devel-3.4.6 (x86_64)"
+ 
+Check: Package existence for "sysstat-5.0.5"
+  Node Name     Available                 Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    sysstat-7.0.2-11.el5      sysstat-5.0.5             passed
+  rhelnode01    sysstat-7.0.2-11.el5      sysstat-5.0.5             passed
+Result: Package existence check passed for "sysstat-5.0.5"
+ 
+Check: Package existence for "unixODBC-2.2.11 (i386)"
+  Node Name     Available                 Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    unixODBC-2.2.11-10.el5 (i386)  unixODBC-2.2.11 (i386)    passed
+  rhelnode01    unixODBC-2.2.11-10.el5 (i386)  unixODBC-2.2.11 (i386)    passed
+Result: Package existence check passed for "unixODBC-2.2.11 (i386)"
+ 
+Check: Package existence for "unixODBC-2.2.11 (x86_64)"
+  Node Name     Available                 Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    unixODBC-2.2.11-10.el5 (x86_64)  unixODBC-2.2.11 (x86_64)  passed
+  rhelnode01    unixODBC-2.2.11-10.el5 (x86_64)  unixODBC-2.2.11 (x86_64)  passed
+Result: Package existence check passed for "unixODBC-2.2.11 (x86_64)"
+ 
+Check: Package existence for "unixODBC-devel-2.2.11 (i386)"
+  Node Name     Available                 Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    unixODBC-devel-2.2.11-10.el5 (i386)  unixODBC-devel-2.2.11 (i386)  passed
+  rhelnode01    unixODBC-devel-2.2.11-10.el5 (i386)  unixODBC-devel-2.2.11 (i386)  passed
+Result: Package existence check passed for "unixODBC-devel-2.2.11 (i386)"
+ 
+Check: Package existence for "unixODBC-devel-2.2.11 (x86_64)"
+  Node Name     Available                 Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    unixODBC-devel-2.2.11-10.el5 (x86_64)  unixODBC-devel-2.2.11 (x86_64)  passed
+  rhelnode01    unixODBC-devel-2.2.11-10.el5 (x86_64)  unixODBC-devel-2.2.11 (x86_64)  passed
+Result: Package existence check passed for "unixODBC-devel-2.2.11 (x86_64)"
+ 
+Check: Package existence for "pdksh-5.2.14"
+  Node Name     Available                 Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    pdksh-5.2.14-37.el5       pdksh-5.2.14              passed
+  rhelnode01    pdksh-5.2.14-37.el5       pdksh-5.2.14              passed
+Result: Package existence check passed for "pdksh-5.2.14"
+ 
+Check: Package existence for "expat-1.95.7 (x86_64)"
+  Node Name     Available                 Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    expat-1.95.8-8.3.el5_5.3 (x86_64)  expat-1.95.7 (x86_64)     passed
+  rhelnode01    expat-1.95.8-8.3.el5_5.3 (x86_64)  expat-1.95.7 (x86_64)     passed
+Result: Package existence check passed for "expat-1.95.7 (x86_64)"
+ 
+Checking for multiple users with UID value 0
+Result: Check for multiple users with UID value 0 passed
+ 
+Check: Current group ID
+Result: Current group ID check passed
+Checking Core file name pattern consistency...
+Core file name pattern consistency check passed.
+ 
+Checking to make sure user "grid" is not in "root" group
+  Node Name     Status                    Comment
+  ------------  ------------------------  ------------------------
+  rhelnode02    does not exist            passed
+  rhelnode01    does not exist            passed
+Result: User "grid" is not part of "root" group. Check passed
+ 
+Check default user file creation mask
+  Node Name     Available                 Required                  Comment
+  ------------  ------------------------  ------------------------  ----------
+  rhelnode02    0022                      0022                      passed
+  rhelnode01    0022                      0022                      passed
+Result: Default user file creation mask check passed
+ 
+Starting Clock synchronization checks using Network Time Protocol(NTP)...
+ 
+NTP Configuration file check started...
+Network Time Protocol (NTP) configuration file not found on any of the nodes. Oracle Cluster Time Synchronization Service(CTSS) can be used instead of NTP for time synchronization on the cluster nodes
+ 
+Result: Clock synchronization check using Network Time Protocol(NTP) passed
+ 
+ 
+Pre-check for cluster services setup was successful.
+[grid@rhelnode01 grid]$
+
+</pre>	
+
+
+<p> 
+	Run similar check on the 2nd node – rhelnode02 and you should get a similar output. Run fixup script if prompted/required.
+	Install cvuqdisk Package for Linux. 
+</p>
+
+<pre>
+[grid@rhelnode01 ~]$ ssh rhelnode01; exit
+ 
+[root@rhelnode01 rpm]# cd /u99/software/grid/rpm/
+[root@rhelnode01 rpm]# CVUQDISK_GRP=oinstall; export CVUQDISK_GRP
+[root@rhelnode01 rpm]# rpm -Uvh cvuqdisk-1.0.7-1.rpm
+Preparing...                ########################################### [100%]
+   1:cvuqdisk               ########################################### [100%]
+[root@rhelnode01 rpm]#
+ 
+[root@rhelnode02 grid]#  cd /u99/software/grid/rpm/
+[root@rhelnode02 rpm]# CVUQDISK_GRP=oinstall; export CVUQDISK_GRP
+[root@rhelnode02 rpm]# rpm -Uvh cvuqdisk-1.0.7-1.rpm
+Preparing...                ########################################### [100%]
+   1:cvuqdisk               ########################################### [100%]
+[root@rhelnode02 rpm]#
+</pre>	
+
+
+<p> 
+	Configure PUTTY to use XTERM 
+	Download and install the Open Source X Server – XMING, on the Host PC.  After installation launch XMING and you should see an “X” on the Desktop Tray.
+	
+	http://sourceforge.net/projects/xming/files/latest/download
+	Open the PuTTY, and enable the option “X11 Forwarding”. Connect to the rhelnode01 and run xterm while in root. You should see a small xterminal session/window spawned. 
+	Disable the access control for now so we don’t run into access control issues while running xterm from grid and oracle.
+</p>
+
+<pre>
+[root@rhelnode01 software]# xhost +
+access control disabled, clients can connect from any host
+</pre>	
+
+
+<p> 
+	Now su – grid and run xterm.
+</p>
+
+<pre>
+[root@rhelnode01 software]# su - grid
+[grid@rhelnode01 ~]$ cd /u99/software/grid/
+[grid@rhelnode01 grid]$ xterm
+</pre>	
+
+
+<p> 
+	You should get a terminal window here.
+	Or If xterm fails with below error, then proceed with next step of adding the xauth from root to your oracle and grid.
+</p>
+
+<pre>
+Xlib: connection to "localhost:10.0" refused by server
+Xlib: PuTTY X11 proxy: wrong authentication protocol attempted
+xterm Xt error: Can’t open display: localhost:10.0
+</pre>	
+
+
+<p> 
+	Below should fix the “wrong authentication protocol attempted” error.
+</p>
+
+<pre>
+[root@rhelnode01 ~]# echo $DISPLAY
+localhost:10.0
+[root@rhelnode01 ~]# xauth list
+rhelnode01/unix:10  MIT-MAGIC-COOKIE-1  c93ff2501501af0e5458c061d261921b
+[root@rhelnode01 ~]# su - grid
+[grid@rhelnode01 ~]$ xauth add rhelnode01/unix:10  MIT-MAGIC-COOKIE-1  c93ff2501501af0e5458c061d261921b
+xauth:  creating new authority file /home/grid/.Xauthority 
+</pre>	
+
+
+<p> 
+	Do the above for “oracle” id as well.
+</p>
+
+<pre>
+[root@rhelnode01 software]# su - grid
+[grid@rhelnode01 ~]$ cd /u99/software/grid/
+[grid@rhelnode01 grid]$ xterm
+</pre>	
+
+
+<p> 
+	Configure PUTTY to use XTERM 
+	Under the new xterm window, su – grid and cd to grid directory (below). 
+</p>
+
+<pre>
+[root@rhelnode01 software]# su - grid
+[grid@rhelnode01 ~]$ cd /u99/software/grid/
+[grid@rhelnode01 grid]$ xterm
+</pre>	
+
+
+<p> 
+	Install Oracle 11gR2 Grid Infrastructure. Under the xterm window, run another xterm to make sure it can open new windows. su – grid and proceed with installation.
+</p>
+
+<pre>
+[grid@rhelnode01 ~]$ cd /u99/software/grid/
+[grid@rhelnode01 ~]$ ./runInstaller 
+</pre>	
+
+<p> 
+Choose Storage Option as "ASM", Do not use IPMI, choose same password across all accounts..
+
+Installation Location:
+	Oracle Base: /u01/app/grid
+	Software Location: /u01/app/11.2.0/grid
+  
+Create Inventory
+   Inventory Directory: /u01/app/oraInventory
+   oraInventory Group Name: oinstall
+</p>
+
+
+<input id="x" type="image" name="imageField" src="images/rac11g/clip_image012.5.jpg" />
+
+<input id="x" type="image" name="imageField" src="images/rac11g/clip_image015.jpg" />
+<input id="x" type="image" name="imageField" src="images/rac11g/clip_image017.jpg" />
+<input id="x" type="image" name="imageField" src="images/rac11g/clip_image019.jpg" />
+<input id="x" type="image" name="imageField" src="images/rac11g/clip_image021.jpg" />
+<input id="x" type="image" name="imageField" src="images/rac11g/clip_image023.jpg" />
+<input id="x" type="image" name="imageField" src="images/rac11g/clip_image025.jpg" />
+
+<p> 
+	One of the errors I ran into was the Cluster Time Synchronization, below is the output of clocksync performed before I asked the installation to retry.
+
+	INFO: PRVF-9652 : Cluster Time Synchronization Services check failed
+</p>
+
+
+
+<pre>
+INFO: Check CTSS state started...
+INFO: CTSS is in Active state. Proceeding with check of clock time offsets on all nodes...
+INFO: PRVF-9661 : Time offset is NOT within the specified limits on the following nodes:
+INFO: "[rhelnode01]"
+INFO: PRVF-9652 : Cluster Time Synchronization Services check failed
+INFO: Post-check for cluster services setup was unsuccessful.
+INFO: Checks did not pass for the following node(s):
+INFO:   rhelnode01
+INFO:
+ 
+[grid@rhelnode01 ~]$ cluvfy comp clocksync -n all
+ 
+Verifying Clock Synchronization across the cluster nodes
+ 
+Checking if Clusterware is installed on all nodes...
+Check of Clusterware install passed
+ 
+Checking if CTSS Resource is running on all nodes...
+CTSS resource check passed
+ 
+ 
+Querying CTSS for time offset on all nodes...
+Query of CTSS for time offset passed
+ 
+Check CTSS state started...
+CTSS is in Active state. Proceeding with check of clock time offsets on all nodes...
+Check of clock time offsets passed
+ 
+Oracle Cluster Time Synchronization Services check passed
+ 
+Verification of Clock Synchronization across the cluster nodes was successful.
+</pre>	
+
+<input id="x" type="image" name="imageField" src="images/rac11g/clip_image027.jpg" />
+<input id="x" type="image" name="imageField" src="images/rac11g/clip_image028.jpg" />
+
+
+<p> 
+	Run orainstRoot.sh on primary node first (rhelnode01) and then on 2nd node – rhelnode02. Afterwards run root.sh on both nodes.
+</p>
+
+<pre>
+[root@rhelnode01 scripts]# sh /u01/app/oraInventory/orainstRoot.sh
+Changing permissions of /u01/app/oraInventory.
+Adding read,write permissions for group.
+Removing read,write,execute permissions for world.
+ 
+Changing groupname of /u01/app/oraInventory to oinstall.
+The execution of the script is complete.
+ 
+[root@rhelnode01 scripts]# sh /u01/app/11.2.0/grid/root.sh
+Running Oracle 11g root.sh script...
+ 
+The following environment variables are set as:
+    ORACLE_OWNER= grid
+    ORACLE_HOME=  /u01/app/11.2.0/grid
+ 
+Enter the full pathname of the local bin directory: [/usr/local/bin]:
+   Copying dbhome to /usr/local/bin ...
+   Copying oraenv to /usr/local/bin ...
+   Copying coraenv to /usr/local/bin ...
+ 
+ 
+Creating /etc/oratab file...
+Entries will be added to the /etc/oratab file as needed by
+Database Configuration Assistant when a database is created
+Finished running generic part of root.sh script.
+Now product-specific root actions will be performed.
+2012-03-20 16:40:29: Parsing the host name
+2012-03-20 16:40:29: Checking for super user privileges
+2012-03-20 16:40:29: User has super user privileges
+Using configuration parameter file: /u01/app/11.2.0/grid/crs/install/crsconfig_params
+Creating trace directory
+LOCAL ADD MODE
+Creating OCR keys for user 'root', privgrp 'root'..
+Operation successful.
+  root wallet
+  root wallet cert
+  root cert export
+  peer wallet
+  profile reader wallet
+  pa wallet
+  peer wallet keys
+  pa wallet keys
+  peer cert request
+  pa cert request
+  peer cert
+  pa cert
+  peer root cert TP
+  profile reader root cert TP
+  pa root cert TP
+  peer pa cert TP
+  pa peer cert TP
+  profile reader pa cert TP
+  profile reader peer cert TP
+  peer user cert
+  pa user cert
+Adding daemon to inittab
+CRS-4123: Oracle High Availability Services has been started.
+ohasd is starting
+ADVM/ACFS is not supported on centos-release-5-8.el5.centos.x86_64
+ 
+[root@rhelnode02 ~]# sh /u01/app/oraInventory/orainstRoot.sh
+Changing permissions of /u01/app/oraInventory.
+Adding read,write permissions for group.
+Removing read,write,execute permissions for world.
+ 
+Changing groupname of /u01/app/oraInventory to oinstall.
+The execution of the script is complete.
+ 
+ 
+ 
+[root@rhelnode02 ~]# sh /u01/app/11.2.0/grid/root.sh
+Running Oracle 11g root.sh script...
+ 
+The following environment variables are set as:
+    ORACLE_OWNER= grid
+    ORACLE_HOME=  /u01/app/11.2.0/grid
+ 
+Enter the full pathname of the local bin directory: [/usr/local/bin]:
+   Copying dbhome to /usr/local/bin ...
+   Copying oraenv to /usr/local/bin ...
+   Copying coraenv to /usr/local/bin ...
+ 
+ 
+Creating /etc/oratab file...
+Entries will be added to the /etc/oratab file as needed by
+Database Configuration Assistant when a database is created
+Finished running generic part of root.sh script.
+Now product-specific root actions will be performed.
+2012-03-20 16:40:15: Parsing the host name
+2012-03-20 16:40:15: Checking for super user privileges
+2012-03-20 16:40:15: User has super user privileges
+Using configuration parameter file: /u01/app/11.2.0/grid/crs/install/crsconfig_params
+Creating trace directory
+LOCAL ADD MODE
+Creating OCR keys for user 'root', privgrp 'root'..
+Operation successful.
+  root wallet
+  root wallet cert
+  root cert export
+  peer wallet
+  profile reader wallet
+  pa wallet
+  peer wallet keys
+  pa wallet keys
+  peer cert request
+  pa cert request
+  peer cert
+  pa cert
+  peer root cert TP
+  profile reader root cert TP
+  pa root cert TP
+  peer pa cert TP
+  pa peer cert TP
+  profile reader pa cert TP
+  profile reader peer cert TP
+  peer user cert
+  pa user cert
+Adding daemon to inittab
+CRS-4123: Oracle High Availability Services has been started.
+ohasd is starting
+ADVM/ACFS is not supported on centos-release-5-8.el5.centos
+ 
+ 
+ 
+CRS-2672: Attempting to start 'ora.gipcd' on 'rhelnode02'
+CRS-2672: Attempting to start 'ora.mdnsd' on 'rhelnode02'
+CRS-2676: Start of 'ora.mdnsd' on 'rhelnode02' succeeded
+CRS-2676: Start of 'ora.gipcd' on 'rhelnode02' succeeded
+CRS-2672: Attempting to start 'ora.gpnpd' on 'rhelnode02'
+CRS-2676: Start of 'ora.gpnpd' on 'rhelnode02' succeeded
+CRS-2672: Attempting to start 'ora.cssdmonitor' on 'rhelnode02'
+CRS-2676: Start of 'ora.cssdmonitor' on 'rhelnode02' succeeded
+CRS-2672: Attempting to start 'ora.cssd' on 'rhelnode02'
+CRS-2672: Attempting to start 'ora.diskmon' on 'rhelnode02'
+CRS-2676: Start of 'ora.diskmon' on 'rhelnode02' succeeded
+CRS-2676: Start of 'ora.cssd' on 'rhelnode02' succeeded
+CRS-2672: Attempting to start 'ora.ctssd' on 'rhelnode02'
+CRS-2676: Start of 'ora.ctssd' on 'rhelnode02' succeeded
+ 
+ASM created and started successfully.
+ 
+DiskGroup CRS created successfully.
+ 
+clscfg: -install mode specified
+Successfully accumulated necessary OCR keys.
+Creating OCR keys for user 'root', privgrp 'root'..
+Operation successful.
+CRS-2672: Attempting to start 'ora.asm' on 'rhelnode02'
+ORA-01012: not logged on
+CRS-2676: Start of 'ora.asm' on 'rhelnode02' succeeded
+CRS-2672: Attempting to start 'ora.crsd' on 'rhelnode02'
+CRS-2676: Start of 'ora.crsd' on 'rhelnode02' succeeded
+CRS-4256: Updating the profile
+Successful addition of voting disk 312c948dfa4e4f15bf16dfa5efca10ae.
+Successfully replaced voting disk group with +CRS.
+CRS-4256: Updating the profile
+CRS-4266: Voting file(s) successfully replaced
+##  STATE    File Universal Id                File Name Disk group
+--  -----    -----------------                --------- ---------
+ 1. ONLINE   312c948dfa4e4f15bf16dfa5efca10ae (ORCL:CRSVOL1) [CRS]
+Located 1 voting disk(s).
+CRS-2673: Attempting to stop 'ora.crsd' on 'rhelnode02'
+CRS-2677: Stop of 'ora.crsd' on 'rhelnode02' succeeded
+CRS-2673: Attempting to stop 'ora.asm' on 'rhelnode02'
+CRS-2677: Stop of 'ora.asm' on 'rhelnode02' succeeded
+CRS-2673: Attempting to stop 'ora.ctssd' on 'rhelnode02'
+CRS-2677: Stop of 'ora.ctssd' on 'rhelnode02' succeeded
+CRS-2673: Attempting to stop 'ora.cssdmonitor' on 'rhelnode02'
+CRS-2677: Stop of 'ora.cssdmonitor' on 'rhelnode02' succeeded
+CRS-2673: Attempting to stop 'ora.cssd' on 'rhelnode02'
+CRS-2677: Stop of 'ora.cssd' on 'rhelnode02' succeeded
+CRS-2673: Attempting to stop 'ora.gpnpd' on 'rhelnode02'
+CRS-2677: Stop of 'ora.gpnpd' on 'rhelnode02' succeeded
+CRS-2673: Attempting to stop 'ora.gipcd' on 'rhelnode02'
+CRS-2677: Stop of 'ora.gipcd' on 'rhelnode02' succeeded
+CRS-2673: Attempting to stop 'ora.mdnsd' on 'rhelnode02'
+CRS-2677: Stop of 'ora.mdnsd' on 'rhelnode02' succeeded
+CRS-2672: Attempting to start 'ora.mdnsd' on 'rhelnode02'
+CRS-2676: Start of 'ora.mdnsd' on 'rhelnode02' succeeded
+CRS-2672: Attempting to start 'ora.gipcd' on 'rhelnode02'
+CRS-2676: Start of 'ora.gipcd' on 'rhelnode02' succeeded
+CRS-2672: Attempting to start 'ora.gpnpd' on 'rhelnode02'
+CRS-2676: Start of 'ora.gpnpd' on 'rhelnode02' succeeded
+CRS-2672: Attempting to start 'ora.cssdmonitor' on 'rhelnode02'
+CRS-2676: Start of 'ora.cssdmonitor' on 'rhelnode02' succeeded
+CRS-2672: Attempting to start 'ora.cssd' on 'rhelnode02'
+CRS-2672: Attempting to start 'ora.diskmon' on 'rhelnode02'
+CRS-2676: Start of 'ora.diskmon' on 'rhelnode02' succeeded
+CRS-2676: Start of 'ora.cssd' on 'rhelnode02' succeeded
+CRS-2672: Attempting to start 'ora.ctssd' on 'rhelnode02'
+CRS-2676: Start of 'ora.ctssd' on 'rhelnode02' succeeded
+CRS-2672: Attempting to start 'ora.asm' on 'rhelnode02'
+CRS-2676: Start of 'ora.asm' on 'rhelnode02' succeeded
+CRS-2672: Attempting to start 'ora.crsd' on 'rhelnode02'
+CRS-2676: Start of 'ora.crsd' on 'rhelnode02' succeeded
+CRS-2672: Attempting to start 'ora.evmd' on 'rhelnode02'
+CRS-2676: Start of 'ora.evmd' on 'rhelnode02' succeeded
+CRS-2672: Attempting to start 'ora.asm' on 'rhelnode02'
+CRS-2676: Start of 'ora.asm' on 'rhelnode02' succeeded
+CRS-2672: Attempting to start 'ora.CRS.dg' on 'rhelnode02'
+CRS-2676: Start of 'ora.CRS.dg' on 'rhelnode02' succeeded
+ 
+rhelnode02     2012/03/20 16:46:16     /u01/app/11.2.0/grid/cdata/rhelnode02/backup_20120320_164616.olr
+Configure Oracle Grid Infrastructure for a Cluster ... succeeded
+Updating inventory properties for clusterware
+Starting Oracle Universal Installer...
+ 
+Checking swap space: must be greater than 500 MB.   Actual 6720 MB    Passed
+The inventory pointer is located at /etc/oraInst.loc
+The inventory is located at /u01/app/oraInventory
+'UpdateNodeList' was successful.
+  
+</pre>	
+
+
+<p> 
+	Check Cluster Ready Services (CRS) 
+</p>
+
+<pre>
+[grid@rhelnode01 ~]$  crsctl check crs
+CRS-4638: Oracle High Availability Services is online
+CRS-4537: Cluster Ready Services is online
+CRS-4529: Cluster Synchronization Services is online
+CRS-4533: Event Manager is online
+
+[grid@rhelnode02 ~]$ crsctl check crs
+CRS-4638: Oracle High Availability Services is online
+CRS-4537: Cluster Ready Services is online
+CRS-4529: Cluster Synchronization Services is online
+CRS-4533: Event Manager is online
+</pre>	
+
+<p> 
+	Check Clusterware Resources 
+</p>
+
+<pre>
+[grid@rhelnode01 init.d]$ crsctl status resource -t
+--------------------------------------------------------------------------------
+NAME           TARGET  STATE        SERVER                   STATE_DETAILS
+--------------------------------------------------------------------------------
+Local Resources
+--------------------------------------------------------------------------------
+ora.CRS.dg
+               ONLINE  ONLINE       rhelnode01
+               ONLINE  ONLINE       rhelnode02
+ora.LISTENER.lsnr
+               ONLINE  ONLINE       rhelnode01
+               ONLINE  ONLINE       rhelnode02
+ora.asm
+               ONLINE  ONLINE       rhelnode01               Started
+               ONLINE  ONLINE       rhelnode02               Started
+ora.eons
+               ONLINE  ONLINE       rhelnode01
+               ONLINE  ONLINE       rhelnode02
+ora.gsd
+               OFFLINE OFFLINE      rhelnode01
+               OFFLINE OFFLINE      rhelnode02
+ora.net1.network
+               ONLINE  ONLINE       rhelnode01
+               ONLINE  ONLINE       rhelnode02
+ora.ons
+               ONLINE  ONLINE       rhelnode01
+               ONLINE  ONLINE       rhelnode02
+--------------------------------------------------------------------------------
+Cluster Resources
+--------------------------------------------------------------------------------
+ora.LISTENER_SCAN1.lsnr
+      1        ONLINE  ONLINE       rhelnode01
+ora.LISTENER_SCAN2.lsnr
+      1        ONLINE  ONLINE       rhelnode02
+ora.LISTENER_SCAN3.lsnr
+      1        ONLINE  ONLINE       rhelnode02
+ora.oc4j
+      1        OFFLINE OFFLINE
+ora.rhelnode01.vip
+      1        ONLINE  ONLINE       rhelnode01
+ora.rhelnode02.vip
+      1        ONLINE  ONLINE       rhelnode02
+ora.scan1.vip
+      1        ONLINE  ONLINE       rhelnode01
+ora.scan2.vip
+      1        ONLINE  ONLINE       rhelnode02
+ora.scan3.vip
+      1        ONLINE  ONLINE       rhelnode02
+</pre>	
+
+
+<p> 
+    Verify Cluster Nodes 
+</p>
+
+<pre>
+[grid@rhelnode02 ~]$ olsnodes -n
+rhelnode02      1
+rhelnode01      2
+ 
+[grid@rhelnode01 ~]$ olsnodes -n
+rhelnode02      1
+rhelnode01      2
+</pre>	
+
+
+<p> 
+   Check Listeners 
+</p>
+
+<pre>
+ [grid@rhelnode01 grid]$ ps -ef | grep lsnr
+grid     28094     1  0 Mar20 ?        00:00:33 /u01/app/11.2.0/grid/bin/tnslsnr LISTENER_SCAN1 -inherit
+grid     28926     1  0 Mar20 ?        00:00:19 /u01/app/11.2.0/grid/bin/tnslsnr LISTENER –inherit
+ 
+[grid@rhelnode02 ~]$ ps -ef | grep lsnr
+grid     12228 12205  0 16:33 pts/1    00:00:00 grep lsnr
+grid     25024     1  0 Mar20 ?        00:00:36 /u01/app/11.2.0/grid/bin/tnslsnr LISTENER_SCAN2 -inherit
+grid     25043     1  0 Mar20 ?        00:00:32 /u01/app/11.2.0/grid/bin/tnslsnr LISTENER_SCAN3 -inherit
+grid     26185     1  0 Mar20 ?        00:00:25 /u01/app/11.2.0/grid/bin/tnslsnr LISTENER –inherit
+</pre>	
+
+<p> 
+	Verify ASM 
+</p>
+
+<pre>
+[grid@rhelnode01 ~]$ srvctl status asm -a
+ASM is running on rhelnode01,rhelnode02
+ASM is enabled.
+ 
+[grid@rhelnode02 ~]$ srvctl status asm -a
+ASM is running on rhelnode01,rhelnode02
+ASM is enabled.
+</pre>	
+
+
+
+<p> 
+   Check status of Oracle Cluster Registry. 
+</p>
+
+<pre>
+ [grid@rhelnode01 ~]$ ocrcheck
+Status of Oracle Cluster Registry is as follows :
+         Version                  :          3
+         Total space (kbytes)     :     262120
+         Used space (kbytes)      :       2184
+         Available space (kbytes) :     259936
+         ID                       :  113605146
+         Device/File Name         :       +CRS
+                                    Device/File integrity check succeeded
+ 
+                                    Device/File not configured
+ 
+                                    Device/File not configured
+ 
+                                    Device/File not configured
+ 
+                                    Device/File not configured
+ 
+         Cluster registry integrity check succeeded
+ 
+         Logical corruption check bypassed due to non-privileged user
+ 
+[grid@rhelnode02 ~]$ ocrcheck
+Status of Oracle Cluster Registry is as follows :
+         Version                  :          3
+         Total space (kbytes)     :     262120
+         Used space (kbytes)      :       2184
+         Available space (kbytes) :     259936
+         ID                       :  113605146
+         Device/File Name         :       +CRS
+                                    Device/File integrity check succeeded
+ 
+                                    Device/File not configured
+ 
+                                    Device/File not configured
+ 
+                                    Device/File not configured
+ 
+                                    Device/File not configured
+ 
+         Cluster registry integrity check succeeded
+ 
+         Logical corruption check bypassed due to non-privileged user
+</pre>	
+
+
+
+<p> 
+   Query the Voting Disk/Check Voting Disk availability.
+</p>
+
+<pre>
+[grid@rhelnode01 ~]$ crsctl query css votedisk
+##  STATE    File Universal Id                File Name Disk group
+--  -----    -----------------                --------- ---------
+ 1. ONLINE   312c948dfa4e4f15bf16dfa5efca10ae (ORCL:CRSVOL1) [CRS]
+Located 1 voting disk(s).
+ 
+[grid@rhelnode02 ~]$ crsctl query css votedisk
+##  STATE    File Universal Id                File Name Disk group
+--  -----    -----------------                --------- ---------
+ 1. ONLINE   312c948dfa4e4f15bf16dfa5efca10ae (ORCL:CRSVOL1) [CRS]
+Located 1 voting disk(s).
+</pre>	
+
+<p> 
+   Run ifconfig –a to see the Virtual IP’s being created by Installation
+</p>
+
+<pre>
+[root@rhelnode00 scripts]# cat /etc/hosts | grep vip
+192.168.56.111  rhelnode01-vip  rhelnode01-vip.intercloudzone.com
+192.168.56.112  rhelnode02-vip  rhelnode02-vip.intercloudzone.com
+ 
+ 
+[root@rhelnode00 scripts]# nslookup racnode-cluster-scan
+Server:         192.168.56.200
+Address:        192.168.56.200#53
+ 
+Name:   racnode-cluster-scan.intercloudzone.com
+Address: 192.168.56.58
+Name:   racnode-cluster-scan.intercloudzone.com
+Address: 192.168.56.56
+Name:   racnode-cluster-scan.intercloudzone.com
+Address: 192.168.56.57
+ 
+[root@rhelnode01 ~]# ifconfig -a
+eth0      Link encap:Ethernet  HWaddr 08:00:27:8B:58:4A
+          inet addr:192.168.56.101  Bcast:192.168.56.255  Mask:255.255.255.0
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:4007631 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:7048644 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:485667729 (463.1 MiB)  TX bytes:5795920520 (5.3 GiB)
+ 
+eth0:1    Link encap:Ethernet  HWaddr 08:00:27:8B:58:4A
+          inet addr:192.168.56.56  Bcast:192.168.56.255  Mask:255.255.255.0
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+ 
+eth0:2    Link encap:Ethernet  HWaddr 08:00:27:8B:58:4A
+          inet addr:192.168.56.111  Bcast:192.168.56.255  Mask:255.255.255.0
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+ 
+eth1      Link encap:Ethernet  HWaddr 08:00:27:CB:1E:CA
+          inet addr:192.168.99.101  Bcast:192.168.99.255  Mask:255.255.255.0
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:684529 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:919818 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:242758713 (231.5 MiB)  TX bytes:362558999 (345.7 MiB)
+ 
+lo        Link encap:Local Loopback
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          UP LOOPBACK RUNNING  MTU:16436  Metric:1
+          RX packets:6162764 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:6162764 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:2128218830 (1.9 GiB)  TX bytes:2128218830 (1.9 GiB)
+ 
+[root@rhelnode02 grid]# ifconfig -a
+eth0      Link encap:Ethernet  HWaddr 08:00:27:DF:0F:BB
+          inet addr:192.168.56.102  Bcast:192.168.56.255  Mask:255.255.255.0
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:2543016 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:607387 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:3778444923 (3.5 GiB)  TX bytes:47716994 (45.5 MiB)
+ 
+eth0:1    Link encap:Ethernet  HWaddr 08:00:27:DF:0F:BB
+          inet addr:192.168.56.112  Bcast:192.168.56.255  Mask:255.255.255.0
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+ 
+eth0:3    Link encap:Ethernet  HWaddr 08:00:27:DF:0F:BB
+          inet addr:192.168.56.57  Bcast:192.168.56.255  Mask:255.255.255.0
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+ 
+eth0:4    Link encap:Ethernet  HWaddr 08:00:27:DF:0F:BB
+          inet addr:192.168.56.58  Bcast:192.168.56.255  Mask:255.255.255.0
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+ 
+eth1      Link encap:Ethernet  HWaddr 08:00:27:CB:88:04
+          inet addr:192.168.99.102  Bcast:192.168.99.255  Mask:255.255.255.0
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:864039 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:1062540 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:403856121 (385.1 MiB)  TX bytes:487302100 (464.7 MiB)
+ 
+lo        Link encap:Local Loopback
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          UP LOOPBACK RUNNING  MTU:16436  Metric:1
+          RX packets:139085 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:139085 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:73786034 (70.3 MiB)  TX bytes:73786034 (70.3 MiB)
+ 
+</pre>	
+
+<p> 
+   Backup the files as it would be overwritten on subsequent installs. 
+</p>
+
+<pre>
+[root@rhelnode01 ~]# cd /u01/app/11.2.0/grid
+[root@rhelnode01 grid]# cp root.sh root.sh_AFTER_RAC_INSTALL_2012MAR
+[root@rhelnode02 ~]# cd /u01/app/11.2.0/grid
+[root@rhelnode02 grid]# cp root.sh root.sh_AFTER_RAC_INSTALL_2012MAR
+</pre>	
+
+<p> 
+	Note: Based on “Oracle” - Srvctl and crsctl are used to manage clusterware resources.  The general rule is to use srvctl for whatever resource management you can.  
+	Crsctl should only be used for things that you cannot do with srvctl (like start the cluster).  Both have a help feature to see the available syntax.
+	Create ASM Disk Groups/Fast Recovery Area. Run this only on ONE node – rhelnode01
+	First ASM disk group was configured during the installation of Oracle Grid Infrastructure, called +CRS which was used to store the Oracle clusterware files (OCR and voting disk).
+</p>
+
+<p> 
+	Create ASM Disk Groups/Fast Recovery Area. Run this only on ONE node – rhelnode01
+   
+    <p> </p>
+	First ASM disk group was configured during the installation of Oracle Grid Infrastructure, called +CRS which was used to store the Oracle clusterware files (OCR and voting disk).
+
+	<p> </p>
+	The other two ASM disk groups will be named as +DFS (Data File System) and will be used to store all Oracle physical database files (data, online redo logs, control files, archived redo logs) 
+	and 3rd disk group will be created for the Fast Recovery Area named +FRA.
+
+	<p> </p>
+	Disk Groups 
+	Run asmca & from the same xterm window where the Grid Installation was done.
+	
+	From the "Disk Groups" tab, click the [Create] button.
+	Create Disk Group
+	If the ASMLib volumes does not show up in the "Select Member Disks" window as eligible (ORCL:DFSVOL1 and ORCL:FRAVOL1) then click on the [Change Disk Discovery Path] button and input "ORCL:*".
+	<p> </p>
+	
+</p>
+
+<pre>
+[root@rhelnode01 ~]# cd /u01/app/11.2.0/grid
+[root@rhelnode01 grid]# cp root.sh root.sh_AFTER_RAC_INSTALL_2012MAR
+[root@rhelnode02 ~]# cd /u01/app/11.2.0/grid
+[root@rhelnode02 grid]# cp root.sh root.sh_AFTER_RAC_INSTALL_2012MAR
+</pre>	
+
+<input id="x" type="image" name="imageField" src="images/rac11g/clip_image031.jpg" />
+
+<input id="x" type="image" name="imageField" src="images/rac11g/clip_image033.jpg" />
+
+<p> 
+	Setup Login Scripts for “oracle” on both nodes. 
+</p>
+
+<pre>
+ [root@rhelnode01 software]# cp /home/grid/.bash_profile /home/oracle/.bash_profile
+cp: overwrite `/home/oracle/.bash_profile'? y
+ 
+[root@rhelnode01 software]# su – oracle
+ 
+Edit the .bash_profile to change following contents.
+# User specific environment and startup programs
+# User specific aliases and functions
+# ORACLE SID for RHELNODE01 =  RACDB1
+ORACLE_SID=RACDB1 ; export ORACLE_SID
+ORACLE_UNQNAME=RACDB; export ORACLE_UNQNAME
+ORACLE_BASE=/u01/app/oracle; export ORACLE_BASE
+ORACLE_HOME=$ORACLE_BASE/product/11.2.0/dbhome_1; export ORACLE_HOME
+ 
+[oracle@rhelnode01 ~]$ scp .bash_profile rhelnode02:/home/oracle/
+.bash_profile                                                               100% 1740     1.7KB/s   00:00
+ 
+On rhelnode02, edit .bash_profile to change below contents.
+ 
+# User specific environment and startup programs
+# User specific aliases and functions
+# ORACLE SID for RHELNODE02 =  RACDB2
+ORACLE_SID=RACDB2 ; export ORACLE_SID
+ORACLE_UNQNAME=RACDB; export ORACLE_UNQNAME
+</pre>	
+
+
+<p> 
+	 Exit and su – oracle again to reload the parameters.
+</p>
+
+<pre>
+[oracle@rhelnode01 ~]$ env | grep ORACLE
+ORACLE_PATH=/u01/app/oracle/dba_scripts/common/sql
+ORACLE_UNQNAME=RACDB
+ORACLE_SID=RACDB1
+ORACLE_BASE=/u01/app/oracle
+ORACLE_TERM=xterm
+ORACLE_HOME=/u01/app/oracle/product/11.2.0/dbhome_1
+
+[root@rhelnode01 software]# unzip linux.x64_11gR2_database_1of2.zip
+[root@rhelnode01 software]# unzip linux.x64_11gR2_database_2of2.zip
+
+</pre>	
+
+
+<p> 
+	Install Oracle Database 11g with Oracle Real Application Clusters – Do it only ONE node – rhelnode01 
+	
+	<p> </p>
+	For the purpose of this example, un-check the security updates check-box and click the [Next] button to continue. 
+	Acknowledge the warning dialog indicating you have not provided an email address by clicking the [Yes] button.
+</p>
+
+<input id="x" type="image" name="imageField" src="images/rac11g/clip_image035.jpg" />
+<input id="x" type="image" name="imageField" src="images/rac11g/clip_image037.jpg" />
+
+ 	
+
+<p> 
+	Choose "Enterprise Edition" and  Oracle Base: /u01/app/oracle and  Software Location: /u01/app/oracle/product/11.2.0/dbhome_1
+	Select Operating System Groups  dba and  Database Operator (OSOPER) Group: oper
+</p>
+
+<input id="x" type="image" name="imageField" src="images/rac11g/clip_image039.jpg" />
+<input id="x" type="image" name="imageField" src="images/rac11g/clip_image041.jpg" />
+
+<pre>
+[root@rhelnode01 software]# sh /u01/app/oracle/product/11.2.0/dbhome_1/root.sh
+Running Oracle 11g root.sh script...
+ 
+The following environment variables are set as:
+    ORACLE_OWNER= oracle
+    ORACLE_HOME=  /u01/app/oracle/product/11.2.0/dbhome_1
+ 
+Enter the full pathname of the local bin directory: [/usr/local/bin]:
+The file "dbhome" already exists in /usr/local/bin.  Overwrite it? (y/n)
+[n]: y
+   Copying dbhome to /usr/local/bin ...
+The file "oraenv" already exists in /usr/local/bin.  Overwrite it? (y/n)
+[n]: y
+   Copying oraenv to /usr/local/bin ...
+The file "coraenv" already exists in /usr/local/bin.  Overwrite it? (y/n)
+[n]: y
+   Copying coraenv to /usr/local/bin ...
+ 
+Entries will be added to the /etc/oratab file as needed by
+Database Configuration Assistant when a database is created
+Finished running generic part of root.sh script.
+Now product-specific root actions will be performed.
+Finished product-specific root actions.
+</pre>	
+
+
+<p> 
+	Create the RAC Database.
+	
+	<p> </p>
+	Choose Admin-Managed, Global DB Name : racdb.intercloudzone.com, SID Prefix : racdb
+	Click the [Select All] button to select all servers: racnode1 and racnode2.
+</p>
+
+<input id="x" type="image" name="imageField" src="images/rac11g/clip_image045.jpg" />
+<input id="x" type="image" name="imageField" src="images/rac11g/clip_image047.jpg" />
+<input id="x" type="image" name="imageField" src="images/rac11g/clip_image049.jpg" />
+<input id="x" type="image" name="imageField" src="images/rac11g/clip_image051.jpg" />
+<input id="x" type="image" name="imageField" src="images/rac11g/clip_image053.jpg" />
+<input id="x" type="image" name="imageField" src="images/rac11g/clip_image055.jpg" />
+<input id="x" type="image" name="imageField" src="images/rac11g/clip_image057.jpg" />
+<input id="x" type="image" name="imageField" src="images/rac11g/clip_image059.jpg" />
+<input id="x" type="image" name="imageField" src="images/rac11g/clip_image061.jpg" />
+<input id="x" type="image" name="imageField" src="images/rac11g/clip_image063.jpg" />
+<input id="x" type="image" name="imageField" src="images/rac11g/clip_image065.jpg" />
+<input id="x" type="image" name="imageField" src="images/rac11g/clip_image067.jpg" />
+<input id="x" type="image" name="imageField" src="images/rac11g/clip_image069.jpg" />
+
+
+<p> 
+	 Run the Cluster Resource Check. 
+</p>
+
+
+
+<pre>
+ [root@rhelnode01 ~]# su - grid
+[grid@rhelnode01 ~]$ crsctl status resource -t
+--------------------------------------------------------------------------------
+NAME           TARGET  STATE        SERVER                   STATE_DETAILS
+--------------------------------------------------------------------------------
+Local Resources
+--------------------------------------------------------------------------------
+ora.CRS.dg
+               ONLINE  ONLINE       rhelnode01
+               ONLINE  ONLINE       rhelnode02
+ora.DFS.dg
+               ONLINE  ONLINE       rhelnode01
+               ONLINE  ONLINE       rhelnode02
+ora.FRA.dg
+               ONLINE  ONLINE       rhelnode01
+               ONLINE  ONLINE       rhelnode02
+ora.LISTENER.lsnr
+               ONLINE  ONLINE       rhelnode01
+               ONLINE  ONLINE       rhelnode02
+ora.asm
+               ONLINE  ONLINE       rhelnode01               Started
+               ONLINE  ONLINE       rhelnode02               Started
+ora.eons
+               ONLINE  ONLINE       rhelnode01
+               ONLINE  ONLINE       rhelnode02
+ora.gsd
+               OFFLINE OFFLINE      rhelnode01
+               OFFLINE OFFLINE      rhelnode02
+ora.net1.network
+               ONLINE  ONLINE       rhelnode01
+               ONLINE  ONLINE       rhelnode02
+ora.ons
+               ONLINE  ONLINE       rhelnode01
+               ONLINE  ONLINE       rhelnode02
+--------------------------------------------------------------------------------
+Cluster Resources
+--------------------------------------------------------------------------------
+ora.LISTENER_SCAN1.lsnr
+      1        ONLINE  ONLINE       rhelnode01
+ora.LISTENER_SCAN2.lsnr
+      1        ONLINE  ONLINE       rhelnode02
+ora.LISTENER_SCAN3.lsnr
+      1        ONLINE  ONLINE       rhelnode02
+ora.oc4j
+      1        OFFLINE OFFLINE
+ora.racdb.db
+      1        ONLINE  ONLINE       rhelnode01               Open
+      2        ONLINE  ONLINE       rhelnode02               Open
+ora.rhelnode01.vip
+      1        ONLINE  ONLINE       rhelnode01
+ora.rhelnode02.vip
+      1        ONLINE  ONLINE       rhelnode02
+ora.scan1.vip
+      1        ONLINE  ONLINE       rhelnode01
+ora.scan2.vip
+      1        ONLINE  ONLINE       rhelnode02
+ora.scan3.vip
+      1        ONLINE  ONLINE       rhelnode02
+[grid@rhelnode01 ~]$
+</pre>	
+
+
+
+<script>$( "pre" ).addClass( "prettyprint" );</script>	
+	
+	<div id="content">
+	<!-- end content -->
+	</div>
+<!-- end page -->
+
+<div id="footer">
+	<p class="legal">Copyright (c) 2015 InterCloudZone.com. All rights reserved.</p>
+</div>
+
+
+</body>
+
+</html>

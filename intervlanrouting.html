@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head> <script data-ad-client="ca-pub-2393111531899119" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script> 
+	<meta charset="utf-8">
+	<title>intercloudzone</title>
+	<meta name="description" content="">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<meta property="og:image" content="path/to/image.jpg">
+<!-- favicon -->
+<link rel="shortcut icon" href="img/favicon/favicon.ico" type="image/x-icon">
+<link rel="apple-touch-icon" href="img/favicon/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="72x72" href="img/favicon/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="114x114" href="img/favicon/apple-touch-icon-114x114.png">
+<!-- favicon -->
+<!-- build:css -->
+<link rel="stylesheet" href="css/libs/bootstrap.min.css">
+<link rel="stylesheet" href="css/libs/font-awesome.min.css">
+<link rel="stylesheet" href="css/libs/animate.min.css">
+<link rel="stylesheet" href="css/libs/slick.css">
+<link rel="stylesheet" href="css/libs/magnific-popup.css">
+
+<link rel="stylesheet" href="css/main.css">
+<link rel="stylesheet" href="css/media.css">
+<!-- endbuild -->
+	<!-- Chrome, Firefox OS and Opera -->
+	<meta name="theme-color" content="#000">
+	<!-- Windows Phone -->
+	<meta name="msapplication-navbutton-color" content="#000">
+	<!-- iOS Safari -->
+	<meta name="apple-mobile-web-app-status-bar-style" content="#000">
+	<!-- <style>body { opacity:s 0; overflow-x: hidden; } html { background-color: #fff; }</style> -->
+</head>
+<body data-spy="scroll" data-target=".navbar" data-offset="50" class="loaded" link="blue">
+<!-- Preloader -->
+<div class="preloader">
+	<div class="cssload-spinner">
+		<div class="cssload-ball cssload-ball-1"></div>
+		<div class="cssload-ball cssload-ball-2"></div>
+		<div class="cssload-ball cssload-ball-3"></div>
+		<div class="cssload-ball cssload-ball-4"></div>
+	</div>
+</div>
+<!-- Preloader -->
+<div class="site-content">
+	<!-- Naviigation -->
+	<div class="navbar-wrap">
+		<div class="navbar">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-12">
+						<nav class="navbar-menu">
+							<div class="navbar-header">
+								<button class="collapsed navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-example-js-navbar-scrollspy">
+									<span class="icon-bar"></span>
+									<span class="icon-bar"></span>
+									<span class="icon-bar"></span>
+								</button>
+							</div>
+							 
+							<div class="navbar-full">
+								<div class="collapse bs-example-js-navbar-scrollspy">
+									<ul class="nav navbar-nav">
+										<li style="display: none;"><a></a></li>
+										<li><a href="http://www.linkedin.com/in/baburajkallarakkal">About Me</a></li>
+										<li><a href="http://padmavyuha.blogspot.com/">Blog</a></li>
+										<li><a href="https://sourceforge.net/projects/oraclerman/">Projects</a></li>
+										<li><a href="https://hub.docker.com/u/baburaj/">Docker</a></li>
+										<li><a href="mailto:raj.anju@gmail.com">Contact Me</a></li>
+										<li>
+										</li>
+									</ul>
+									<!-- btn -->
+									<div class="nav-button main-button">
+										<a href="#" class="btn btn-nav btn-block" role="button">
+											Site is in Beta!
+										</a>
+									</div>
+									<!-- btn -->
+								</div>
+							</div>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Naviigation -->
+<!-- Header -->
+	<div class="menu-sticky"></div>
+
+	 
+
+	<!-- Screen-one -->
+	<div class="screen-one">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="screen-one-title">
+						<h2>Intervlan Routing via SVI and via routers through secondary IPs</h2>
+					</div>
+				</div>
+			</div>
+		</div>
+	 
+		<div class="container">
+
+					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0s">
+						<span>00.</span>
+						<div class="screen-one-item-container">
+							<h3> Goal of this is to establish packet routing via trunk (SVI VLAN Routing) and as well through the router (bypassing trunk) </h3>
+							<p> <a href="homelab_intervlan.html"> Lab setup for the specific test </a> </p>
+							<p>   </p>
+<pre>
+
+
+#Subnets of interest to configure the VLAN50 and as well the VIPs.
+
+baburaj@Aurora-5:~\> ipcalc 192.168.50.1/24
+Address:   192.168.50.1         11000000.10101000.00110010. 00000001
+Netmask:   255.255.255.0 = 24   11111111.11111111.11111111. 00000000
+Wildcard:  0.0.0.255            00000000.00000000.00000000. 11111111
+=>
+Network:   192.168.50.0/24      11000000.10101000.00110010. 00000000
+HostMin:   192.168.50.1         11000000.10101000.00110010. 00000001
+HostMax:   192.168.50.254       11000000.10101000.00110010. 11111110
+Broadcast: 192.168.50.255       11000000.10101000.00110010. 11111111
+Hosts/Net: 254                   Class C, Private Internet
+
+
+</pre>
+						</div>
+				</div>
+
+					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0s">
+						<span>01.</span>
+						<div class="screen-one-item-container">
+							<h3> Configure VLAN11 on Cloud10, VLAN21 on Cloud20    </h3>
+							
+							<p> VLAN11 and VLAN21 are optional setups, as I learned later but planning to keep it as-is. </p>
+<p> </p>
+
+<pre>
+
+#Cloud10 - Configure VLAN11.
+
+cloud10#enable
+cloud10#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+cloud10(config)#vlan 11
+cloud10(config-vlan)#name servers
+cloud10(config-vlan)#exit
+cloud10(config)#end
+cloud10#
+
+cloud10#enable
+cloud10#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+cloud10(config)#interface vlan11
+cloud10(config-if)#ip address 10.0.1.1 255.255.255.0
+cloud10(config-if)#no shutdown
+cloud10(config-if)#exit
+cloud10(config)#end
+cloud10#
+
+#Assign the switchport to the VLAN
+
+cloud10#enable
+cloud10#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+cloud10(config)#interface fa0/10
+cloud10(config-if)#switchport access vlan 11
+cloud10(config-if)#no shutdown
+cloud10(config-if)#exit
+cloud10(config)#end
+
+
+#Cloud20 - Configure VLAN21
+
+cloud20#enable
+cloud20#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+cloud20(config)#vlan 21
+cloud20(config-vlan)#name servers
+cloud20(config-vlan)#exit
+cloud20(config)#end
+cloud20#
+
+cloud20#enable
+cloud20#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+cloud20(config)#interface vlan21
+cloud20(config-if)#ip address 10.0.2.1 255.255.255.0
+cloud20(config-if)#no shutdown
+cloud20(config-if)#exit
+cloud20(config)#end
+cloud20#
+
+#Assign the switchport to the VLAN
+
+cloud20#enable
+cloud20#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+cloud20(config)#interf
+cloud20(config)#interface fa0/12
+cloud20(config-if)#switchport access vlan 21
+cloud20(config-if)#no shutdown
+cloud20(config-if)#exit
+cloud20(config)#end
+cloud20#
+
+
+</pre>
+						</div>
+				</div>
+
+				   <div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.1s">
+						<span>02.</span>
+						<div class="screen-one-item-container">
+							<h3> Configure VLAN50 and allow it on the trunk on both switches. </h3>
+							<p>   
+							</p>
+							<p> </p>
+
+<pre>
+
+#Configure VLAN50 on Cloud10 and Cloud20.
+
+cloud10#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+cloud10(config)#vlan 50
+cloud10(config-vlan)#name interswitch
+cloud10(config-vlan)#end
+cloud10#
+
+cloud10#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+cloud10(config)#interface vlan 50
+cloud10(config-if)#
+*Mar  1 01:31:55.903: %LINEPROTO-5-UPDOWN: Line protocol on Interface Vlan50, changed state to down
+cloud10(config-if)#ip address 192.168.50.1 255.255.255.252
+cloud10(config-if)#ip route 192.168.50.0 255.255.255.0 192.168.50.2
+cloud10(config)#^Z
+cloud10#
+
+cloud20#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+cloud20(config)#vlan 50
+cloud20(config-vlan)#name interswitch
+cloud20(config-vlan)#^Z
+cloud20#
+
+cloud20#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+cloud20(config)#interface vlan 50
+cloud20(config-if)#
+*Mar  1 01:33:33.018: %LINEPROTO-5-UPDOWN: Line protocol on Interface Vlan50, changed state to down
+cloud20(config-if)#ip address 192.168.50.2 255.255.255.252
+cloud20(config-if)#ip route 192.168.50.0 255.255.255.0 192.168.50.1
+cloud20(config)#^Z
+cloud20#
+
+
+#Allow VLANs on trunk for Cloud10 and Cloud20.
+
+cloud10#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+cloud10(config)#interface fa0/13
+cloud10(config-if)#switchport trunk allowed vlan 50
+cloud10(config-if)#^Z
+cloud10#
+
+cloud20#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+cloud20(config)#interface fa0/13
+cloud20(config-if)#switchport trunk allowed vlan 50
+cloud20(config-if)#^Z
+cloud20#
+
+# Ensure the spanning tree is in forwarding state and VLAN's allowed is 50.
+
+
+cloud10#show interface fa0/13 trunk
+
+Port        Mode             Encapsulation  Status        Native vlan
+Fa0/13      on               802.1q         trunking      1
+
+Port        Vlans allowed on trunk
+Fa0/13      50
+
+Port        Vlans allowed and active in management domain
+Fa0/13      50
+
+Port        Vlans in spanning tree forwarding state and not pruned
+Fa0/13      50
+
+cloud20#sh int fa0/13 trunk
+
+Port        Mode             Encapsulation  Status        Native vlan
+Fa0/13      on               802.1q         trunking      1
+
+Port        Vlans allowed on trunk
+Fa0/13      50
+
+Port        Vlans allowed and active in management domain
+Fa0/13      50
+
+Port        Vlans in spanning tree forwarding state and not pruned
+Fa0/13      50
+
+
+</pre>
+						</div>
+					</div>
+
+					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
+						<span>03.</span>
+						<div class="screen-one-item-container">
+							<h3> Configure VIP's with 192.168.50.x IP's </h3>
+							<p>    	</p>
+						<p> </p>
+
+<pre>
+
+
+root@panchajanya:/etc/sysconfig/network-scripts\> cat ifcfg-enp7s0:0 | egrep '^IPADDR|^PRE'
+IPADDR=192.168.50.11
+PREFIX=24
+
+root@mayura:/etc/sysconfig/network-scripts\> cat ifcfg-enp7s0:0 | egrep '^IPADDR|^PRE'
+IPADDR=192.168.50.21
+PREFIX=24
+
+root@panchajanya:/etc/sysconfig/network-scripts\> ip addr show enp7s0
+2: enp7s0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 00:1f:bc:02:01:66 brd ff:ff:ff:ff:ff:ff
+    inet 10.0.1.11/24 brd 10.0.1.255 scope global enp7s0
+       valid_lft forever preferred_lft forever
+    inet 192.168.50.11/24 brd 192.168.50.255 scope global enp7s0:0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::21f:bcff:fe02:166/64 scope link
+       valid_lft forever preferred_lft forever
+
+root@mayura:/etc/sysconfig/network-scripts\> ip addr show enp7s0
+2: enp7s0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 00:1f:bc:02:6f:10 brd ff:ff:ff:ff:ff:ff
+    inet 10.0.2.21/24 brd 10.0.2.255 scope global enp7s0
+       valid_lft forever preferred_lft forever
+    inet 192.168.50.21/24 brd 192.168.50.255 scope global enp7s0:0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::21f:bcff:fe02:6f10/64 scope link
+       valid_lft forever preferred_lft forever
+
+
+</pre>
+ 
+						</div>
+					</div>
+
+					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
+					<span>04.</span>
+					<div class="screen-one-item-container">
+						<h3> Verify the route taken against both IP's from both servers </h3>
+						<p>  Route taken for 10.0.1.0/24 and 10.0.2.0/24 subnets are via R6230. This is due to the static route on both the router and also
+							 the switches. The route taken while trying to reach 192.168.50.0/24 subnets from either of these servers is missing 10.0.0.1 (R6230) route.   </p>
+
+						<p> </p>
+
+<pre>
+
+
+root@panchajanya:/etc/sysconfig/network-scripts\> tracepath 10.0.2.21
+ 1?: [LOCALHOST]                                         pmtu 1500
+ 1:  10.0.1.1                                              0.847ms
+ 1:  10.0.1.1                                              1.916ms
+ 2:  10.0.0.1                                              4.301ms
+ 3:  10.0.0.20                                             6.773ms
+ 4:  10.0.2.21                                             1.570ms !H
+     Resume: pmtu 1500
+
+root@panchajanya:/etc/sysconfig/network-scripts\> tracepath 192.168.50.21
+ 1?: [LOCALHOST]                                         pmtu 1500
+ 1:  10.0.1.1                                              1.094ms
+ 1:  10.0.1.1                                              1.950ms
+ 2:  192.168.50.2                                          1.524ms
+ 3:  192.168.50.21                                         1.022ms !H
+     Resume: pmtu 1500
+
+
+root@mayura:/etc/sysconfig/network-scripts\> traceroute 10.0.1.11
+traceroute to 10.0.1.11 (10.0.1.11), 30 hops max, 60 byte packets
+ 1  10.0.2.1 (10.0.2.1)  1.403 ms  1.550 ms  1.715 ms
+ 2  10.0.0.1 (10.0.0.1)  0.482 ms  0.416 ms  0.447 ms
+ 3  10.0.0.10 (10.0.0.10)  1.848 ms  2.226 ms  2.001 ms
+ 4  10.0.1.11 (10.0.1.11)  1.006 ms !X  0.950 ms !X  0.984 ms !X
+
+
+root@mayura:/etc/sysconfig/network-scripts\> traceroute 192.168.50.11
+traceroute to 192.168.50.11 (192.168.50.11), 30 hops max, 60 byte packets
+ 1  10.0.2.1 (10.0.2.1)  0.844 ms  0.928 ms  1.074 ms
+ 2  192.168.50.1 (192.168.50.1)  2.340 ms  2.497 ms  2.662 ms
+ 3  192.168.50.11 (192.168.50.11)  0.227 ms !X  0.214 ms !X  0.183 ms !X
+
+
+#Check the MAC's being learned via ARP.
+
+cloud10#show ip arp vlan 50
+Protocol  Address          Age (min)  Hardware Addr   Type   Interface
+Internet  192.168.50.21         174   001c.0e58.aa43  ARPA   Vlan50
+Internet  192.168.50.2          173   001c.0e58.aa43  ARPA   Vlan50
+Internet  192.168.50.1            -   001c.0e58.3744  ARPA   Vlan50
+
+
+cloud10#show ip arp vlan 11
+Protocol  Address          Age (min)  Hardware Addr   Type   Interface
+Internet  10.0.1.11              17   001f.bc02.0166  ARPA   Vlan11
+Internet  10.0.1.1                -   001c.0e58.3743  ARPA   Vlan11
+Internet  192.168.50.11          17   001f.bc02.0166  ARPA   Vlan11
+
+cloud20#show ip arp vlan 50
+Protocol  Address          Age (min)  Hardware Addr   Type   Interface
+Internet  192.168.50.11         173   001c.0e58.3744  ARPA   Vlan50
+Internet  192.168.50.2            -   001c.0e58.aa43  ARPA   Vlan50
+Internet  192.168.50.1          174   001c.0e58.3744  ARPA   Vlan50
+
+cloud20#show ip arp vlan 21
+Protocol  Address          Age (min)  Hardware Addr   Type   Interface
+Internet  10.0.2.1                -   001c.0e58.aa42  ARPA   Vlan21
+Internet  10.0.2.21              17   001f.bc02.6f10  ARPA   Vlan21
+Internet  192.168.50.21          17   001f.bc02.6f10  ARPA   Vlan21
+
+#Or check the summary itself
+
+
+cloud10#show arp
+Protocol  Address          Age (min)  Hardware Addr   Type   Interface
+Internet  10.0.1.11             146   001f.bc02.0166  ARPA   Vlan11
+Internet  10.0.0.10               -   001c.0e58.3741  ARPA   FastEthernet0/1
+Internet  10.0.1.1                -   001c.0e58.3743  ARPA   Vlan11
+Internet  10.0.0.1              146   8c3b.add3.fef6  ARPA   FastEthernet0/1
+Internet  10.0.0.20             211   001c.0e58.aa41  ARPA   FastEthernet0/1
+Internet  192.168.50.21         150   001c.0e58.aa43  ARPA   Vlan50
+Internet  192.168.50.11         147   001f.bc02.0166  ARPA   Vlan11
+Internet  192.168.50.2          150   001c.0e58.aa43  ARPA   Vlan50
+Internet  192.168.50.1            -   001c.0e58.3744  ARPA   Vlan50
+ 
+cloud20#show arp
+Protocol  Address          Age (min)  Hardware Addr   Type   Interface
+Internet  10.0.0.10             212   001c.0e58.3741  ARPA   FastEthernet0/2
+Internet  10.0.2.1                -   001c.0e58.aa42  ARPA   Vlan21
+Internet  10.0.0.1              146   8c3b.add3.fef6  ARPA   FastEthernet0/2
+Internet  10.0.2.21             146   001f.bc02.6f10  ARPA   Vlan21
+Internet  10.0.0.20               -   001c.0e58.aa41  ARPA   FastEthernet0/2
+Internet  192.168.50.21         148   001f.bc02.6f10  ARPA   Vlan21
+Internet  192.168.50.11         150   001c.0e58.3744  ARPA   Vlan50
+Internet  192.168.50.2            -   001c.0e58.aa43  ARPA   Vlan50
+Internet  192.168.50.1          151   001c.0e58.3744  ARPA   Vlan50
+
+
+#Verify the interface status
+
+cloud10#show int status | ex not
+
+Port      Name               Status       Vlan       Duplex  Speed Type
+Fa0/1                        connected    routed     a-full  a-100 10/100BaseTX
+Fa0/10                       connected    11         a-full  a-100 10/100BaseTX
+Fa0/13                       connected    trunk      a-full  a-100 10/100BaseTX
+
+cloud20#show int status | ex not
+
+Port      Name               Status       Vlan       Duplex  Speed Type
+Fa0/2                        connected    routed     a-full  a-100 10/100BaseTX
+Fa0/12                       connected    21         a-full  a-100 10/100BaseTX
+Fa0/13                       connected    trunk      a-full  a-100 10/100BaseTX
+
+
+#Trimmed ouput of running configuration
+
+
+cloud10#show running-config
+!
+ip routing
+!
+interface FastEthernet0/1
+ no switchport
+ ip address 10.0.0.10 255.255.255.0
+!
+interface FastEthernet0/10
+ switchport access vlan 11
+!
+..
+!
+interface FastEthernet0/13
+ switchport trunk encapsulation dot1q
+ switchport trunk allowed vlan 50
+ switchport mode trunk
+!
+
+!
+interface Vlan11
+ ip address 10.0.1.1 255.255.255.0
+!
+interface Vlan50
+ ip address 192.168.50.1 255.255.255.0
+..
+!
+ip classless
+ip route 0.0.0.0 0.0.0.0 10.0.0.1
+ip route 192.168.50.0 255.255.255.0 192.168.50.2
+ip route 192.168.50.11 255.255.255.255 10.0.1.11
+..
+
+cloud20#show running-config
+Building configuration...
+..
+ip subnet-zero
+ip routing
+!
+interface FastEthernet0/2
+ no switchport
+ ip address 10.0.0.20 255.255.255.0
+!
+interface FastEthernet0/12
+ switchport access vlan 21
+!
+interface FastEthernet0/13
+ switchport trunk encapsulation dot1q
+ switchport trunk allowed vlan 50
+ switchport mode trunk
+!
+!
+interface Vlan21
+ ip address 10.0.2.1 255.255.255.0
+!
+interface Vlan50
+ ip address 192.168.50.2 255.255.255.0
+ ...
+!
+ip classless
+ip route 0.0.0.0 0.0.0.0 10.0.0.1
+ip route 192.168.50.0 255.255.255.0 192.168.50.1
+ip route 192.168.50.21 255.255.255.255 10.0.2.21
+..
+
+
+</pre>
+					</div>
+				</div>
+
+
+					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
+					<span>05.</span>
+					<div class="screen-one-item-container">
+						<h3> Quick test to assess the MTU behaviour between the routed/switched packets.</h3>
+						<p>     </p>
+
+						<p> </p>
+
+<pre>
+
+
+
+
+root@mayura:/etc/sysconfig/network-scripts\> ip link set dev enp7s0 mtu 9000
+root@mayura:/etc/sysconfig/network-scripts\> ip link set dev enp7s0:0 mtu 9000
+
+
+root@mayura:/etc/sysconfig/network-scripts\> ip link show enp7s0:0
+2: enp7s0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 9000 qdisc pfifo_fast state UP mode DEFAULT qlen 1000
+    link/ether 00:1f:bc:02:6f:10 brd ff:ff:ff:ff:ff:ff
+ 
+
+root@mayura:/etc/sysconfig/network-scripts\> ping -M do -s 1970 192.168.50.11 -c 1
+PING 192.168.50.11 (192.168.50.11) 1970(1998) bytes of data.
+1978 bytes from 192.168.50.11: icmp_seq=1 ttl=62 time=1.59 ms
+
+--- 192.168.50.11 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 1.597/1.597/1.597/0.000 ms
+
+
+root@mayura:/etc/sysconfig/network-scripts\> ping -M do -s 1971 192.168.50.11 -c 1
+PING 192.168.50.11 (192.168.50.11) 1971(1999) bytes of data.
+^C
+--- 192.168.50.11 ping statistics ---
+1 packets transmitted, 0 received, 100% packet loss, time 0ms
+
+If the max MTU negotiated for the whole route is 1500, the max payload that an ICMP packet can carry is 1472.
+
+IP header ICMP header ICMP payload size     MTU (1500)
+20 bytes  8 bytes   1472 bytes  (maximum) 20 + 8 + 1472 = 1500
+
+If the max MTU negotiated for the whole route is 1998, the max payload that an ICMP packet can carry is 1970.
+ 
+root@mayura:~\> echo " 1998 - 20 - 8 " | bc -l
+1970
+
+
+Expected outcome if the route/path it takes via SVI (switch-trunk-switch) vs the R620 routed interface is that an 
+expected ICMP response of Type 3, Code 4 back from the router asking the sender to defrag the packet.
+
+root@mayura:/etc/sysconfig/network-scripts\> ping -M do -s 1472 10.0.1.11 -c 1
+PING 10.0.1.11 (10.0.1.11) 1472(1500) bytes of data.
+1480 bytes from 10.0.1.11: icmp_seq=1 ttl=61 time=9.35 ms
+
+--- 10.0.1.11 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 9.359/9.359/9.359/0.000 ms
+
+root@mayura:/etc/sysconfig/network-scripts\> ping -M do -s 1473 10.0.1.11 -c 1
+PING 10.0.1.11 (10.0.1.11) 1473(1501) bytes of data.
+From 10.0.0.1 icmp_seq=1 Frag needed and DF set (mtu = 1500)
+
+
+root@mayura:~\> tcpdump -nni enp7s0 -vvv -e -s0  icmp
+...
+15:43:18.470479 00:1f:bc:02:6f:10 > 00:1c:0e:58:aa:42, ethertype IPv4 (0x0800), length 1515: (tos 0x0, ttl 64, id 0, offset 0, flags [DF], proto ICMP (1), length 1501)
+    10.0.2.21 > 10.0.1.11: ICMP echo request, id 28669, seq 1, length 1481
+15:43:18.471395 00:1c:0e:58:aa:42 > 00:1f:bc:02:6f:10, ethertype IPv4 (0x0800), length 590: (tos 0xc0, ttl 63, id 48342, offset 0, flags [none], proto ICMP (1), length 576)
+    10.0.0.1 > 10.0.2.21: ICMP 10.0.1.11 unreachable - need to frag (mtu 1500), length 556
+  (tos 0x0, ttl 63, id 0, offset 0, flags [DF], proto ICMP (1), length 1501)
+    10.0.2.21 > 10.0.1.11: ICMP echo request, id 28669, seq 1, length 1481
+
+
+#One observation here is the SVI/switch VLAN interface isn't sending back the ICMP response for defrag! Yes to explore on this front...
+
+root@mayura:/etc/sysconfig/network-scripts\> ping -M do -s 1970 192.168.50.11 -c 1
+PING 192.168.50.11 (192.168.50.11) 1970(1998) bytes of data.
+1978 bytes from 192.168.50.11: icmp_seq=1 ttl=62 time=1.50 ms
+
+--- 192.168.50.11 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 1.500/1.500/1.500/0.000 ms
+root@mayura:/etc/sysconfig/network-scripts\>
+root@mayura:/etc/sysconfig/network-scripts\> ping -M do -s 1971 192.168.50.11 -c 1
+PING 192.168.50.11 (192.168.50.11) 1971(1999) bytes of data.
+
+--- 192.168.50.11 ping statistics ---
+1 packets transmitted, 0 received, 100% packet loss, time 0ms
+
+
+</pre>
+					</div>
+				</div>
+
+
+<!-- Contact -->
+<a class="anchor" id="contact"></a>
+
+<section class="contact">
+		<div class="contact-wrap">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-12 __web-inspector-hide-shortcut__">
+						<div class="contact-title">
+							<h2></h2>
+							<p> 
+								<br class="disable"></p>
+						</div>
+						<!-- /.contact-title -->
+					</div>
+					<!-- /.col-md-12 -->
+					
+					<!-- /.col-md-10 -->
+				</div>
+				<!-- /.row -->
+			</div>
+			<!-- /.container -->
+		</div>
+		<!-- /.directions-wrap -->
+	</section>
+
+</div>
+<!-- Site content -->
+
+<!-- Footer -->
+<a class="anchor" id="footer"></a>
+<footer class="footer" style="background-image: url(img/footer-bg.jpg); background-position:center; background-size: cover; background-repeat:no-repeat;">
+	<div class="footer-wrap">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="footer-title">
+						<h2>www.intercloudzone.com</h2>
+						<ul class="footer-icons">
+						<script src="//platform.linkedin.com/in.js" type="text/javascript"> lang: en_US</script>
+						<script type="IN/Share" data-url="http://www.intercloudzone.com/intervlanrouting.html"></script>
+						</ul>
+						<p> </p>
+					</div>
+					<!-- /.footer-title -->
+				</div>
+				<!-- /.col-md-12 -->
+			</div>
+			<!-- /.row -->
+		</div>
+		<!-- /.container -->
+	</div>
+	<!-- /.directions-wrap -->
+</footer>
+<!-- Footer -->
+
+
+
+<!-- links -->
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?key=AIzaSyDDuC8pr6YqiBr9wqfhNIJ56AqwzWKhiQo"></script>
+<!-- build:js -->
+
+ 
+
+<script src="js/libs/jquery.min.js"></script>
+<script type="text/javascript" src="js/libs/bootstrap.min.js"></script>
+<script type="text/javascript" src="js/libs/waypoints.min.js"></script>
+<script type="text/javascript" src="js/libs/slick.min.js"></script>
+<script type="text/javascript" src="js/libs/magnific-popup.min.js"></script>
+
+<script type="text/javascript" src="js/common.js"></script>
+<!-- endbuild -->
+<!-- links -->
+</body>
+</html>

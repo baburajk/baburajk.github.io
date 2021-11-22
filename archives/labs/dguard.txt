@@ -1,0 +1,196 @@
+DataGuard
+=========
+Created Thursday 28 May 2015
+
+vi $ORACLE_HOME/sqlplus/admin/glogin.sql
+set sqlprompt "_user '@' _connect_identifier > "
+https://tamimdba.wordpress.com/tag/db_recovery_file_dest/
+
+
+
+
+
+PREPARE PRIMARY DATABASE - CHICAGO
+==================================
+
+SELECT flashback_on, log_mode, force_logging FROM v$database;
+
+ 
+alter system set log_archive_format='CHICAGO_%d_%t_%s_%r.arc' scope = spfile;
+alter system set DB_FLASHBACK_RETENTION_TARGET=200;
+alter system set DB_RECOVERY_FILE_DEST_SIZE=4G;
+alter system set DB_RECOVERY_FILE_DEST = '/u02/app/oracle/fast_recovery_area';
+alter database archivelog;
+alter database flashback on;
+alter database force logging;
+
+
+
+Create Standby redo log files - one member for each group. Add one group extra.
+
+set linesize 1000
+column member format a70
+select group#, member  from v$logfile order by group# asc;
+select group#, bytes from v$log;
+
+    GROUP# MEMBER                                                               
+---------- ----------------------------------------------------------------------
+         1 /u02/app/oracle/oradata/CHICAGO/redo01.log                            
+         2 /u02/app/oracle/oradata/CHICAGO/redo02.log                            
+         3 /u02/app/oracle/oradata/CHICAGO/redo03.log                            
+
+
+    GROUP#      BYTES
+---------- ----------
+         1   52428800
+         2   52428800
+         3   52428800
+
+    GROUP# MEMBER                                                               
+---------- ----------------------------------------------------------------------
+         1 /u02/app/oracle/oradata/CHICAGO/redo01.log                            
+         2 /u02/app/oracle/oradata/CHICAGO/redo02.log                            
+         3 /u02/app/oracle/oradata/CHICAGO/redo03.log                            
+
+
+    GROUP#      BYTES
+---------- ----------
+         1   52428800
+         2   52428800
+         3   52428800
+
+
+
+
+alter database add standby logfile '/u02/app/oracle/oradata/CHICAGO/stdbyredo01.log' size 50M;
+alter database add standby logfile '/u02/app/oracle/oradata/CHICAGO/stdbyredo02.log' size 50M;
+alter database add standby logfile '/u02/app/oracle/oradata/CHICAGO/stdbyredo03.log' size 50M;
+
+
+
+Add Service Names- CHICAGO IS PRIMARY, LONDON IS STANDBY
+
+ALTER SYSTEM SET SERVICE_NAMES = 'CHICAGO.INTERCLOUDZONE.COM','PRIMARY.INTERCLOUDZONE.COM';
+
+NAME          TYPE   VALUE                                                  
+------------- ------ ------------------------------------------------------ 
+service_names string CHICAGO.INTERCLOUDZONE.COM, PRIMARY.INTERCLOUDZONE.COM 
+
+
+
+Update tnsnames.ora
+
+CHICAGO =
+  (DESCRIPTION =
+    (ADDRESS = (PROTOCOL = TCP)(HOST = rbpridb)(PORT = 1530))
+    (ADDRESS = (PROTOCOL = TCP)(HOST = rbpridb)(PORT = 1521))
+    (CONNECT_DATA =
+      (SERVER = DEDICATED)
+      (SERVICE_NAME = CHICAGO.INTERCLOUDZONE.COM)
+    )
+  )
+
+PRIMARY =
+  (ADDRESS_LIST =
+    (ADDRESS = (PROTOCOL = TCP)(HOST = rbpridb.intercloudzone.com)(PORT = 1521))
+    (ADDRESS = (PROTOCOL = TCP)(HOST = rbsbydb.intercloudzone.com)(PORT = 1521))
+        (CONNECT_DATA = (SERVICE_NAME = CHICAGO.INTERCLOUDZONE.COM))
+  )
+
+
+Set the log_archive_dest_1 to use the flash_recovery_area and enable it. 
+
+alter system set log_archive_dest_1='location=USE_DB_RECOVERY_FILE_DEST valid_for=(ALL_LOGFILES,ALL_ROLES) db_unique_name=CHICAGO' scope=both;
+
+alter system set log_archive_dest_state_1='enable' scope = both;
+
+
+alter system set log_archive_config = 'dg_config=(CHICAGO,LONDON)' scope=both;
+
+
+Automatic standby_file_management is set so any time a datafile is added/deleted it get's replicated to the standby database.
+alter system set standby_file_management='auto' scope=both;
+
+
+
+
+
+PREPARE STANDBY DATABASE - LONDON
+=================================
+
+
+
+mkdir -pv /u02/app/oracle/admin/LONDON/adump
+mkdir -pv /u02/app/oracle/oradata/LONDON/pdbseed
+mkdir -pv /u02/app/oracle/oradata/LONDON/CPDB1
+mkdir -pv /u02/app/oracle/oradata/LONDON/CPDB2
+mkdir -pv /u02/app/oracle/fast_recovery_area/LONDON/
+
+
+Create an init.ora file
+
+cd $ORACLE_HOME/dbs
+echo 'DB_NAME=LONDON' > initLONDON.ora
+echo 'DB_DOMAIN=INTERCLOUDZONE.COM' >> initLONDON.ora
+
+Copy the password file
+
+[oracle@rbpridb dbs]$ scp orapwCHICAGO rbsbydb:/u02/app/oracle/product/12.1.0/dbhome_1/dbs/orapwLONDON
+orapwCHICAGO                                                      100% 7680     7.5KB/s   00:00
+
+
+[oracle@rbsbydb dbs]$ env |grep LONDON
+ORACLE_SID=LONDON
+
+
+Start the database in nomount mode
+
+
+[oracle@rbsbydb admin]$ sqlplus / as sysdba;
+
+SQL*Plus: Release 12.1.0.1.0 Production on Mon Jun 1 19:15:39 2015
+
+Copyright (c) 1982, 2013, Oracle.  All rights reserved.
+
+Connected to an idle instance.
+
+SQL> startup nomount
+ORACLE instance started.
+
+Total System Global Area  217157632 bytes
+Fixed Size                  2286656 bytes
+Variable Size             159386560 bytes
+Database Buffers           50331648 bytes
+Redo Buffers                5152768 bytes
+SQL> host
+[oracle@rbsbydb admin]$ ps -ef|grep smon
+oracle    2402     1  0 19:15 ?        00:00:00 ora_smon_LONDON
+oracle    2451  2412  0 19:15 pts/0    00:00:00 grep --color=auto smon
+
+
+tnsnames.ora
+============
+
+LONDON =
+  (DESCRIPTION =
+    (ADDRESS = (PROTOCOL = TCP)(HOST = rbsbydb)(PORT = 1530))
+    (ADDRESS = (PROTOCOL = TCP)(HOST = rbsbydb)(PORT = 1521))
+    (CONNECT_DATA =
+      (SERVER = DEDICATED)
+      (SID = LONDON )
+    )
+  )
+
+
+
+[oracle@rbsbydb admin]$ rman target sys/oracle@CHICAGO auxiliary sys/oracle@LONDON
+
+Recovery Manager: Release 12.1.0.1.0 - Production on Mon Jun 1 19:22:22 2015
+
+Copyright (c) 1982, 2013, Oracle and/or its affiliates.  All rights reserved.
+
+connected to target database: CHICAGO (DBID=1490970004)
+connected to auxiliary database: LONDON (not mounted)
+
+
+

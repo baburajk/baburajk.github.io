@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="Generator" content="EditPlus®">
+  <meta name="Author" content="">
+  <meta name="Keywords" content="">
+  <meta name="Description" content="">
+  <title>Notes</title>
+ <link rel="stylesheet" href="css/stylesheet1.css">
+ <link rel="stylesheet" href="css/stylesheet2.css">
+ <link rel="stylesheet" href="css/w3.css">
+
+ <style type="text/css" >
+	  
+ </style>
+<script Language="Javascript">
+function toggle() {
+    var x = document.getElementById('contents');
+    if (x.style.display === 'none') {
+		document.getElementById("togglelink").text = "hide"
+        x.style.display = 'block';
+    } else {
+        x.style.display = 'none';
+		document.getElementById("togglelink").text = "show"
+    }
+}
+</script>
+
+
+ </head>
+	<body> 
+		<div id="nav">
+			<div id="jumplinks"> Quick notes </div>
+		</div>
+    
+		<div id="body">
+			<div id="content" class="mw-body" role="main">
+ 				<div id="toc" class="toc"><div id="toctitle"><h2>Contents</h2><span class="toctoggle">&nbsp;[<a href="javascript:toggle()" id="togglelink">hide</a>]&nbsp;</span></div>
+					<div id="contents">
+						<ul>
+							<li> <a href="#iscsi">	 <span class="tocnumber">	1 </span> <span class="toctext"> ISCSI	</span></a> </li> 
+							<li> <a href="#NTP">	 <span class="tocnumber">	2 </span> <span class="toctext"> NTP	</span></a> </li> 
+							<li> <a href="#firewalld">	 <span class="tocnumber">	3 </span> <span class="toctext"> Firewalld 	</span></a> </li> 
+							<li> <a href="#IPv6">	 <span class="tocnumber">	2 </span> <span class="toctext"> IPv6 	</span></a> </li> 
+						</ul>
+					</div>
+				</div>
+
+				<style>
+					html,body,h1,h2,h3,h4,h5,h6 { font-family: "Comic Sans MS", cursive, sans-serif; }
+				</style>
+ 
+
+
+<div class="w3-container">
+	<h1><span class="mw-headline" id="Bonding_Teaming"> Bonding/Teaming </h1>	
+<p>
+
+</p>
+
+<pre> 
+
+-How to remove stale volume group entries..
+[root@rhce1 ~]# pvscan
+  /dev/vgsan/lvsan0: read failed after 0 of 4096 at 0: Input/output error
+  /dev/vgsan/lvsan0: read failed after 0 of 4096 at 1073676288: Input/output error
+  /dev/vgsan/lvsan0: read failed after 0 of 4096 at 1073733632: Input/output e
+
+
+[root@rhce1 ~]# dmsetup remove vgsan-lvsan1 -f
+[root@rhce1 ~]# dmsetup remove vgsan-lvsan0 -f
+[root@rhce1 ~]# dmsetup ls
+vgos-home	(253:4)
+vgos-swap	(253:1)
+vgos-root	(253:0)
+
+
+
+ /> cd /backstores/block
+/backstores/block> ls
+o- block ..................................................................................................... [Storage Objects: 0]
+/backstores/block> create iscsidisk1 dev=/dev/vdb
+Created block storage object iscsidisk1 using /dev/vdb.
+
+--NFS Sharing Details
+
+SHARING FILES
+If you want to share files with multiple domains (Apache, FTP, rsync, Samba), you can set a file context of public_content_t and public_content_rw_t. These context allow any of the above domains to read the content. If you want a particular domain to write to the public_content_rw_t domain, you must set the appropriate boolean.
+Allow nfsd servers to read the /var/nfsd directory by adding the public_content_t file type to the directory and by restoring the file type.
+semanage fcontext -a -t public_content_t "/var/nfsd(/.*)?" 
+restorecon -F -R -v /var/nfsd
+
+Allow nfsd servers to read and write /var/nfsd/incoming by adding the public_content_rw_t type to the directory and by restoring the file type. You also need to turn on the nfsd_anon_write boolean.
+semanage fcontext -a -t public_content_rw_t "/var/nfsd/incoming(/.*)?" 
+restorecon -F -R -v /var/nfsd/incoming 
+setsebool -P nfsd_anon_write 1
+
+If you want to allow nfs servers to modify public files used for public file transfer services. Files/Directories must be labeled public_content_rw_t., you must turn on the nfsd_anon_write boolean.
+
+setsebool -P nfsd_anon_write 1
+
+
+
+
+</pre>
+
+</div>
+
+ 
+ <div class="w3-container">
+	<h1><span class="mw-headline" id="ISCSI"> ISCSI </h1>	
+<p>
+
+</p>
+
+<pre> 
+  https://www.rootusers.com/how-to-configure-an-iscsi-target-and-initiator-in-linux/
+https://www.lisenet.com/2016/iscsi-target-and-initiator-configuration-on-rhel-7/
+
+Note:
+Enable Service
+Add firewall service/port
+While mounting add _netdev. The _netdev mount option is mandatory to postpone the mount operation after the network initialization. If you don’t do it, the initiator boot process will be stopped after a timeout in maintenance mode.
+
+UUID=84c298ec-139a-4a4b-8869-ec7af8615ca2 /tmp/iscsimnt                   xfs     _netdev        0 0
+
+
+https://www.lisenet.com/2016/iscsi-target-and-initiator-configuration-on-rhel-7/
+
+
+  /> cd /backstores/block
+/backstores/block> ls
+o- block ..................................................................................................... [Storage Objects: 0]
+/backstores/block> create iscsidisk1 dev=/dev/vdb
+Created block storage object iscsidisk1 using /dev/vdb.
+
+WWN not valid as: iqn, naa, eui
+/iscsi> create iqn.2018-01.com.intercloudzone:iscsidisk1
+Created target iqn.2018-01.com.intercloudzone:iscsidisk1.
+Created TPG 1.
+Global pref auto_add_default_portal=true
+Created default portal listening on all IPs (0.0.0.0), port 3260.
+/iscsi> ls
+o- iscsi ............................................................................................................. [Targets: 1]
+  o- iqn.2018-01.com.intercloudzone:iscsidisk1 .......................................................................... [TPGs: 1]
+    o- tpg1 ................................................................................................ [no-gen-acls, no-auth]
+      o- acls ........................................................................................................... [ACLs: 0]
+      o- luns ........................................................................................................... [LUNs: 0]
+      o- portals ..................................................................................................... [Portals: 1]
+        o- 0.0.0.0:3260 ...................................................................................................... [OK]
+/iscsi>
+
+/iscsi/iqn.20.../tpg1/portals> create 192.168.122.10
+Using default IP port 3260
+Could not create NetworkPortal in configFS
+/iscsi/iqn.20.../tpg1/portals> ls
+o- portals ........................................................................................................... [Portals: 1]
+  o- 0.0.0.0:3260 ............................................................................................................ [OK]
+/iscsi/iqn.20.../tpg1/portals> delete 0.0.0.0 ip_port=3260
+Deleted network portal 0.0.0.0:3260
+/iscsi/iqn.20.../tpg1/portals> create 192.168.122.10
+Using default IP port 3260
+Created network portal 192.168.122.10:3260.
+
+/iscsi/iqn.20...sk1/tpg1/luns> create /backstores/block/iscsidisk1
+Created LUN 0.
+
+/iscsi/iqn.20...csidisk1/tpg1> set attribute authentication=0 demo_mode_write_protect=0 generate_node_acls=1
+Parameter authentication is now '0'.
+Parameter demo_mode_write_protect is now '0'.
+Parameter generate_node_acls is now '1'.
+
+/> exit
+Global pref auto_save_on_exit=true
+Last 10 configs saved in /etc/target/backup.
+Configuration saved to /etc/target/saveconfig.json
+[root@rhce1 ~]# cat /etc/target/saveconfig.json
+
+--Create ACL
+
+
+[root@rhce2 ~]# cat /etc/iscsi/initiatorname.iscsi
+InitiatorName=iqn.1994-05.com.redhat:ab5f22d09eca
+
+
+/iscsi/iqn.2018-01.com.intercloudzone:iscsidisk1/tpg1/acls
+/iscsi/iqn.20...sk1/tpg1/acls> create iqn.1994-05.com.redhat:ab5f22d09eca
+Created Node ACL for iqn.1994-05.com.redhat:ab5f22d09eca
+Created mapped LUN 1.
+Created mapped LUN 0.
+
+
+--Discover targets
+ 
+[root@rhce2 ~]# iscsiadm --mode discovery --type sendtargets --portal 192.168.122.10
+192.168.122.10:3260,1 iqn.2018-01.com.intercloudzone:iscsidisk1
+
+--Try to login
+[root@rhce2 ~]# iscsiadm -m node -T iqn.2018-01.com.intercloudzone:iscsidisk1 -l
+Logging in to [iface: default, target: iqn.2018-01.com.intercloudzone:iscsidisk1, portal: 192.168.122.10,3260] (multiple)
+Login to [iface: default, target: iqn.2018-01.com.intercloudzone:iscsidisk1, portal: 192.168.122.10,3260] successful.
+
+-Check sessions
+[root@rhce2 ~]# iscsiadm -m session -P 0
+tcp: [1] 192.168.122.10:3260,1 iqn.2018-01.com.intercloudzone:iscsidisk1 (non-flash)
+
+--Check the devices ()
+[root@rhce2 ~]# lsblk --scsi
+NAME HCTL       TYPE VENDOR   MODEL             REV TRAN
+sda  2:0:0:0    disk LIO-ORG  iscsidisk1       4.0  iscsi
+sdb  2:0:0:1    disk LIO-ORG  testfile         4.0  iscsi
+
+--Logout 
+
+[root@rhce2 ~]# iscsiadm -m node -u
+Logging out of session [sid: 1, target: iqn.2018-01.com.intercloudzone:iscsidisk1, portal: 192.168.122.10,3260]
+Logout of [sid: 1, target: iqn.2018-01.com.intercloudzone:iscsidisk1, portal: 192.168.122.10,3260] successful.
+[root@rhce2 ~]# lsblk --scsi
+[root@rhce2 ~]# iscsiadm -m session -P 0
+iscsiadm: No active sessions.
+
+--Example of mapping lun afterwards
+/iscsi/iqn.20...ce4-disk1-acl> create mapped_lun=0 tpg_lun_or_backstore=/backstores/block/disk1
+Created Mapped LUN 0.
+
+--Create a write-protected LUN (under ACL) 
+
+/iscsi/iqn.20...ce4-disk1-acl> create mapped_lun=1 tpg_lun_or_backstore=/backstores/fileio/file1 write_protect=1
+Created Mapped LUN 1.
+/iscsi/iqn.20...ce4-disk1-acl> ls
+o- iqn.2018-04.com.intercloudzone:rhce4-disk1-acl ............................................................... [Mapped LUNs: 2]
+  o- mapped_lun0 ......................................................................................... [lun0 block/disk1 (rw)]
+  o- mapped_lun1 ........................................................................................ [lun1 fileio/file1 (ro)
+
+
+
+--Cleanup nodes if things go wrong
+
+
+[root@rhce3 ~]# lsblk --scsi
+NAME HCTL       TYPE VENDOR   MODEL             REV TRAN
+sda  18:0:0:0   disk LIO-ORG  san0             4.0  iscsi
+sdb  17:0:0:0   disk LIO-ORG  iscsidisk1       4.0  iscsi
+sdc  18:0:0:1   disk LIO-ORG  san1             4.0  iscsi
+sdd  17:0:0:1   disk LIO-ORG  testfile         4.0  iscsi
+
+
+[root@rhce3 ~]# ls -lr /var/lib/iscsi/nodes/
+total 0
+drw-------. 3 root root 35 Jan 26 12:15 iqn.2018-01.local.rhce.ipa:target
+drw-------. 3 root root 35 Jan 26 12:15 iqn.2018-01.com.intercloudzone:iscsidisk1
+
+[root@rhce3 ~]# iscsiadm -m node -T iqn.2018-01.local.rhce.ipa:target -p 192.168.122.10 --logout
+Logging out of session [sid: 17, target: iqn.2018-01.local.rhce.ipa:target, portal: 192.168.122.10,3260]
+Logout of [sid: 17, target: iqn.2018-01.local.rhce.ipa:target, portal: 192.168.122.10,3260] successful.
+[root@rhce3 ~]# iscsiadm -m node -T iqn.2018-01.local.rhce.ipa:target -p 192.168.122.10 -o delete
+
+[root@rhce3 ~]# lsblk --scsi
+NAME HCTL       TYPE VENDOR   MODEL             REV TRAN
+sdb  17:0:0:0   disk LIO-ORG  iscsidisk1       4.0  iscsi
+sdd  17:0:0:1   disk LIO-ORG  testfile         4.0  iscsi
+
+[root@rhce3 ~]# blkid  |grep sdb
+/dev/sdb: UUID="2ef58790-64b7-4723-8e04-daa05b040127" TYPE="xfs"
+
+
+/iscsi/iqn.20...:c3e0e869a66f> set auth userid=client password=client
+Parameter password is now 'client'.
+Parameter userid is now 'client'.
+
+https://www.lisenet.com/2016/iscsi-target-and-initiator-configuration-on-rhel-7/
+
+
+Note: The device names may vary during reboots, so only the UUID's should be used to mount with _netdev option.
+#UUID="4ee8aecb-de46-4d29-9858-811be645a195"     /test ext3     _netdev         0 0
+
+
+--DIscover (-D should be passed in case of discoverydb mode)
+[root@rhce5 doc]# iscsiadm -m discoverydb -t sendtargets -p rhce4.intercloudzone.com -D
+192.168.122.40:3260,1 iqn.2018-04.com.intercloudzone:rhce4-disk1
+
+
+--Samba multiuser option with elevated privlege.
+mount -o username=dev2 -o rw,multiuser,sec=ntlmssp //rhce1.intercloudzone.com/smbdevops /mnt/smbmulti/
+
+
+</pre>
+ 
+ 
+	
+</body>
+</html>

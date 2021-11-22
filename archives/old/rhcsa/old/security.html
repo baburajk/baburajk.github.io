@@ -1,0 +1,929 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="Generator" content="EditPlus®">
+  <meta name="Author" content="">
+  <meta name="Keywords" content="">
+  <meta name="Description" content="">
+  <title>Notes</title>
+ <link rel="stylesheet" href="css/stylesheet1.css">
+ <link rel="stylesheet" href="css/stylesheet2.css">
+ <link rel="stylesheet" href="css/w3.css">
+
+ <style type="text/css" >
+	  
+ </style>
+<script Language="Javascript">
+function toggle() {
+    var x = document.getElementById('contents');
+    if (x.style.display === 'none') {
+		document.getElementById("togglelink").text = "hide"
+        x.style.display = 'block';
+    } else {
+        x.style.display = 'none';
+		document.getElementById("togglelink").text = "show"
+    }
+}
+</script>
+
+
+ </head>
+	<body> 
+		<div id="nav">
+			<div id="jumplinks"> Reference Notes/Hints </div>
+		</div>
+    
+		<div id="body">
+			<div id="content" class="mw-body" role="main">
+ 				<div id="toc" class="toc"><div id="toctitle"><h2>Contents</h2><span class="toctoggle">&nbsp;[<a href="javascript:toggle()" id="togglelink">hide</a>]&nbsp;</span></div>
+					<div id="contents">
+						<ul>
+ 							<li> <a href="#generic"> <span class="tocnumber">	1 </span> <span class="toctext"> Generic 	</span></a> </li>
+							<li> <a href="#tcpwrappers"> <span class="tocnumber">	2 </span> <span class="toctext"> TCP Wrappers 	</span></a> </li>
+							<li> <a href="#iptables"> <span class="tocnumber">	2 </span> <span class="toctext"> IPTABLES 	</span></a> </li>	
+							<li> <a href="#selinux"> <span class="tocnumber">	2 </span> <span class="toctext"> SELINUX 	</span></a> </li>	
+ 						</ul>
+					</div>
+				</div>
+
+				<style>
+					html,body,h1,h2,h3,h4,h5,h6 { font-family: "Comic Sans MS", cursive, sans-serif; }
+				</style>
+ 
+ 
+
+	
+<div class="w3-container">
+	<h1><span class="mw-headline" id="security"> Security</h1>
+		
+<p>
+	Security/Auditing related...
+</p>
+
+	
+
+<pre> 
+
+--Login/Logout Details
+Data Stored @ /var/log/wtmp 
+last
+last reboot
+
+--Failed User attempts
+Data stored @ /var/log/btmp
+lastb
+
+--Users who has never logged in
+lastlog
+
+
+--Login/Logout Details
+Data Stored @ /var/log/wtmp 
+last
+last reboot
+
+--Failed User attempts
+Data stored @ /var/log/btmp
+lastb
+
+--Users who has never logged in
+lastlog
+
+--setuid/setgid/stickybit (4 - 2 - 1)
+	
+#setuid 
+[root@lab125a ~]# ll /usr/bin/su
+-rwsr-xr-x. 1 root root 32072 Nov 20  2015 /usr/bin/su
+
+#setuid is bit so other users can execute su with 'root' privileges. (chmod 4755)
+find / -perm -4000 
+
+#setgid
+Non-owners can execute with exact privileges that the group members have.(chmod 2755)
+find / -perm -4000 
+
+[root@lab125a ~]# ll /usr/bin/wall
+-r-xr-sr-x. 1 root tty 15344 Jun  9  2014 /usr/bin/wall
+
+#Can also be set on group-shared directories to allow files/sub-dirs to inherit the owning group. The standard behavior 
+when a directory/file is created to always receive the creator's group.
+
+#stickybit 
+[root@lab125a ~]# ll -d /tmp/
+drwxrwxrwt. 12 root root 4096 Sep 25 19:52 /tmp/
+
+Protects the files being removed/deleted by non-owners even though the directory has the rw permissions.
+
+--passwd/shadow/group/gshadow
+
+Limits are defined in /etc/login.defs
+[root@lab125a etc]# cat /etc/login.defs | grep -v ^# |grep -v ^$
+MAIL_DIR	/var/spool/mail
+PASS_MAX_DAYS	99999
+PASS_MIN_DAYS	0
+PASS_MIN_LEN	5
+..
+
+--shadow
+!! at the beginning of 2nd field(password filed) means user is locked.
+root:$6$CYV0wm.5tR7eWgd4fRFGVmWrdD8vQwIavP.::0:99999:7:::
+bin:*:16659:0:99999:7:::
+babu:!!:17396:0:99999:7:::
+
+Lock password (passwd -l babu), Unlock(passwd -u babu), Lock Account(usermod -L babu), Unlock Account(usermod -U babu)
+[root@lab125a etc]# passwd -S babu
+babu NP 2017-08-17 0 99999 7 -1 (Empty password.)
+[root@lab125a etc]# passwd -S user1
+user1 LK 2017-08-21 0 99999 7 -1 (Password locked.)
+
+--Number of days before which the passwords should be changed
+change -m user 10
+passwd -n user 15
+
+
+
+--Perms on gshadow file is 000
+[root@lab125a etc]# ls -ltr gshadow
+----------. 1 root root 658 Sep 19 09:42 gshadow
+
+-VErify integrity of passwd/shadow files
+pwck
+grpck
+
+--vipwd and vigr
+
+--Activate & Deactivate shadow mechanism
+pwconv, pwunconv , grpconv, grpunconv
+
+--/etc/skel
+[root@lab125a etc]# echo "Welcome to Lab125a" > /etc/skel/readme.txt
+[root@lab125a etc]# useradd usertest
+[root@lab125a etc]# ls -l /home/usertest/
+total 4
+-rw-r--r--. 1 usertest usertest 19 Sep 29 16:43 readme.txt
+
+--useradd
+Picks default values from /etc/default/useradd and /etc/login.defs
+
+--.bashrc/.bash_profile/.bash_logout behaviour during su and su -
+
+
+[root@lab125a ~]# su user3
+ This is from .bashrc
+[user3@lab125a root]$ exit
+exit
+
+[root@lab125a profile.d]# su - user3
+Last login: Sat Sep 30 11:08:48 CDT 2017 on pts/0
+This is set in /etc/profile.d/runme.sh : Setting vi editor for shell
+ This is from .bashrc
+This is from .bash_profile
+[user3@lab125a ~]$ exit
+logout
+This is from .bash_logout
+
+Note:When you login (type username and password) via console, either sitting at the machine,
+or remotely via ssh: .bash_profile is executed to configure your shell before the initial command prompt.
+But, if you’ve already logged into your machine and open a new terminal window (xterm) inside Gnome or KDE,
+then .bashrc is executed before the window command prompt. .bashrc is also run when you start a new bash instance by typing /bin/bash in a terminal.
+
+--Example (Expire users passwod and prompt it to change at next login (-d 0) , be unable to change the password within 5 days following last
+password change (-m 5) and disable account expiration ( -E -1 )
+
+[root@lab125a ~]# chage -E -1 -d 0 -m 5 user3
+
+
+--su - (Hypen) ensures that directory is switched to the homedirectory of new user , changes environment variables to that of new user.
+
+--System wide scripts 
+/etc/bashrc and /etc/profile executes scripts in /etc/profile.d for all users.
+Env variables like HOSTNAME, HISTSIZE, HISTCONTROL are set in /etc/profile
+
+
+
+</pre>
+
+</div>
+	
+
+ 
+<div class="w3-container">
+	<h1><span class="mw-headline" id="tcpwrappers"> TCP Wrappers  </h1>
+		
+<p>
+
+	
+</p>
+
+	
+
+<pre> 
+
+Shows the difference from the defaults..
+
+[root@server1 demo]# semanage boolean -l -C
+SELinux boolean                State  Default Description
+
+zoneminder_run_sudo            (on   ,  off)  Allow zoneminder to run sudo
+httpd_enable_homedirs          (on   ,   on)  Allow httpd to enable homedirs
+
+
+
+/etc/hosts.allow is parsed first followed by /etc/hosts/deny. <BR> 
+netcat not a good tool to validate the connectivity as it will show connected but the ssh itself wouldn't work. <BR>
+This can only be used to restrict wrapper-aware programs like finger,sssh,telnet, rsh, talk. <BR>
+	
+service : user@source
+
+--suoders reference
+http://sleepyhead.de/howto/?href=sudo
+http://toroid.org/sudoers-syntax
+
+User Host = (Runas) Command
+
+Runas
+If you also specify a target group, e.g., (postgres:postgres), sudo will accept any combination of the listed 
+users and groups (see the section on aliases below). If you specify only a target group, e.g., (:postgres),
+ sudo will accept and act on “-g postgres” but run commands only as the invoking user.
+
+ams ALL=/bin/ls, /bin/df -h /, /bin/date ""
+Double quotes implies command can be executed only without arguments.
+
+Options
+Before the command, you can specify zero or more options to control how it will be executed. The most important options are NOPASSWD (to not require a password) and SETENV (to allow the user to set environment variables for the command).
+ams ALL=(ALL) NOPASSWD: SETENV: /bin/ls
+
+
+-- Limit access to su
+
+Add ID's to the wheel group
+
+-bash-4.2$ grep wheel /etc/group
+wheel:x:10:arjun,oracle
+
+Enable PAM module ( Uncomment below line )
+[root@server1 security]# cat /etc/pam.d/su
+#%PAM-1.0
+...
+# Uncomment the following line to require a user to be in the "wheel" group.
+auth		required	pam_wheel.so use_uid
+
+--Two ways to check whether a library supports the tcpwrapper
+
+
+[root@lab19 ~]# ldd /usr/sbin/sshd | grep libwrap
+	libwrap.so.0 => /lib64/libwrap.so.0 (0x00007f51bb5ba000)
+
+or
+
+[root@lab125a ~]# strings -f /usr/sbin/* | grep hosts_access
+/usr/sbin/auditd: hosts_access
+/usr/sbin/rpcbind: hosts_access
+/usr/sbin/rpc.mountd: hosts_access
+/usr/sbin/rpc.rquotad: hosts_access
+/usr/sbin/rpc.statd: hosts_access
+/usr/sbin/sshd: hosts_access
+
+
+ ausearch -c "httpd" -m AVC
+ time->Tue Nov 14 20:43:36 2017
+type=PROCTITLE msg=audit(1510713816.781:964): proctitle=2F7573722F7362696E2F6874747064002D44464F524547524F554E44
+type=SYSCALL msg=audit(1510713816.781:964): arch=c000003e syscall=4 success=no exit=-13 a0=55d49b0f2100 a1=7ffc0a425640 a2=7ffc0a425640 a3=7f04064e9792 items=0 ppid=11184 pid=11188 auid=4294967295 uid=48 gid=48 euid=48 suid=48 fsuid=48 egid=48 sgid=48 fsgid=48 tty=(none) ses=4294967295 comm="httpd" exe="/usr/sbin/httpd" subj=system_u:system_r:httpd_t:s0 key=(null)
+type=AVC msg=audit(1510713816.781:964): avc:  denied  { getattr } for  pid=11188 comm="httpd" path="/custom/index.html" dev="dm-0" ino=149255 scontext=system_u:system_r:httpd_t:s0 tcontext=unconfined_u:object_r:default_t:s0 tclass=file
+
+
+--Example usecase-1 ( The 'twist' directive is used to replace the service with a selected command )
+
+Lead to the discovery of hte SELINUX NIS context error...
+
+
+[root@lab125a ~]# tail -1 /etc/hosts.allow
+sshd: user1@192.168.2.55
+
+[root@lab125a ~]# tail -1 /etc/hosts.deny
+sshd : ALL : twist /bin/echo "Service suspended for abuse!"
+
+--Use spawn directive to spawn a command capture messages from the host
+sshd : ALL : spawn /bin/echo VSFTP requested to %h >> /var/log/vsftp.log
+
+
+--Ideally user1 should have allowed..
+
+[root@lab19 ~]# ssh user1@lab125a
+ssh_exchange_identification: read: Connection reset by peer
+
+==> /var/log/messages <==
+Oct  3 19:14:18 lab125a dbus[596]: [system] Successfully activated service 'org.fedoraproject.Setroubleshootd'
+Oct  3 19:14:18 lab125a dbus-daemon: dbus[596]: [system] Successfully activated service 'org.fedoraproject.Setroubleshootd'
+Oct  3 19:14:18 lab125a setroubleshoot: SELinux is preventing /usr/sbin/sshd from name_connect access on the tcp_socket port 113. For complete SELinux messages. 
+run sealert -l cd9b7da6-cb08-43ae-81e0-dbd7dd928036
+Oct  3 19:14:18 lab125a python: SELinux is preventing /usr/sbin/sshd from name_connect access on the tcp_socket port 113.#012#012*****  Plugin catchall_boolean (47.5 confidence) suggests   
+******************#012#012If you want to allow nis to enabled#012Then you must tell SELinux about this by enabling the 'nis_enabled' boolean.#012
+You can read 'None' man page for more details.#012Do#012setsebool -P nis_enabled 1#012#012*****  Plugin catchall_boolean (47.5 confidence) suggests   ******************#012#012
+If you want to allow daemons to use tcp wrapper#012Then you must tell SELinux about this by enabling the 'daemons_use_tcp_wrapper' boolean.#012
+
+--Run sealert
+
+[root@lab125a ~]# sealert -l cd9b7da6-cb08-43ae-81e0-dbd7dd928036
+SELinux is preventing /usr/sbin/sshd from name_connect access on the tcp_socket port 113.
+
+*****  Plugin catchall_boolean (47.5 confidence) suggests   ******************
+
+If you want to allow nis to enabled
+Then you must tell SELinux about this by enabling the 'nis_enabled' boolean.
+You can read 'None' man page for more details.
+Do
+setsebool -P nis_enabled 1
+
+*****  Plugin catchall_boolean (47.5 confidence) suggests   ******************
+
+If you want to allow daemons to use tcp wrapper
+Then you must tell SELinux about this by enabling the 'daemons_use_tcp_wrapper' boolean.
+You can read 'None' man page for more details.
+Do
+setsebool -P daemons_use_tcp_wrapper 1
+
+*****  Plugin catchall (6.38 confidence) suggests   **************************
+
+If you believe that sshd should be allowed name_connect access on the port 113 tcp_socket by default.
+Then you should report this as a bug.
+You can generate a local policy module to allow this access.
+Do
+allow this access for now by executing:
+# ausearch -c 'sshd' --raw | audit2allow -M my-sshd
+# semodule -i my-sshd.pp
+
+
+Additional Information:
+Source Context                system_u:system_r:sshd_t:s0-s0:c0.c1023
+Target Context                system_u:object_r:auth_port_t:s0
+Target Objects                port 113 [ tcp_socket ]
+Source                        sshd
+Source Path                   /usr/sbin/sshd
+Port                          113
+Host                          lab125a
+Source RPM Packages
+Target RPM Packages
+Policy RPM                    selinux-policy-3.13.1-102.el7_3.16.noarch
+Selinux Enabled               True
+Policy Type                   targeted
+Enforcing Mode                Enforcing
+Host Name                     lab125a
+Platform                      Linux lab125a 3.10.0-327.el7.x86_64 #1 SMP Thu Nov
+                              19 22:10:57 UTC 2015 x86_64 x86_64
+Alert Count                   24
+First Seen                    2017-10-03 18:37:56 CDT
+Last Seen                     2017-10-03 19:14:17 CDT
+Local ID                      cd9b7da6-cb08-43ae-81e0-dbd7dd928036
+
+Raw Audit Messages
+type=AVC msg=audit(1507076057.918:1493): avc:  denied  { name_connect } for  pid=3693 comm="sshd" dest=113 scontext=system_u:system_r:sshd_t:s0-s0:c0.c1023 tcontext=system_u:object_r:auth_port_t:s0 tclass=tcp_socket
+
+
+Hash: sshd,sshd_t,auth_port_t,tcp_socket,name_connect
+
+AllowTCPForwarding
+This tells whether or not the tunneled connections are allowed.
+
+[root@server ssh]# grep banner sshd_config
+# no default banner path
+Banner /etc/banner
+
+ClientAliveCountMax
+This sets the number of attempts the OpenSSH server should make contacting the client before issuing a disconnect ( Zero means session stays connected indefinitely.
+ )and will be sent in intervals defined by ClientAliveInterval.
+
+
+TCPKeepAlive
+sshd will send keep-alive requests to the clients. So in case of a client crash, the server side process will be terminated.
+
+X11Forwarding
+Will establish a tunnel and automatically set the $DISPLAY variable. eg 10:1 (Where X11DisplayOffset 10) If a user resets the DISPLAY variable to use a different one for eg.rack:0.1
+then encryption is defeated.
+
+#Enabling Port 99 in addition to port 22 and restart of sshd.
+
+*******************#012#012If you believe that sshd should be allowed name_bind access on the port 99 tcp_socket by default.#012Then you should report this as a bug.#012You can generate a local policy module to allow this access.#012Do#012allow this access for now by executing:#012# ausearch -c 'sshd' --raw | audit2allow -M my-sshd#012# semodule -i my-sshd.pp#012
+Aug  1 14:32:18 server setroubleshoot: SELinux is preventing /usr/sbin/sshd from name_bind access on the tcp_socket port 99. For complete SELinux messages. run sealert -l fc07953e-1392-421e-a4db-21705ffa9df1
+Aug  1 14:32:18 server python: SELinux is preventing /usr/sbin/sshd from name_bind access on the tcp_socket port 99.#012#012*****  Plugin bind_ports (99.5 confidence) suggests   ************************#012#012If you want to allow /usr/sbin/sshd to bind to network port 99#012Then you need to modify the port type.#012Do#012# semanage port -a -t PORT_TYPE -p tcp 99#012    where PORT_TYPE is one of the following: ssh_port_t, vnc_port_t, xserver_port_t.#012#012*****  Plugin catchall (1.49 confidence) suggests   **************************#012#012If you believe that sshd should be allowed name_bind access on the port 99 tcp_socket by default.#012Then you should report this as a bug.#012You can generate a local policy module to allow this access.#012Do#012allow this access for now by executing:#012# ausearch -c 'sshd' --raw | audit2allow -M my-sshd#012# semodule -i my-sshd.pp#012
+
+
+[root@server ~]# sealert -l fc07953e-1392-421e-a4db-21705ffa9df1
+SELinux is preventing /usr/sbin/sshd from name_bind access on the tcp_socket port 99.
+
+*****  Plugin bind_ports (99.5 confidence) suggests   ************************
+
+If you want to allow /usr/sbin/sshd to bind to network port 99
+Then you need to modify the port type.
+Do
+# semanage port -a -t PORT_TYPE -p tcp 99
+    where PORT_TYPE is one of the following: ssh_port_t, vnc_port_t, xserver_port_t.
+
+*****  Plugin catchall (1.49 confidence) suggests   **************************
+
+If you believe that sshd should be allowed name_bind access on the port 99 tcp_socket by default.
+Then you should report this as a bug.
+You can generate a local policy module to allow this access.
+Do
+allow this access for now by executing:
+# ausearch -c 'sshd' --raw | audit2allow -M my-sshd
+# semodule -i my-sshd.pp
+
+
+Additional Information:
+Source Context                system_u:system_r:sshd_t:s0-s0:c0.c1023
+Target Context                system_u:object_r:reserved_port_t:s0
+Target Objects                port 99 [ tcp_socket ]
+Source                        sshd
+Source Path                   /usr/sbin/sshd
+Port                          99
+Host                          server
+Source RPM Packages
+Target RPM Packages
+Policy RPM                    selinux-policy-3.13.1-102.el7_3.16.noarch
+Selinux Enabled               True
+Policy Type                   targeted
+Enforcing Mode                Enforcing
+Host Name                     server
+Platform                      Linux server 3.10.0-327.el7.x86_64 #1 SMP Thu Nov
+                              19 22:10:57 UTC 2015 x86_64 x86_64
+Alert Count                   5
+First Seen                    2017-08-01 12:38:53 CDT
+Last Seen                     2017-08-01 14:32:04 CDT
+Local ID                      fc07953e-1392-421e-a4db-21705ffa9df1
+
+Raw Audit Messages
+type=AVC msg=audit(1501615924.31:403): avc:  denied  { name_bind } for  pid=3067 comm="sshd" src=99 scontext=system_u:system_r:sshd_t:s0-s0:c0.c1023 tcontext=system_u:object_r:reserved_port_t:s0 tclass=tcp_socket
+
+
+Hash: sshd,sshd_t,reserved_port_t,tcp_socket,name_bind
+
+
+# Update semanage context.
+
+[root@server ~]# semanage port -a -t ssh_port_t -p tcp 99
+[root@server ~]# semanage port -l |grep ssh
+ssh_port_t                     tcp      99, 22
+
+
+TCPWrappers 
+
+Makes use of /etc/hosts.allow and /etc/hosts.deny ( allow consulted first by tcpd)
+
+[root@server etc]# vi hosts.deny
+[root@server etc]# tcpdmatch -d sshd hosts.deny
+client:   address  198.105.244.228
+server:   process  sshd
+access:   denied
+
+client:   address  198.105.254.228
+server:   process  sshd
+access:   denied
+ 
+</pre>
+
+</div>
+
+
+<div class="w3-container">
+	<h1><span class="mw-headline" id="iptables"> IPTABLES </h1>
+<p>
+Create rules to address these: <BR> Delete all existing rules, append rules to filter table to allow egress on 80, reject outbound on ICMP with no
+return notification, forward all inbound traffic to subnet 192.168.2.0/24. Insert a rule to allow first/subsequent FTP connections on 21. Append
+rule to disallow all outgoing to port 25. Save rules and reboot to check for persistency.
+
+</p>
+
+
+<pre> 
+
+--To enable IPTables disable firwalld and install iptables-service.
+
+[root@lab125a ~]# systemctl disable firewalld
+Removed symlink /etc/systemd/system/dbus-org.fedoraproject.FirewallD1.service.
+Removed symlink /etc/systemd/system/basic.target.wants/firewalld.service.
+
+[root@lab125a ~]# systemctl enable iptables
+Failed to execute operation: Access denied
+
+
+[root@lab125a yum.repos.d]# yum install iptables-services -y
+
+[root@lab125a yum.repos.d]# systemctl enable iptables
+Created symlink from /etc/systemd/system/basic.target.wants/iptables.service to /usr/lib/systemd/system/iptables.service.
+[root@lab125a yum.repos.d]# systemctl start iptables
+[root@lab125a yum.repos.d]# systemctl status iptables
+● iptables.service - IPv4 firewall with iptables
+   Loaded: loaded (/usr/lib/systemd/system/iptables.service; enabled; vendor preset: disabled)
+   Active: active (exited) since Fri 2017-10-06 14:32:16 CDT; 3s ago
+  Process: 3096 ExecStart=/usr/libexec/iptables/iptables.init start (code=exited, status=0/SUCCESS)
+ Main PID: 3096 (code=exited, status=0/SUCCESS)
+
+Oct 06 14:32:16 lab125a systemd[1]: Starting IPv4 firewall with iptables...
+Oct 06 14:32:16 lab125a iptables.init[3096]: iptables: Applying firewall rules: [  OK  ]
+Oct 06 14:32:16 lab125a systemd[1]: Started IPv4 firewall with iptables.
+
+
+--Rich rules are the ones with greater level of control. Firewalld has the ability to pass security rules
+directly through iptables using direct interface mode but rules aren't persistent. rich language rules come in
+place to address this problem.
+
+man firewalld.richlanguage
+
+
+example:
+firewall-cmd --zone=public --add-rich-rule="rule family="ipv4" source address="192.168.2.0/24" log prefix="ftp_firewalld" level="info" accept"
+
+--Temporary rule that expires in 24 hours
+
+  [root@lab125a zones]# firewall-cmd --add-rich-rule 'rule family="ipv4" source address="192.168.130.0/24" service name="telnet" log prefix="telnet blocked:" level="info" reject' --timeout="86400" --zone myzone
+success
+
+
+
+</pre>
+
+</div>
+	
+<div class="w3-container">
+	<h1><span class="mw-headline" id="selinux"> SELINUX </h1>
+<p>
+
+</p>
+
+
+<pre> 
+
+--Change context type of /etc/shadow
+
+[root@server ~]# ls -lZ /etc/shadow
+----------. root root system_u:object_r:shadow_t:s0    /etc/shadow
+
+[root@server ~]# chcon -t public_content_t /etc/shadow
+
+[root@server ~]# ls -lZ /etc/shadow
+----------. root root system_u:object_r:public_content_t:s0 /etc/shadow
+
+
+--Try to change the password
+
+[root@server ~]# passwd user3
+Changing password for user user3.
+New password:
+BAD PASSWORD: The password is shorter than 8 characters
+Retype new password:
+passwd: Authentication token manipulation error
+
+
+--Check logs..
+
+
+systemctl status auditd states it's running. So instead of rsyslogd sending messages to /var/log/messages auditd would be sending it to audit.log
+
+
+type=AVC msg=audit(1501520443.317:502): avc:  denied  { read } for  pid=3069 comm="unix_chkpwd" name="shadow" dev="dm-0" ino=16970057 scontext=unconfined_u:unconfined_r:chkpwd_t:s0-s0:c0.c1023 tcontext=system_u:object_r:public_content_t:s0 tclass=file
+type=SYSCALL msg=audit(1501520443.317:502): arch=c000003e syscall=2 success=no exit=-13 a0=7f3e393350b3 a1=80000 a2=1b6 a3=24 items=0 ppid=3068 pid=3069 auid=0 uid=0 gid=0 euid=0 suid=0 fsuid=0 egid=0 sgid=0 fsgid=0 tty=(none) ses=1 comm="unix_chkpwd" exe="/usr/sbin/unix_chkpwd" subj=unconfined_u:unconfined_r:chkpwd_t:s0-s0:c0.c1023 key=(null)
+
+type=AVC msg=audit(1501520449.941:504): avc:  denied  { read } for  pid=3068 comm="passwd" name="shadow" dev="dm-0" ino=16970057 scontext=unconfined_u:unconfined_r:passwd_t:s0-s0:c0.c1023 tcontext=system_u:object_r:public_content_t:s0 tclass=file
+type=SYSCALL msg=audit(1501520449.941:504): arch=c000003e syscall=2 success=no exit=-13 a0=7f1c854832d4 a1=0 a2=1 a3=7f1c8d23bc8c items=0 ppid=2550 pid=3068 auid=0 uid=0 gid=0 euid=0 suid=0 fsuid=0 egid=0 sgid=0 fsgid=0 tty=pts2 ses=1 comm="passwd" exe="/usr/bin/passwd" subj=unconfined_u:unconfined_r:passwd_t:s0-s0:c0.c1023 key=(null)
+
+
+--Check the selinux 
+
+[root@server ~]# sestatus
+SELinux status:                 enabled
+SELinuxfs mount:                /sys/fs/selinux
+SELinux root directory:         /etc/selinux
+Loaded policy name:             targeted
+Current mode:                   enforcing
+Mode from config file:          enforcing
+Policy MLS status:              enabled
+Policy deny_unknown status:     allowed
+Max kernel policy version:      28
+
+--It's enforcing, let's temporarily set the context types to permissive
+
+
+[root@server ~]# semanage permissive -a chkpwd_t
+[root@server ~]# semanage permissive -a passwd_t
+[root@server ~]# semanage permissive -l
+
+--Customized Permissive Types
+
+chkpwd_t
+httpd_t
+passwd_t
+
+--Builtin Permissive Types
+
+-Retry password change
+
+[root@server ~]# passwd user3
+Changing password for user user3.
+New password:
+BAD PASSWORD: The password is shorter than 8 characters
+Retype new password:
+passwd: all authentication tokens updated successfully.
+
+-Password change worked, although avc_denied re-appers since permissive allows access bug logs the denials.
+
+
+--Backout policy changes 
+
+[root@server ~]# semanage permissive -d chkpwd_t
+libsemanage.semanage_direct_remove_key: Removing last permissive_chkpwd_t module (no other permissive_chkpwd_t module exists at another priority).
+[root@server ~]# semanage permissive -d passwd_t
+libsemanage.semanage_direct_remove_key: Removing last permissive_passwd_t module (no other permissive_passwd_t module exists at another priority).
+
+
+--What happens on context preservation
+
+a) IF file is copied over on same directory or different directory the context will be switched to the destination file's attributes.
+b) If a file is copied to a new directory as a new file - the context of the destination directory is preserved.
+c) If a file is moved to same or different directory the user attribute (subject) will be changed to unconfined_u
+d) For tar archives use --selinux opttion to preserve contexts
+
+
+[root@server ~]# ls -ldZ /usr/bin/
+dr-xr-xr-x. root root system_u:object_r:bin_t:s0       /usr/bin/
+[root@server ~]# ls -ldZ /usr/etc/
+drwxr-xr-x. root root system_u:object_r:etc_t:s0       /usr/etc/
+[root@server ~]# cd /usr/bin/
+[root@server bin]# touch afile
+[root@server bin]# ls -lZ afile
+-rw-r--r--. root root unconfined_u:object_r:bin_t:s0   afile
+[root@server bin]# cp afile ../etc/
+[root@server bin]# cd ../etc/
+[root@server etc]# ls -lZ afile
+-rw-r--r--. root root unconfined_u:object_r:etc_t:s0   afile
+-rw-r--r--. root root unconfined_u:object_r:etc_t:s0   ../etc/afile
+[root@server bin]# cp afile ../etc/ --preserve=context
+cp: overwrite ‘../etc/afile’? y
+[root@server bin]# ls -lZ ../etc/afile
+-rw-r--r--. root root unconfined_u:object_r:bin_t:s0   ../etc/afile
+
+
+[root@server bin]# ls -lZ zcat.test
+-rwxr-xr-x. root root system_u:object_r:bin_t:s0       zcat.test
+[root@server bin]# ls -lZ zcat.test
+-rwxr-xr-x. root root unconfined_u:object_r:bin_t:s0   zcat.test
+
+--To set booleans 
+
+setsebool 
+sestatus -b
+
+
+root@panchajanya:/var/ftp\> ls -Z vnetiso.xml
+-rw-r--r--. root root unconfined_u:object_r:unlabeled_t:s0 vnetiso.xml
+
+root@panchajanya:/var/ftp\> chcon -t public_content_t vnetiso.xml
+root@panchajanya:/var/ftp\> ls -Z vnetiso.xml
+-rw-r--r--. root root unconfined_u:object_r:public_content_t:s0 vnetiso.xml
+
+#Adding a user
+[root@server bin]# semanage login -a -s user_u user4
+[root@server bin]# semanage login -l
+
+Login Name           SELinux User         MLS/MCS Range        Service
+
+__default__          unconfined_u         s0-s0:c0.c1023       *
+root                 unconfined_u         s0-s0:c0.c1023       *
+system_u             system_u             s0-s0:c0.c1023       *
+user4                user_u               s0                   *
+user5                staff_u              s0-s0:c0.c1023       *
+
+#change default selinux login context
+
+[root@server bin]# semanage login -l
+
+Login Name           SELinux User         MLS/MCS Range        Service
+
+__default__          unconfined_u         s0-s0:c0.c1023       *
+root                 unconfined_u         s0-s0:c0.c1023       *
+system_u             system_u             s0-s0:c0.c1023       *
+user4                user_u               s0                   *
+user5                staff_u              s0-s0:c0.c1023       *
+[root@server bin]# semanage login -m -S targeted -s staff_u __default__
+[root@server bin]# semanage login -l
+
+Login Name           SELinux User         MLS/MCS Range        Service
+
+__default__          staff_u              s0-s0:c0.c1023       *
+root                 unconfined_u         s0-s0:c0.c1023       *
+system_u             system_u             s0-s0:c0.c1023       *
+user4                user_u               s0                   *
+user5                staff_u              s0-s0:c0.c1023       *
+
+[root@server bin]# semanage login -m -S targeted -r s0:c0 -s staff_u __default__
+^[[A[root@server bi^C
+[root@server bin]# semanage login -l
+
+Login Name           SELinux User         MLS/MCS Range        Service$
+se$
+
+
+__default__          staff_u              s0:c0                *
+root                 unconfined_u         s0-s0:c0.c1023       *
+system_u             system_u             s0-s0:c0.c1023       *
+user4                user_u               s0                   *
+user5                staff_u              s0-s0:c0.c1023       *
+
+
+
+--Add persistent context for a file
+[root@server ~]# semanage fcontext -a  -S targeted -s user_u -t public_content_t /root/afile
+
+[root@server ~]# cat /etc/selinux/targeted/contexts/files/file_contexts.local | grep afile
+/root/afile    user_u:object_r:public_content_t:s0
+
+[root@server ~]# ls -Zd /root/
+dr-xr-x---. root root system_u:object_r:admin_home_t:s0 /root/
+[root@server ~]# chcon -u user_u -t var_run_t /root
+[root@server ~]# ls -Zd /root/
+dr-xr-x---. root root user_u:object_r:var_run_t:s0     /root/
+
+[root@server ~]# restorecon -Fv /root/
+restorecon reset /root context user_u:object_r:var_run_t:s0->system_u:object_r:admin_home_t:s0
+[root@server ~]# ls -Zd /root/
+dr-xr-x---. root root system_u:object_r:admin_home_t:s0 /root/
+
+[root@server ~]# semanage port -a -t http_port_t -p tcp 8010
+[root@server ~]# semanage port -l |grep http_port_t
+http_port_t                    tcp      8010, 80, 81, 443, 488, 8008, 8009, 8443, 9000
+pegasus_http_port_t            tcp      5988
+[root@server ~]# semanage port -d -t http_Port_t -p tcp 8010
+[root@server ~]# semanage port -l |grep http_port_t
+http_port_t                    tcp      80, 81, 443, 488, 8008, 8009, 8443, 9000
+pegasus_http_port_t            tcp      5988
+
+--Quick Reference
+https://wiki.centos.org/HowTos/SELinux
+https://wiki.gentoo.org/wiki/SELinux/Users_and_logins
+ 
+
+--Add User/login example.
+semanage user --add -r s0:c0 -R "auditadm_r sysadm_r" auditor_u
+semanage login --add -s auditor_u phil
+		
+
+[root@server phil]# semanage permissive -a httpd_t
+[root@server phil]# seinfo --permissive
+
+Permissive Types: 7
+   httpd_t
+   blkmapd_t
+   hsqldb_t
+   ipmievd_t
+   sanlk_resetd_t
+   systemd_hwdb_t
+   targetd_t
+
+--Triaging a SEALERT
+
+-Error message.
+type=AVC msg=audit(1218128130.653:334): avc:  denied  { connectto } for  pid=9111 comm="smtpd" path="/var/spool/postfix/postgrey/socket"
+scontext=system_u:system_r:postfix_smtpd_t:s0 tcontext=system_u:system_r:initrc_t:s0 tclass=unix_stream_socket
+
+--Check the scontext, which is postfix_smtpd_t
+semanage permissive -a postfix_smtpd_t
+
+Watch the audit logs to see what postfix_smtpd_t needs to be allowed to do in order to succesfully operate. Once we're finished we can put that type back into enforcing mode:
+
+
+--Allow apache to listen on port 81
+semanage port -a -t http_port_t -p tcp 81 
+		
+semanage permissive -d postfix_smtpd_t
+This approach doesn't suffer from the heavy-handedness of setenforce 0 and allows all other services on the system to keep benefiting from the access controls of SELinux.
+
+
+		
+Set correct SELInux port 
+
+yum whatprovides semanage
+yum whatprovides seinfo
+
+[root@lab125a ~]# seinfo -t  |grep syslogd |grep port
+   syslogd_port_t
+
+[root@lab125a ~]# semanage port -l | grep syslogd
+syslogd_port_t                 tcp      601
+syslogd_port_t                 udp      514, 601
+
+[root@lab125a ~]# semanage port -m -t syslogd_port_t -p tcp 514
+
+
+[root@lab125a ~]# semanage port -l | grep syslogd
+syslogd_port_t                 tcp      514, 601
+syslogd_port_t                 udp      514, 601
+
+
+#Accessing a resource.
+
+[root@server1 ~]# cd /var/www/html/
+[root@server1 html]# ls -lZ *
+-rw-r--r--. root root unconfined_u:object_r:httpd_sys_content_t:s0 index.html
+
+
+[root@server1 html]# ps -eZ |grep httpd
+system_u:system_r:httpd_t:s0     4266 ?        00:00:00 httpd
+system_u:system_r:httpd_t:s0     4267 ?        00:00:00 httpd
+
+
+[root@server1 ~]# sesearch --allow --source httpd_t --target httpd_sys_content_t --class dir
+Found 16 semantic av rules:
+   allow httpd_t httpd_sys_content_t : dir { ioctl read getattr lock search open } ;
+   
+[root@server1 html]# chcon -t var_t index.html
+[root@server1 html]# ls -lZ index.html
+-rw-r--r--. root root unconfined_u:object_r:var_t:s0   index.html
+
+[root@server1 ~]# curl -s http://localhost/index.html
+..
+<p>You don't have permission to access /index.html
+..
+
+-In audit log
+type=AVC msg=audit(1508807842.331:542): avc:  denied  { getattr } for  pid=4270 comm="httpd" path="/var/www/html/index.html" dev="dm-0" ino=137566 
+scontext=system_u:system_r:httpd_t:s0 tcontext=unconfined_u:object_r:var_t:s0 tclass=file
+type=SYSCALL msg=audit(1508807842.331:542): arch=c000003e syscall=6 success=no exit=-13 
+a0=7fc5ba752c08 a1=7ffffad80a30 a2=7ffffad80a30 a3=ffffffe0 items=0 ppid=4266 pid=4270 auid=4294967295 uid=48 gid=48 euid=48 
+suid=48 fsuid=48 egid=48 sgid=48 fsgid=48 tty=(none) ses=4294967295 comm="httpd" exe="/usr/sbin/httpd" subj=system_u:system_r:httpd_t:s0 key=(null)
+
+-Temporarily reset to permissive for triaging
+[root@server1 ~]# semanage permissive -a httpd_t
+[root@server1 ~]# semanage permissive -l
+
+Customized Permissive Types
+
+httpd_t
+
+Builtin Permissive Types
+
+sanlk_resetd_t
+hsqldb_t
+systemd_hwdb_t
+blkmapd_t
+ipmievd_t
+targetd_t
+
+[root@server1 ~]# curl -s http://localhost/index.html
+Hello this is from server1.intercloudzone.com
+
+-Scan the audit.log
+
+sealert -a /var/log/audit/audit.log
+
+...
+If you want to fix the label.
+/var/www/html/index.html default label should be httpd_sys_content_t.
+Then you can run restorecon.
+Do
+# /sbin/restorecon -v /var/www/html/index.html
+	
+...
+
+[root@server1 html]# restorecon -vR index.html
+restorecon reset /var/www/html/index.html context unconfined_u:object_r:var_t:s0->unconfined_u:object_r:httpd_sys_content_t:s0
+
+--Context Inheritance for Files and Directories
+SELinux enforces something we can term as "context inheritance". What this means is that unless specified by the policy, processes and files are created with the contexts of their parents.
+
+This inheritance is not preserved when files are copied to another location. In a copy operation, the copied file or directory will assume the type context of the target location.
+
+-- Changing the fcontext 
+
+[root@server1 ~]# ls -lZ /www/html/
+-rw-r--r--. root root unconfined_u:object_r:default_t:s0 index.html
+
+
+[root@server1 ~]# curl -s http://localhost/index.html
+...
+<p>You don't have permission to access /index.html
+..
+
+
+[root@server1 html]# matchpathcon -V index.html
+index.html has context unconfined_u:object_r:var_t:s0, should be system_u:object_r:httpd_sys_content_t:s0
+
+
+[root@server1 ~]# matchpathcon -V /www/html/index.html
+/www/html/index.html verified.
+
+Reference 
+https://www.digitalocean.com/community/tutorials/an-introduction-to-selinux-on-centos-7-part-2-files-and-processes#how-processes-access-resources
+
+time->Tue Oct 24 17:35:24 2017
+type=SYSCALL msg=audit(1508884524.050:482): arch=c000003e syscall=6 success=no exit=-13 a0=7f248c01fbf0 a1=7ffd21904f00 a2=7ffd21904f00 a3=7ffd21904c80 items=0 ppid=3385 pid=3391 auid=4294967295 uid=48 gid=48 euid=48 suid=48 fsuid=48 egid=48 sgid=48 fsgid=48 tty=(none) ses=4294967295 comm="httpd" exe="/usr/sbin/httpd" subj=system_u:system_r:httpd_t:s0 key=(null)
+type=AVC msg=audit(1508884524.050:482): avc:  denied  { getattr } for  pid=3391 comm="httpd" path="/www/html/index.html" dev="dm-0" ino=136145 scontext=system_u:system_r:httpd_t:s0 tcontext=unconfined_u:object_r:default_t:s0 tclass=file
+[root@server1 ~]# ausearch -m avc -c httpd
+</pre>
+
+</div>	
+	
+	
+	
+</body>
+</html>

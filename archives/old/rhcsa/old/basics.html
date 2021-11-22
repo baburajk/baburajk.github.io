@@ -1,0 +1,765 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="Generator" content="EditPlus®">
+  <meta name="Author" content="">
+  <meta name="Keywords" content="">
+  <meta name="Description" content="">
+  <title>Notes</title>
+ <link rel="stylesheet" href="css/stylesheet1.css">
+ <link rel="stylesheet" href="css/w3.css">
+ <link rel="stylesheet" href="http://d2j4ekq3nza4ef.cloudfront.net/wp-content/plugins/asdf/images/style/output.css" type="text/css" />
+	 
+	 
+ <style type="text/css" >
+	  
+ </style>
+<script Language="Javascript">
+function toggle() {
+    var x = document.getElementById('contents');
+    if (x.style.display === 'none') {
+		document.getElementById("togglelink").text = "hide"
+        x.style.display = 'block';
+    } else {
+        x.style.display = 'none';
+		document.getElementById("togglelink").text = "show"
+    }
+}
+</script>
+
+
+ </head>
+	<body> 
+		<div id="nav">
+			<div id="jumplinks"> Quick notes </div>
+		</div>
+    
+		<div id="body">
+			<div id="content" class="mw-body" role="main">
+ 				<div id="toc" class="toc"><div id="toctitle"><h2>Contents</h2><span class="toctoggle">&nbsp;[<a href="javascript:toggle()" id="togglelink">hide</a>]&nbsp;</span></div>
+					<div id="contents">
+						<ul>
+							<li> <a href="#terminals"> <span class="tocnumber">	1 </span> <span class="toctext"> Terminals 	</span></a> </li>
+							<li> <a href="#packages"> <span class="tocnumber">	2 </span> <span class="toctext"> Packages 	</span></a> </li>
+							<li> <a href="#generic"> <span class="tocnumber">	3 </span> <span class="toctext"> Generic 	</span></a> </li>
+
+ 						</ul>
+					</div>
+				</div>
+
+				<style>
+					html,body,h1,h2,h3,h4,h5,h6 { font-family: "Comic Sans MS", cursive, sans-serif; }
+				</style>
+ 
+
+
+<div class="w3-container">
+	<h1><span class="mw-headline" id="terminals"> Terminals</h1>
+		
+<p>
+Differences between shell and a terminal is not completely obvious. For example, the terminal converts keys into control sequences (e.g. Left → \e[D). The shell converts control sequences into commands (e.g. \e[D → backward-char).
+
+</p>
+
+	
+
+<pre> 
+--Useful commands/information 
+pinfo (instead of info)
+yum list * - doc* ( Softwares providing doc as a separate package)
+&> file (Combines stdout and stderr to one file)
+>> file 2>&1 (Sends stderr to stdout through a pipe )
+userdel -r ( always run with -r ), else scan for find / -nouser -o -nogroup 2> /dev/null
+usermod -aG newgroup ( without -a , the existing groups will be removed)
+nlogin will prevent only interactive use of the system, does not prevent upload/retrieve logs via applications, ftp's etc.
+/etc/login.defs has all login default parameters
+Divide the load-average with number of logical CPU's ( grep "model name" /proc/cpuinfo )
+top - z (Color) , C (Absoulte Path), x (Highlight Sorted column), b (Highlight Sorted Column ),u (User filter),P ( Sort by CPU),M (Sort by Memory),m (Memory bar), V (Forest Mode), O (%MEM > 1, %CPU >1 etc.), "=" to clear all filters, save this with W
+
+--IF userdel -r not used, the UID/GID is re-used for the future users..
+find / -nouser -o -nogroup 2>/dev/null
+
+--List all groups from the variant file (Under RepoPackage)
+cat variant.xml | xpath comps/environment/grouplist/groupid
+
+[root@server1 demo]# cat /etc/tmpfiles.d/demo.conf
+d /var/run/demo 0700 root root 5s
+
+[root@server1 tmpfiles.d]# cd /var/run/demo/
+
+[root@server1 demo]# touch afile bfile
+
+[root@server1 demo]# ls -ltr
+total 0
+-rw-rw-r--. 1 root root 0 Nov 29 16:37 bfile
+-rw-rw-r--. 1 root root 0 Nov 29 16:37 afile
+
+[root@server1 demo]# systemd-tmpfiles --clean /etc/tmpfiles.d/demo.conf
+
+[root@server1 demo]# ls -ltr
+total 0
+
+[root@server1 demo]# cat /etc/tmpfiles.d/demo.conf
+d /var/run/demo 0700 root root 5s
+
+
+pkill -STOP -u vivek
+pkill -CONT -u vivek
+
+
+
+--Commands to find the terminals
+
+[root@lab125a ~]# tty
+/dev/ttyS0
+
+--Run who -a
+[root@lab125a ~]# who -a
+           system boot  2017-09-22 09:58
+LOGIN      tty1         2017-09-22 09:58               637 id=tty1
+root     + ttyS0        2017-09-22 10:03   .           638
+           run-level 3  2017-09-22 09:58
+root     + pts/0        2017-09-22 10:00 00:01        2527 (192.168.125.1)
+
+--Better than who, is what - w
+[root@lab125a ~]# w
+ 11:28:51 up  1:30,  2 users,  load average: 0.01, 0.02, 0.05
+USER     TTY      FROM             LOGIN@   IDLE   JCPU   PCPU WHAT
+root     ttyS0                     10:03    2:35   0.28s  0.28s -bash
+root     pts/0    192.168.125.1    10:46    3.00s  0.03s  0.02s w
+
+--Sent message to terminal
+#console terminal
+[root@lab125a ~]# echo &quot;test&quot; > /dev/ttyS0	 
+[root@lab125a ~]# echo &quot;You will be kicked out soon &quot; | write root pts/0
+
+#pts terminal
+[root@lab125a ~]# tty
+/dev/pts/0
+[root@lab125a ~]# echo &quot;test&quot; > /dev/pts/0
+test
+
+--Reset the size of the console/terminal
+virsh console lab125a
+
+[root@lab125a ~]# stty rows 80 columns 120
+[root@lab125a ~]# echo "This is to test the line-folds wont happen on a console after stty reset " | write root pts/0
+
+--Commands to display screen-size/options
+stty size
+tputs columns
+
+
+--Save the current command using CTRL+E , run new and use CTRL+Y to bring back the old one back..
+
+[root@lab125a ~]# echo "This is a test "^C
+CTRL+E  => Gives a new line to execute the command
+ls -lr  => Run that command
+CTRL+Y  => Puts back the previous command which is "echo"
+
+</pre>
+
+</div>
+
+
+
+<div class="w3-container">
+	<h1><span class="mw-headline" id="packages"> Packages </h1>
+		
+<p>
+	RPM and YUM Package Manager related..
+</p>
+
+	
+
+<pre> 
+
+--rpm
+rpm -qi (Information on an installed package)
+rpm -ql (List files of an installed package)
+rpm -q --whatrequires iproute ( What packages require iproute inorder for them to operate properly).
+
+--Lost file /etc/ntp.conf
+root@panchajanya:/tmp\> rpm -q --whatprovides /etc/ntp.conf
+ntp-4.2.6p5-22.el7.centos.x86_64
+
+root@panchajanya:/tmp\> rpm -qf /etc/ntp.conf
+ntp-4.2.6p5-22.el7.centos.x86_64
+
+--rpm2cpio, cpio -id => i = extract files, d= create directories
+
+root@panchajanya:/tmp/extract\> ls -ltr
+total 544
+-r--r--r--. 1 root root 556104 Sep 28 12:13 ntp-4.2.6p5-22.el7.centos.x86_64.rpm
+root@panchajanya:/tmp/extract\> rpm2cpio ntp-4.2.6p5-22.el7.centos.x86_64.rpm | cpio -id
+2812 blocks
+root@panchajanya:/tmp/extract\> ls -ltr
+total 544
+-r--r--r--. 1 root root 556104 Sep 28 12:13 ntp-4.2.6p5-22.el7.centos.x86_64.rpm
+drwxr-xr-x. 5 root root     58 Sep 28 12:16 etc
+drwxr-xr-x. 6 root root     49 Sep 28 12:16 usr
+drwxr-xr-x. 4 root root     26 Sep 28 12:16 var
+
+--Verify signature
+root@panchajanya:/tmp/extract\> rpm -K --nosignature ntp-4.2.6p5-22.el7.centos.x86_64.rpm
+ntp-4.2.6p5-22.el7.centos.x86_64.rpm: sha1 md5 OK
+
+-- PKI files
+/etc/pki/rpm-gpg
+
+
+--Verify if the package is altered.
+root@panchajanya:/tmp/extract\> rpm -Vv ntp-4.2.6p5-22.el7.centos.x86_64
+.........    /etc/dhcp/dhclient.d
+.........    /etc/dhcp/dhclient.d/ntp.sh
+.........  c /etc/ntp.conf
+.........    /etc/ntp/crypto
+.........  c /etc/ntp/crypto/pw
+.........  c /etc/sysconfig/ntpd
+.M...UG..    /usr/bin/ntpstat
+
+
+root@panchajanya:/tmp/extract\> rpm -Vf /usr/bin/ntpstat
+.M...UG..    /usr/bin/ntpstat
+
+
+</pre>
+
+</div>
+	
+
+<div class="w3-container">
+	<h1><span class="mw-headline" id="generic"> Generic </h1>
+		
+<p>
+	Basic/Generic commands...
+</p>
+
+
+
+<pre> 
+
+-- Terminates the shell if there's no activity on specified number of seconds, in /etc/profile.
+
+export TMOUT=120
+readonly TMOUT
+
+
+
+--PRevent root user login
+echo > /etc/securetty, PermitRootLogin no (sshd_config), /sbin/nologin (passwd) and PAM
+
+
+
+-- (( double open paranthesis )) for arithmetic, [ square brackets for conditionl expression ], [[ double square paranthesis for regular expressions like =~ ]]
+
+[root@server1 rpm-gpg]# echo $((1+4))
+5
+
+[root@server1 rpm-gpg]# [ $(date +%d -d -100days) -le 30 ] && echo "Test passed"
+Test passed
+
+[root@server1 rpm-gpg]# if  [[ "xyz" =~ "x" ]]; then echo "True" ; fi
+True
+
+--Expressions : == looks for exact string equality vs eq looks for arithmetic equality.
+
+[root@rhce4 ~]#  [ " 1 " == 1 ]  && echo equal || echo not
+not
+
+[root@rhce4 ~]#  [ " 1 " -eq 1 ]  && echo equal || echo not
+equal
+
+
+Difference between command and space!
+--Logical "AND" implied
+pgrep -u root sshd
+
+--Logical &quot;OR&quot; implied
+pgrep -u root,sshd
+
+Files (chattr) - Immutable and only can append data.
+[root@lab125a ~]# chattr +ai afile
+[root@lab125a ~]# lsattr afile
+----ia---------- afile
+
+Find command
+find / -size -1M (Files smaller than 1MB)
+find / -size +1M (Files larger than 1MB)
+find / -user root -not group wheel 
+find / -mtime +10 (Files modified more than 10 days ago)
+find / -mtime 10  (Files modified exactly 10 days ago)
+find . -mtime +0 # find files modified greater than 24 hours ago
+find . -mtime 0 # find files modified between now and 1 day ago
+# (i.e., in the past 24 hours only)
+find . -mtime -1 # find files modified less than 1 day ago (SAME AS -mtime 0)
+find . -mtime 1 # find files modified between 24 and 48 hours ago
+find . -mtime +1 # find files modified more than 48 hours ago
+
+
+--Nice
+Range -20 to +19 (Higher nice, lower execution priority!)
+
+--kill
+kill -l lists all signals
+pgrep -u apache httpd | xargs kill
+killall httpd
+
+--Cron
+
+-cron.deny
+By default only cron.deny exists - all users not listed in it are pemitted.
+
+-cron.allow - Takes priority over cron.deny.
+* If neither file exist, no users are allowed to run crons only root user can access cron.
+/etc/cron.allow takes precedence.
+
+
+
+--setuid
+rwS = (Executable permission bit not set, this is an error) vs rws (setuid and x set) 
+
+
+--Find files by reference
+
+touch -d '1 day ago' cutoff
+
+[root@rhcsa1 ~]# ls -ltr
+total 8
+-rw-------. 1 root root 1504 Nov 22 18:47 anaconda-ks.cfg
+-rw-r--r--. 1 root root 2771 Nov 23 18:34 configfiles.txt
+-rw-r--r--. 1 root root    0 Nov 25 22:23 cutoff
+-rw-r--r--. 1 root root    0 Nov 26 22:23 bfile
+[root@rhcsa1 ~]# date
+Sun Nov 26 22:24:22 EST 2017
+
+[root@rhcsa1 ~]# find . -newer cutoff
+.
+./bfile
+
+--Find older files (excluding the cutoff)
+[root@rhcsa1 ~]# find . ! -newer cutoff --samefile cutoff
+.
+./bfile
+
+
+
+
+-- Schedule a cron to execute on first sunday of every month.
+  0 2 * * sun  [ $(date +%d) -le 07 ] && /script/script.sh
+
+When you specify */5 in minute field means every 5 minutes.
+When you specify 0-10/2 in minute field mean every 2 minutes in the first 10 minute.
+
+
+--systemd-tmpfiles 
+
+When systemd starts a system, one of the first service units launched is systemd-tmpfiles-setup. This service runs the command
+systemd-tmpfiles --create --remove. This command reas configuration files from /usr/lib/tmpfiles.d/*.conf, /run/tmpfiles.d/*.conf and
+/etc/tmpfiles.d/*.conf
+
+
+
+
+-- Generate SHA512 crypt passwords
+
+
+[root@server1 ~]# python
+Python 2.7.5 (default, Nov 20 2015, 02:00:19)
+[GCC 4.8.5 20150623 (Red Hat 4.8.5-4)] on linux2
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import crypt
+>>> print (crypt.crypt("oracle",crypt.mksalt(crypt.METHOD_SHA512)))
+$6$mS0WeRwcJtXUprd8$Gg3PbM/x5yopaBZ57Hk9atr5W/vDdcfr5tegM28XhjNAkxOpl8DyFe17RHJmtpO.7f21v609r6l0nQUwBXmf60
+>>>
+
+$6 = SHA512, $5 = SHA256, $1 = MD5 ( Format = $ENCRYPTION $SALT $ENCRYPTED PASSWORD)
+
+[root@server1 ~]# doveadm pw -s SHA512-CRYPT -p oracle
+{SHA512-CRYPT}$6$SfFdJ4r.ZiTAqIPj$OXhFnIIJpEU/1.WwSgLv/EOhPtEAbIjm/oFrtHC4ISC4Gn87wQSg9HWtGBsUutQWZCGB5FJrMAkaD/uEuhJsN.
+
+page-out and page-in are called demand paging.
+excessive amount of paging that affects performance is called thrashing
+
+[root@server ~]# lvcreate -L 1G -n swapvol vgdata0
+WARNING: ext4 signature detected on /dev/vgdata0/swapvol at offset 1080. Wipe it? [y/n]: y
+  Wiping ext4 signature on /dev/vgdata0/swapvol.
+  Logical volume "swapvol" created.
+
+[root@server ~]# mkswap /dev/vgdata0/swapvol
+Setting up swapspace version 1, size = 1048572 KiB
+no label, UUID=b4bb1977-2a2d-4d9d-8f91-2eb1efc01156
+
+[root@server ~]# swapon -v /dev/vdb2
+swapon /dev/vdb2
+swapon: /dev/vdb2: found swap signature: version 1, page-size 4, same byte order
+swapon: /dev/vdb2: pagesize=4096, swapsize=1048576, devsize=1048576
+[root@server ~]# swapon -v /dev/vgdata0/swapvol
+swapon /dev/vgdata0/swapvol
+swapon: /dev/mapper/vgdata0-swapvol: found swap signature: version 1, page-size 4, same byte order
+swapon: /dev/mapper/vgdata0-swapvol: pagesize=4096, swapsize=1073741824, devsize=1073741824
+
+swapon -s
+
+
+/dev/device-nodes
+
+#Character(raw) devices are accessed serially - printers, mice, keyboards, terminals, etc and block devices are accessed in parallel via blocks - HDD, optical drives etc.
+
+
+chattr +i afile # Immutable, can't be deleted, renamed or changed
+chattr +a afile # Can only be appended.
+
+Files metadata includes several piece of informaiton, such as files type, size, permissions, owners name, group name, last access/mod time, ACL, link count , bloks and pointers to the location where actual data is stored. This takes 128-byte space in the FS for each file and this tiny storage space is reerred to as inode (index node). inode is assigned a unique
+identifier that is used by kernel to access, track and manage the file.
+
+the file name and corresponding inode number is maintained in directories metadata. 
+
+inode doesn't store file name. 
+
+Hardlinked files share same data location and and unlike soft-links cannot cross file system boundaries and link directories.
+
+#umask
+default umask is 0022 for root and system users and 0002 for all regular users with a bash shell.
+
+[radha@lab11 ~]$ umask
+0002
+
+[radha@lab11 ~]$ umask -S
+u=rwx,g=rwx,o=rx
+
+Linux assigns default permissions by using "preset value" -  "umask value"
+
+For files 666 - umask , directories 777 - umask.
+
+
+#setuid - set's on files. Gives ability for non-owenrs and non-group members the ability to run executables with the privileges of owner.
+
+Find all files in teh system with setuid bit set
+
+[root@server ~]# find / -perm -4000
+
+
+[radha@lab11 ~]$ ll /usr/bin/su
+-rwsr-xr-x. 1 root root 32072 Nov 20  2015 /usr/bin/su
+[radha@lab11 ~]$ su - root
+Password:
+Last login: Thu Aug  3 08:30:04 CDT 2017 from 192.168.134.1 on pts/0
+[root@lab11 ~]# chmod u-s /usr/bin/su
+[root@lab11 ~]# ll /usr/bin/su
+-rwxr-xr-x. 1 root root 32072 Nov 20  2015 /usr/bin/su
+[root@lab11 ~]# su - radha
+Last login: Thu Aug  3 14:17:44 CDT 2017 on pts/0
+[radha@lab11 ~]$ su - root
+Password:
+su: Authentication failure
+
+
+#setgid is set at group level
+
+File can be executed by non-owners by exact same privileges that group members have.
+[root@server ~]# ll /usr/bin/wall
+-r-xr-sr-x. 1 root tty 15344 Jun  9  2014 /usr/bin/wall
+
+wall is used for broadcasting message to all logged in users.
+
+chmod 2555 /usr/bin/wall
+
+Also used for group collaboration
+
+user100@lab11 ~]$ cd /sdata
+[user100@lab11 sdata]$ touch afile
+[user100@lab11 sdata]$ ls -al
+total 4
+drwxrwxr-x.  2 root    sdatagrp   18 Aug  3 14:47 .
+dr-xr-xr-x. 19 root    root     4096 Aug  3 14:43 ..
+-rw-rw-r--.  1 user100 user100     0 Aug  3 14:47 afile
+[user100@lab11 sdata]$ exit
+logout
+[root@lab11 ~]# chmod g+s /sdata
+[root@lab11 ~]# su - user100
+Last login: Thu Aug  3 14:47:48 CDT 2017 on pts/0
+[user100@lab11 ~]$ cd /sdata
+[user100@lab11 sdata]$ ls -l
+total 0
+-rw-rw-r--. 1 user100 user100 0 Aug  3 14:47 afile
+[user100@lab11 sdata]$ touch afile
+[user100@lab11 sdata]$ ls -l
+total 0
+-rw-rw-r--. 1 user100 user100 0 Aug  3 14:48 afile
+[user100@lab11 sdata]$ touch bfile
+[user100@lab11 sdata]$ ls -l
+total 0
+-rw-rw-r--. 1 user100 user100  0 Aug  3 14:48 afile
+-rw-rw-r--. 1 user100 sdatagrp 0 Aug  3 14:48 bfile
+[user100@lab11 sdata]$
+
+Owning group get's automatically changed to the sdatagrp with setgid.
+
+
+#stickybit 
+chmod 1755 public_writable_directory
+
+Set on directories where rw exists for everyone and prevents from moving/dpurging of files owned by other users.
+
+#ACL's
+Before ACL's can be enabled hte FS should be mounted with ACL support.
+
+chacl, getacl, setacl
+
+eg:
+[root@server data]# getfacl afile
+# file: afile
+# owner: root
+# group: root
+user::rw-
+group::r--
+other::r--
+
+1. user:1000:r-  # Means that a user with UID 1000, who is no tthe owner of the file nor member of the owning group is allowed only read access to this file.
+
+sefacl mask permissions - max permissions a specific user/group can have on a file/dir. If it's set to rw_ no specific user/group can have more permissions than read-write
+
+setfacl switches (-b = remove all acl settings, -d applies to default acl's, -k = remove all default acls, -m = modify , -x = remove specific ACL setting)
+
+
+eg:
+
+[root@lab11 sdata]# getfacl -c afile
+user::rw-
+group::rw-
+other::r--
+
+[user200@lab11 sdata]$ echo test > bfile
+
+
+[root@lab11 sdata]# setfacl -m u:user200:r bfile
+
+[root@lab11 sdata]# getfacl bfile
+# file: bfile
+# owner: user100
+# group: sdatagrp
+user::rw-
+user:user200:r--
+group::rw-
+mask::rw-
+other::r--
+
+[user200@lab11 sdata]$ echo test > bfile
+-bash: bfile: Permission denied
+
+#Removes just that permission
+
+[root@lab11 sdata]# setfacl -x u:user200 bfile
+[root@lab11 sdata]# getfacl -c bfile
+user::rw-
+group::rw-
+mask::rw-
+other::r--
+
+#Sets the max permission
+
+[root@lab11 sdata]# setfacl -m m:r bfile
+[root@lab11 sdata]# getfacl -c bfile
+user::rw-
+group::rw-			#effective:r--
+mask::r--
+other::r--
+
+
+[user200@lab11 sdata]$ echo test > bfile
+-bash: bfile: Permission denied
+
+# No need to check acl option for XFS file systems as they are integral part of it.
+
+[user100@lab11 sdata]$ ls -l bfile
+-rw-r--r--. 1 user100 sdatagrp 5 Aug  3 16:17 bfile
+
+[user200@lab11 sdata]$ echo test > bfile
+-bash: bfile: Permission denied
+
+[user100@lab11 sdata]$ getfacl -c bfile
+user::rw-
+group::r--
+other::r--
+
+[user100@lab11 sdata]$ setfacl -m g:sdatagrp:rw bfile
+[user100@lab11 sdata]$ getfacl -c bfile
+user::rw-
+group::r--
+group:sdatagrp:rw-
+mask::rw-
+other::r--
+
+[user200@lab11 sdata]$ echo test > bfile
+
+[user100@lab11 sdata]$ setfacl -x group:sdatagrp bfile
+
+Also, XFS enables user_xattr (extended user attributes) and acl (POSIX access control lists) as default mount options, unlike ext3 or ext4
+
+#Basic file system commands
+
+[root@server ~]# findmnt -t xfs
+TARGET  SOURCE                  FSTYPE OPTIONS
+/       /dev/mapper/vgos-lvroot xfs    rw,relatime,seclabel,attr2,inode64,noquota
+├─/boot /dev/vda1               xfs    rw,relatime,seclabel,attr2,inode64,noquota
+└─/home /dev/mapper/vgos-lvhome xfs    rw,relatime,seclabel,attr2,inode64,noquota
+
+#/etc/fstab - The last column is fsck
+
+Pass (fsck order)
+Fsck order is to tell fsck what order to check the file systems, if set to "0" file system is ignored.
+
+Often a source of confusion, there are only 3 options :
+
+0 == do not check.
+1 == check this partition first.
+2 == check this partition(s) next
+
+[root@server ~]# e2label /dev/mapper/vg01-lvol1
+teste2
+[root@server ~]# mount LABEL=teste2 /mnt/
+[root@server ~]# findmnt -t ext4
+TARGET SOURCE                 FSTYPE OPTIONS
+/mnt   /dev/mapper/vg01-lvol1 ext4   rw,relatime,seclabel,data=ordered
+
+
+[root@server ~]# dumpe2fs /dev/mapper/vg01-lvol1 |grep superblock
+dumpe2fs 1.42.9 (28-Dec-2013)
+  Primary superblock at 1, Group descriptors at 2-3
+  Backup superblock at 8193, Group descriptors at 8194-8195
+  Backup superblock at 24577, Group descriptors at 24578-24579
+  Backup superblock at 40961, Group descriptors at 40962-40963
+  Backup superblock at 57345, Group descriptors at 57346-57347
+  Backup superblock at 73729, Group descriptors at 73730-73731
+  Backup superblock at 204801, Group descriptors at 204802-204803
+
+
+[root@server ~]# fsck -b 8193 /dev/mapper/vg01-lvol1
+fsck from util-linux 2.23.2
+e2fsck 1.42.9 (28-Dec-2013)
+teste2 was not cleanly unmounted, check forced.
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+
+teste2: ***** FILE SYSTEM WAS MODIFIED *****
+teste2: 11/53248 files (0.0% non-contiguous), 12632/212992 blocks
+
+
+#Error
+
+[root@server ~]# pvcreate /dev/vdd
+  WARNING: Device for PV xdVv91-0Gfz-uzSs-1pzu-CDVQ-34Pm-PwsGBd not found or rejected by a filter.
+  Device /dev/vdd not found (or ignored by filtering).
+
+
+[root@server ~]# uuidgen
+c534079b-103f-45ab-9252-839684568fd6
+
+
+[root@server ~]# tune2fs /dev/vdd -U c534079b-103f-45ab-9252-839684568fd6
+tune2fs 1.42.9 (28-Dec-2013)
+tune2fs: Bad magic number in super-block while trying to open /dev/vdd
+Couldn't find valid filesystem superblock.
+
+[root@server ~]# dumpe2fs /dev/vdd
+dumpe2fs 1.42.9 (28-Dec-2013)
+dumpe2fs: Bad magic number in super-block while trying to open /dev/vdd
+Couldn't find valid filesystem superblock.
+
+[root@server ~]# fsck -b 98304 /dev/vdd
+fsck from util-linux 2.23.2
+e2fsck 1.42.9 (28-Dec-2013)
+fsck.ext2: Invalid argument while trying to open /dev/vdd
+
+The superblock could not be read or does not describe a correct ext2
+filesystem.  If the device is valid and it really contains an ext2
+filesystem (and not swap or ufs or something else), then the superblock
+is corrupt, and you might try running e2fsck with an alternate superblock:
+    e2fsck -b 8193 <device>
+
+#Last ditch effort of recreating ONLY superblocks
+
+[root@server ~]# mke2fs -S /dev/vdd -t ext4
+mke2fs 1.42.9 (28-Dec-2013)
+Filesystem label=
+OS type: Linux
+Block size=4096 (log=2)
+Fragment size=4096 (log=2)
+Stride=0 blocks, Stripe width=0 blocks
+196608 inodes, 786432 blocks
+39321 blocks (5.00%) reserved for the super user
+First data block=0
+Maximum filesystem blocks=805306368
+24 block groups
+32768 blocks per group, 32768 fragments per group
+8192 inodes per group
+Superblock backups stored on blocks:
+	32768, 98304, 163840, 229376, 294912
+
+Allocating group tables: done
+Skipping journal creation in super-only mode
+Writing superblocks and filesystem accounting information: done
+
+Run e2fsck immediately..
+
+root@server ~]# e2fsck /dev/vdd
+
+#Display devices ..
+[root@server ~]# lvs -a -o +devices
+  WARNING: Device for PV xdVv91-0Gfz-uzSs-1pzu-CDVQ-34Pm-PwsGBd not found or rejected by a filter.
+  LV     VG   Attr       LSize   Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert Devices
+  lvol0  vg01 -wi-a----- 208.00m                                                     /dev/vde(0)
+
+
+
+
+#Another utility
+debugfs
+
+
+[root@server ~]# vgs -a -o +pv_name
+  VG   #PV #LV #SN Attr   VSize VFree   PV
+  vg01   2   3   0 wz--n- 3.97g   3.36g /dev/vde
+  vg01   2   3   0 wz--n- 3.97g   3.36g /dev/vdc1
+  vgos   1   2   0 wz--n- 9.76g 996.00m /dev/vda2
+
+[root@server ~]# vgreduce vg01 --removemissing --force
+  WARNING: Device for PV xdVv91-0Gfz-uzSs-1pzu-CDVQ-34Pm-PwsGBd not found or rejected by a filter.
+  WARNING: Device for PV xdVv91-0Gfz-uzSs-1pzu-CDVQ-34Pm-PwsGBd not found or rejected by a filter.
+  Wrote out consistent volume group vg01
+
+
+ [root@server ~]# pvcreate /dev/vdd
+  Physical volume "/dev/vdd" successfully created
+
+  
+
+</pre>
+
+</div>
+	
+
+	
+<div class="w3-container">
+	<h1><span class="mw-headline" id="kill">   </h1>
+		
+<p>
+</p>
+
+	
+
+<pre> 
+
+ 
+</pre>
+
+</div>
+	
+	
+</body>
+</html>

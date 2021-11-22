@@ -1,0 +1,158 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>InterCloudZone</title>
+<meta name="keywords" content="" />
+<meta name="description" content="" />
+<link href="style.css" rel="stylesheet" type="text/css" media="screen" />
+<link href="google-code-prettify/sunburst.css" type="text/css" rel="stylesheet" />
+
+<!--[if IE]>
+<style type="text/css">
+#sidebar #calendar {
+	background-position: 0px 20px;
+}
+</style>
+<![endif]-->
+
+<script src="http://www.google.com/jsapi" type="text/javascript"></script>
+<script type="text/javascript">google.load("jquery", "1.3.2");</script>
+<script type="text/javascript" src="/google-code-prettify/prettify.js?autoload=true&;lang=css;skin=sunburst""></script>
+<script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js?autoload=true&amp;lang=css&amp;skin=sunburst"></script>
+</head>
+<body>
+<div id="logo">
+	<h1> InterCloudZone.com </h1>
+</div>
+<div id="menu">
+	<ul>
+		<li class="first"><a href="http://www.intercloudzone.com" accesskey="1" title="">Home</a></li>
+		<li><a href="http://sourceforge.net/projects/oraclerman/" accesskey="2" title="">OpenSource</a></li>
+		<li><a href="http://padmavyuha.blogspot.com/" accesskey="3" title="">Blogs</a></li>
+		<li><a href="http://www.linkedin.com/in/baburajkallarakkal" accesskey="4" title="">Profile</a></li>
+	</ul>
+	 
+</div>
+<hr />
+<!-- div id="banner"><img src="images/img09.jpg" alt="" width="960" height="147" / ></div -->
+<!-- start page -->
+
+<div id="swift-page" class="default-page" >
+	<!-- start content -->
+	<h2 class="title"> Centos Install failure on a media that was RAID configured, mounting NTFS partition </h2>
+
+<p> 
+If you ever run into a situation where CentOS 7.x installation fails on a media which was used initially to 
+configure hardware RAID - please read on to my situation and hopefully that will help you to resolve or 
+at the minimum lead to some pointers.
+
+</p> 
+
+<p> 
+I had two Hardware RAID's configured - 2 SSD's (OCZRAID0) and 4 Spinning Disks (HITACHI0). I had the OCZRAID0
+where the Window 7.x was installed and HITACHIRAID0 used for storing data. 
+
+I had to move out of state and hence unplugged all the drives and re-plug them during assembling my CPU back.
+
+
+	
+</p> 
+<p> 
+Unfortunately the system didn't boot and after I plugged the drives back in even though it was in exact sequence. Issue
+was RAID failure. I later realized that the HITACHIRAID0 was marked as bootable vs. OCZRAID!
+
+</p> 
+<p> 
+<p> 
+I don't know the root cause for it, but for what it's worth that gave me a good excuse to install CentOS 7.x.
+</p> 
+
+<p> 
+Here are few things that I ran into as issues when I tried installation on that CentOS 7.x after breaking the Hardware RAID - OCZRAID0
+</p> 
+
+<p> 
+ 
+</p>
+ 
+
+<p> 
+So on the BIOS I deleted the OCZRAID, so my two SSD's are now individual drives and Windows! gone for ever.
+The installation of CentOS7.x failed. The intial attempt was done by GUI and so on the screen where you select teh language
+it got stuck!
+
+<p/>
+
+<p> 
+I then changed to text install mode, to do so. On the screen where you see "Install the media" , press "Esc" and type
+"linux text" 
+</p>
+
+
+<p> 
+The installation failed still where it tried to scan the drives (two SSD's which were used to intially create OCZRAID0) with an
+error stating unable to find /dev/sda!!
+</p>
+
+
+
+<pre>
+
+So clear the metadata of the RAID drives. With the installation media in text mode type ctrl + b which should 
+drop you to a shell. The drives should all be visible if you were to fdisk -l
+
+[root@panchajanya intercloudzone.com]# blockdev --getsz /dev/sda
+117231408
+
+
+
+Zero out first few blocks and also last few where the RAID metadata resides.
+
+
+dd if=/dev/zero of=/dev/sda bs=1024 count=1000
+
+Seek (SKIP) the initial blocks for faster performance of the dd (instead of doing teh whole disk)
+
+[root@panchajanya intercloudzone.com]# echo "117231408 - 1024 " | bc -l
+117230384
+
+dd if=/dev/zero of=/dev/sda seek=117230384 bs=1025 count=1000
+
+</pre>
+
+
+ 
+<pre> 
+
+   41  mount -l
+   45  mount /dev/md126p2 /tmp/nfs2
+  112  mount /dev/md126 /tmp/nfs/
+  116  mount -t ntfs-3g /dev/md126 /tmp/nfs/
+  119  mount -t ntfs-3g /dev/md126p1 /tmp/nfs/
+  263  cp block-nfs-hacking-using-ebtables.html break-hardware-raid-mount-nfs-on-linux.html
+
+
+</pre>	
+	 
+ 
+<p>
+	Thanks for visiting the site.
+</p>
+  
+<script>$( "pre" ).addClass( "prettyprint" );</script>	
+	
+	<div id="content">
+	<!-- end content -->
+	</div>
+<!-- end page -->
+<div id="footer">
+	<p class="legal">Copyright (c) 2015-2020 InterCloudZone.com. All rights reserved.</p>
+</div>
+
+
+
+</body>
+
+</html>

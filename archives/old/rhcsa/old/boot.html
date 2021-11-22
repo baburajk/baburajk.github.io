@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="Generator" content="EditPlus®">
+  <meta name="Author" content="">
+  <meta name="Keywords" content="">
+  <meta name="Description" content="">
+  <title>Notes</title>
+ <link rel="stylesheet" href="css/stylesheet1.css">
+ <link rel="stylesheet" href="css/stylesheet2.css">
+ <link rel="stylesheet" href="css/w3.css">
+
+ <style type="text/css" >
+	  
+ </style>
+<script Language="Javascript">
+function toggle() {
+    var x = document.getElementById('contents');
+    if (x.style.display === 'none') {
+		document.getElementById("togglelink").text = "hide"
+        x.style.display = 'block';
+    } else {
+        x.style.display = 'none';
+		document.getElementById("togglelink").text = "show"
+    }
+}
+</script>
+
+
+ </head>
+	<body> 
+		<div id="nav">
+			<div id="jumplinks"> Reference Notes/Hints </div>
+		</div>
+    
+		<div id="body">
+			<div id="content" class="mw-body" role="main">
+ 				<div id="toc" class="toc"><div id="toctitle"><h2>Contents</h2><span class="toctoggle">&nbsp;[<a href="javascript:toggle()" id="togglelink">hide</a>]&nbsp;</span></div>
+					<div id="contents">
+						<ul>
+							<li> <a href="#grub">	 <span class="tocnumber">	1 </span> <span class="toctext"> GRUB	</span></a> </li> 
+						</ul>
+					</div>
+				</div>
+
+				<style>
+					html,body,h1,h2,h3,h4,h5,h6 { font-family: "Comic Sans MS", cursive, sans-serif; }
+				</style>
+ 
+
+
+<div class="w3-container">
+	<h1><span class="mw-headline" id="nfsconfig"> NFS Configuration </h1>	
+<p>
+Modify the default boot target from graphical to multi-user and reboot the system to test it. Run appropriate commands after the reboot to validate the change. Restore the default boot target back to graphical and reboot to test.
+
+</p>
+
+<pre> 
+
+--Resuce mode
+Mount the DVD, boot - choose the resuce media
+
+chroot /mnt/sysimage
+grub2-install /dev/vda
+yum reinstall grub2-tools
+grub2-mkconfig -o /boot/grub2/grub.cfg
+or 
+grub2-mkconfig -o /boot/grub2/efi/EFI/redhat/grub.cfg
+
+
+--Boot into rescue mode
+init=/sysroot/bin/sh or systemd-unit=rd.break, or rd.break
+chroot /sysroot
+mout -o remount,rw /
+touch /.autorelabel
+
+
+
+
+ [root@rhce boot]# systemctl --help |grep default
+  get-default                     Get the name of the default target
+  set-default NAME                Set the default target
+  default                         Enter system default mode
+
+[root@rhce boot]# systemctl get-default
+multi-user.target
+
+[root@rhce boot]# systemctl set-default rescue.target
+Removed symlink /etc/systemd/system/default.target.
+Created symlink from /etc/systemd/system/default.target to /usr/lib/systemd/system/rescue.target.
+
+[root@rhce boot]# ls -ltr /etc/systemd/system/default.target
+lrwxrwxrwx. 1 root root 37 Jul 18 12:47 /etc/systemd/system/default.target -> /usr/lib/systemd/system/rescue.target
+
+[root@rhce ~]# systemctl set-default multi-user.target
+Removed symlink /etc/systemd/system/default.target.
+Created symlink from /etc/systemd/system/default.target to /usr/lib/systemd/system/multi-user.target.
+
+
+Default is controlled by 
+[root@rhce grub2]# grep GRUB_DEFAULT /etc/default/grub
+GRUB_DEFAULT=saved
+
+Since it's saved - the detail will be in /boot/grub2/grubenv 
+
+This can be seen as 
+[root@rhce grub2]# grub2-editenv list
+saved_entry=CentOS Linux (3.10.0-514.26.2.el7.x86_64) 7 (Core)
+
+[root@rhce grub2]# grep "^menuentry" /boot/grub2/grub.cfg | cut -d "'" -f2
+CentOS Linux (3.10.0-514.26.2.el7.x86_64) 7 (Core)
+CentOS Linux (3.10.0-327.el7.x86_64) 7 (Core)
+CentOS Linux (0-rescue-d458f1266e944ac49077920032339122) 7 (Core)
+
+
+[root@rhce grub2]# grub2-set-default 0
+[root@rhce grub2]# grub2-editenv list
+saved_entry=0
+
+
+-- Boot-time parameters.
+
+[root@lab125a sysctl.d]# cat /proc/cmdline
+BOOT_IMAGE=/vmlinuz-3.10.0-327.el7.x86_64 root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet LANG=en_US.UTF-8
+
+
+[root@lab125a ~]# grep CMD /etc/default/grub
+GRUB_CMDLINE_LINUX="crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet console=tty0 console=ttyS0 console=ttyS0,115200"
+grub2-mkconfig -o /boot/grub2/grub.cfg
+
+[root@lab130a ~]# grep linux16 /boot/grub2/grub.cfg
+	linux16 /vmlinuz-3.10.0-327.el7.x86_64 root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet LANG=en_US.UTF-8
+	linux16 /vmlinuz-0-rescue-6e490d5089bd459881a69cee25bb2294 root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet
+
+
+[root@lab130a ~]# grubby --update-kernel /boot/vmlinuz-3.10.0-327.el7.x86_64 --args="console=tty0,ttyS0,115200"
+[root@lab130a ~]# grep linux16 /boot/grub2/grub.cfg
+	linux16 /vmlinuz-3.10.0-327.el7.x86_64 root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet LANG=en_US.UTF-8 console=tty0 console=ttyS0 console=ttyS0,115200
+	linux16 /vmlinuz-0-rescue-6e490d5089bd459881
+
+-- initramfs missing
+https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/deployment_guide/sec-verifying_the_initial_ram_disk_image
+
+dracut "initramfs-$(uname -r).img" $(uname -r)
+
+-- vmlinuz missing
+Boot into rescue mode
+chroot /mnt/sysimage
+mount /dev/cdrom /tmp/mnt 
+cp /tmp/mnt/isolinux/vmlinuz /boot/vmlinuz-$(uname -r) or grub2-install /dev/vda1 --skip-fs-probe --force -v
+cd /boot ; dracut initramfs-$(uname -r).img $(uname -r)
+
+
+--Configure virtual terminals
+/etc/systemd/logind.conf
+
+
+--Restore LVM
+https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/logical_volume_manager_administration/mdatarecover
+
+
+</pre>
+
+</div>
+
+ 	 
+	
+ 
+	
+</body>
+</html>

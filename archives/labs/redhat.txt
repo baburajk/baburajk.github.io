@@ -1,0 +1,501 @@
+setuid,setgid,stickybit,acl
+===========================
+Created Wednesday 11 November 2015
+
+
+
+Create a group - devops, 1000
+Create a group - development, GID 1200
+Create a group - developer , 1301
+Create a group - messaging , 1302
+Create user jeff, 2001 - group developer , secondory group development
+Create user derek, 2002 - group messaging, secondory group development
+
+How to set default umask?
+
+Create share directory /u01/data/development
+
+create directory /u01/data/developer
+create directory /u01/data/messaging
+
+
+
+Implementation 
+
+[root@rbnetlab ~]# groupadd -g 1000 devops
+[root@rbnetlab ~]# groupadd -g 1200 development
+[root@rbnetlab ~]# groupadd -g 1301 developer
+[root@rbnetlab ~]# groupadd -g 1302 messaging
+
+[root@rbnetlab ~]# userdel -r jeff
+[root@rbnetlab ~]# useradd -u 2001 -g 1301 -G 1200 jeff
+[root@rbnetlab ~]# cat /etc/passwd |grep jeff
+jeff:x:2001:1301::/home/jeff:/bin/bash
+[root@rbnetlab ~]# cat /etc/group | egrep '1301|1200'
+development:x:1200:jeff
+developer:x:1301:
+
+
+[root@rbnetlab ~]# cat /etc/passwd |grep derek
+derek:x:2002:1302::/home/derek:/bin/bash
+[root@rbnetlab ~]# cat /etc/group | egrep '1302|1200'
+development:x:1200:jeff,derek
+messaging:x:1302:
+
+
+Create and Manage Access Control Lists (ACLs)
+http://www.vanemery.com/Linux/ACL/linux-acl.html#using
+
+
+getfacl -R Tree > Tree.facl
+setfacl -R -b Tree
+setfacl --restore Tree.facl
+setfacl --set-file=backup.acl oracle
+
+
+
+
+systemd
+https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/7/html/System_Administrators_Guide/sect-Managing_Services_with_systemd-Services.html#sect-Managing_Services_with_systemd-Services-List
+
+Set run level 3 (multi-user with networking and console only login): 
+rm /etc/systemd/system/default.target 
+ln -sf /lib/systemd/system/runlevel3.target /etc/systemd/system/default.target
+Set run level 5 (graphic mode): 
+rm /etc/systemd/system/default.target 
+ln -sf /lib/systemd/system/runlevel5.target /etc/systemd/system/default.target
+
+— enable debugging --
+[root@rbnetops system]# grep Env vsftpd.service
+Environment=SYSTEMD_LOG_LEVEL=debug
+[root@rbnetops system]# pwd
+/usr/lib/systemd/system
+
+
+
+
+
+/etc/sysconfig directory
+  /usr/share/docs/initscripts*/sysconfig.txt
+
+
+/etc/proc
+[root@rbnetops proc]# cd 1083
+[root@rbnetops 1083]# cat cmdline
+/usr/libexec/at-spi2-registryd--use-gnome-session[root@rbnetops 1083]#
+
+cmdline = Command issued when starting the process
+cwd 	= Symbolic link to current working directory of the process.
+environ = A list of environment variables for the process.
+
+rsyslog
+
+Under Global Directives
+
+# Template for the message format.
+$template precise,"%syslogpriority%,%syslogfacility%,%timegenerated::fulltime%,%HOSTNAME%,%syslogtag%,%msg%\n"
+#template for creating dynamic files.
+$template DynamicFile,"/var/log/%timegenerated%-bk.log
+
+Rules for each of the above.
+mail.*                                                /var/log/bkmail;precise
+mail.*                                                ?DynamicFile
+
+
+User and group
+
+
+[root@rbnetops ~]# cd /etc/skel/
+[root@rbnetops skel]# touch bfile
+[root@rbnetops skel]# useradd test -g cheeni -G babu,git
+
+[root@rbnetops skel]# grep test /etc/shadow
+test:!!:16435:0:99999:7:::
+
+[root@rbnetops skel]# grep test /etc/passwd
+test:x:1001:503::/home/test:/bin/bash
+
+[root@rbnetops skel]# grep test /etc/group
+babu:x:501:cheeni,kannan,git,test
+git:x:502:test
+
+[root@rbnetops skel]# ls -ltr /home/test/
+total 0
+-rw-r--r--. 1 test cheeni 0 Dec 30 19:45 bfile
+
+[root@rbnetops skel]# cat /etc/default/useradd
+# useradd defaults file
+GROUP=100
+HOME=/home
+INACTIVE=-1
+EXPIRE=
+SHELL=/bin/bash
+SKEL=/etc/skel
+CREATE_MAIL_SPOOL=yes
+
+
+[root@rbnetops skel]# cat /etc/nologin.txt
+Welcome idiot!!
+
+[root@rbnetops skel]# usermod test -s /sbin/nologin
+
+[root@rbnetops skel]# su - test
+Last login: Tue Dec 30 19:52:23 EST 2014 on pts/1
+Welcome idiot!!
+
+[root@rbnetops system]# usermod -aG 72 test
+[root@rbnetops system]# id test
+uid=1001(test) gid=503(cheeni) groups=503(cheeni),72(tcpdump),501(babu),502(git)
+
+#umask
+Default profiles
+
+#chage
+chage -d 0 frank — Password expires immediately
+[root@rbnetops Canada]# authconfig --passalgo=sha512 --update
+[root@rbnetops Canada]# authconfig --test  | grep hash
+ password hashing algorithm is sha512
+
+#File System
+/etc/mke2fs.conf
+
+
+Continue from Page 301...
+
+
+#ssh port forwarding
+[root@rbnetops ~]# ssh -l root -L *:4567:rbdns02.intercloudzone.com:22 rbdns01.intercloudzone.com -v cat -
+
+[root@rbnetops ~]# ssh localhost -p 4567 hostname -f
+root@localhost's password:
+rbdns02
+
+
+[root@rbnetops ~]# ssh -l root -R *:4567:rbnetops.intercloudzone.com:3000 rbdns02.intercloudzone.com -v cat -
+[root@rbdns02 ~]# ssh localhost -p 4567 hostname -f
+ssh_exchange_identification: Connection closed by remote host
+[root@rbdns02 ~]#
+
+
+
+[root@rbnetops ~]# ssh -l root -R *:4567:rbnetops.intercloudzone.com:22 rbdns01.intercloudzone.com cat -
+root@rbdns01.intercloudzone.com's password:
+
+
+root@rbdns01 named]# ssh -l root localhost -p 4567
+root@localhost's password:
+Last login: Tue Jan  6 16:30:12 2015 from 192.168.56.1
+[root@rbnetops ~]# exit
+
+#kpartx
+
+
+
+#cryptsetup
+http://www.cyberciti.biz/hardware/howto-linux-hard-disk-encryption-with-luks-cryptsetup-command/
+
+lvcreate -L 3G -n lvCRYPT10 vgDATA
+cryptsetup -y -v luksFormat /dev/vgDATA/lvCRYPT10
+
+[root@rbnetops downloads]# cryptsetup luksOpen /dev/vgDATA/lvCRYPT10 cryptfs10 -v
+Enter passphrase for /dev/vgDATA/lvCRYPT10:
+Key slot 0 unlocked.
+Command successful.
+
+[root@rbnetops downloads]# ls -ltr /dev/mapper/cryptfs10
+lrwxrwxrwx. 1 root root 7 Jan  7 17:31 /dev/mapper/cryptfs10 -> ../dm-5
+[root@rbnetops downloads]# cryptsetup status -v cryptfs10
+/dev/mapper/cryptfs10 is active.
+  type:    LUKS1
+  cipher:  aes-xts-plain64
+  keysize: 256 bits
+  device:  /dev/mapper/vgDATA-lvCRYPT10
+  offset:  4096 sectors
+  size:    6287360 sectors
+  mode:    read/write
+Command successful.
+
+[root@rbnetops ~]# dd if=/dev/zero | pv -terb | dd of=/dev/mapper/cryptfs10
+ 301MiB 0:00:33 [8.93MiB/s]
+
+[root@rbnetops ~]# mkfs.ext4 /dev/mapper/cryptfs10
+[root@rbnetops ~]# mount /dev/mapper/cryptfs10 /crypt/
+
+# Dismount
+cryptsetup luksClose cryptfs10
+cryptsetup luksRemoveKey /dev/vgDATA/lvCRYPT10
+lvremove /dev/vgDATA/lvCRYPT10
+
+
+#netcat
+
+#pv
+
+
+[root@rbnetops ~]# pv -tpreb /dev/zero | dd of=/dev/mapper/cryptfs  bs=128M
+ 1.2GiB 0:00:20 [46.4MiB/s] [                          <=>         
+
+#bonding
+http://www.linuxhorizon.ro/bonding.html
+
+ifconfig bond0 192.168.2.152 netmask 255.255.255.0
+[root@rbnetops bonding]# echo "-bond0" > /sys/class/net/bonding_masters
+[root@rbnetops bonding]# cat /sys/class/net/bonding_masters
+[root@rbnetops bonding]# rmmod bonding
+
+#rndc
+
+[root@rbdns01 ~]# grep rndc /etc/named.conf
+include "/etc/rndc.key";
+        inet 127.0.0.1 allow { localhost; } keys { "rndc-key"; } ;
+
+
+[root@rbdns01 ~]# cat /etc/rndc.key
+key "rndc-key" {
+        algorithm hmac-md5;
+        secret "Xx2WpxL+T4tEI9cK5AAZAA==";
+};
+
+
+
+# Read more on the Linux Networking Cookbook            ++++++++++>>
+ 
+
+#NFS
+
+
+/etc/exports is very sensitive to whitespace - so the following statements are not the same:
+
+/export/dir hostname(rw,no_root_squash) 
+/export/dir hostname (rw,no_root_squash)
+The first will grant hostname rw access to /export/dir without squashing root privileges. The second will grant hostname rw privileges with root squash and it will grant everyone else read/write access, without squashing root privileges. Nice huh?
+
+
+--SERVER
+[root@rbnetops ~]# lsmod |grep nfs
+nfsd                  284378  1
+auth_rpcgss            59368  1 nfsd
+nfs_acl                12837  1 nfsd
+lockd                  93977  1 nfsd
+sunrpc                293453  5 nfsd,auth_rpcgss,lockd,nfs_acl
+
+systemctl start nfs.service
+
+[root@rbnetops ~]# cat /etc/exports
+/u01/shared *(all_squash, ro)
+
+[root@rbnetops ~]# showmount -e
+Export list for rbnetops.intercloudzone.com:
+/u01/shared *
+
+[root@rbnetops ~]# cat /var/lib/nfs/etab
+/u01/shared     *(rw,sync,wdelay,hide,nocrossmnt,secure,root_squash,all_squash,no_subtree_check,secure_locks,acl,anonuid=65534,anongid=65534,sec=sys,rw,secure,root_squash,all_squash)
+
+[root@rbnetops u01]# chmod o+w shared/
+
+
+--CLIENT
+[root@rbdns01 ~]# service nfs start
+[root@rbdns01 ~]# mkdir -pv /u01/clientshare
+[root@rbdns01 ~]# mount -t nfs -o rw rbnetops.intercloudzone.com:/u01/shared /u01/clientshare/ -v
+mount.nfs: timeout set for Thu Jan 15 11:13:17 2015
+mount.nfs: trying text-based options 'vers=4,addr=192.168.2.151,clientaddr=192.168.2.130'
+rbnetops.intercloudzone.com:/u01/shared on /u01/clientshare type nfs (rw)
+
+[root@rbdns01 ~]# mount -l |grep client
+rbnetops.intercloudzone.com:/u01/shared on /u01/clientshare type nfs (rw,vers=4,addr=192.168.2.151,clientaddr=192.168.2.130)
+
+Change Read Write mode.
+[root@rbdns01 ~]# mount -o remount /u01/clientshare/
+
+
+--autofs mount
+[root@rbnetops autoshared]# showmount -e
+Export list for rbnetops.intercloudzone.com:
+/u01/autoshare *
+/u01/shared    *
+
+
+[root@rbdns01 ~]# cat /etc/auto.master | grep -v ^#
+/misc   /etc/auto.misc
+/net    -hosts
++auto.master
+/-      auto.direct
+
+[root@rbdns01 ~]# cat /etc/auto.direct
+/u01/autoshare -rw,soft rbnetops.intercloudzone.com:/u01/autoshare
+
+[root@rbdns01 ~]# cat /etc/auto.misc | grep -v ^#
+cd              -fstype=iso9660,ro,nosuid,nodev :/dev/cdrom
+misc99          -fstype=nfs             rbnetops.intercloudzone.com:/u01/miscshare
+
+
+—- host file
+
+[root@rbdns01 ~]# grep hosts /etc/auto.master
+# NOTE: mounts done from a hosts map will be mounted with the
+/net    -hosts
+
+[root@rbdns01 ~]# cat /etc/hosts | grep rbnetops
+192.168.2.151 rbnetops rbnetops.intercloudzone.com
+
+[root@rbdns01 rbnetops]# ls -ltr /net/rbnetops/u01/
+total 0
+drwxr-xr-x 2 root root 0 Jan 15 18:03 miscshare
+drwxr-xr-x 2 root root 0 Jan 15 18:03 autoshare
+drwxr-xr-x 2 root root 0 Jan 15 18:03 shared
+
+
+
+#netcat
+
+Find all good ones
+
+Refer VSFTP, SAMBA, LDAP later..
+
+Starting from 123..
+
+PAM
+http://www.ibm.com/developerworks/aix/library/au-sshlocks/
+
+How to deny access to users
+	cd /usr/share/doc/pam-1.1.8
+	
+
+
+Add below line to /etc/pam.d/sshd
+	account    required     pam_access.so
+
+Add lines to /etc/security/access.conf to deny all users except root
+	+ : root : ALL
+	- : ALL : ALL
+
+Add lines to enable only root access only through DNS01
++ : root : 192.168.2.130
+- : ALL : ALL
+
+Another way
+
+Add line to /etc/pam.d/ssh
+auth    required        pam_listfile.so item=user sense=allow file=/etc/ssh_users onerr=fail
+
+[root@rbnetops txts]# cat /etc/ssh_users
+root
+babu
+
+
+#qperf
+
+
+#knockd
+
+
+page 140 contd...
+
+#netcat
+nc -l -v -v  2222 | bzip2 -d | dd bs=16M of=/tmp/testfile
+cat /var/log/messages | bzip2 -c |  nc -v -v rbnetops 2222
+
+#selinux
+[root@rbnetops ~]# setenforce 1
+[root@rbnetops ~]# getenforce
+Enforcing
+[root@rbnetops ~]# setenforce 0
+[root@rbnetops ~]# getenforce
+Permissive
+
+ 
+
+#mtr
+https://www.linode.com/docs/networking/diagnosing-network-issues-with-mtr
+
+
+#chroot
+
+#vsftp
+https://www.centos.org/docs/5/html/5.2/Deployment_Guide/s2-ftp-vsftpd-conf-opt-log.html
+pam_service_name=vsftpd
+userlist_deny=YES
+tcp_wrappers=YES
+dual_log_enable=YES
+local_enable=YES
+no_anon_password=YES
+
+
+#ARP Poisoning
+
+
+#iptables ** Pending - Review it with examples
+http://wiki.centos.org/HowTos/Network/IPTables
+Work with examples.
+continue with 169
+
+Refer ARP POISONING NOTE
+
+#TCP Wrappers
+To allow and deny access.
+
+/etc/hosts.allow and /etc/hosts.deny ( allow looked at first )
+
+eg.
+
+[root@rbnetops ~]# grep sshd /etc/hosts.allow
+sshd : 192.168.56.130, 192.168.2.130
+[root@rbnetops ~]# grep sshd /etc/hosts.deny
+sshd : 192.168.56.131, 192.168.2.131
+sshd : 192.168.2.151 : twist /bin/echo 421 Access denied
+
+[root@rbdns02 ~]# ssh rbnetops -v
+OpenSSH_5.3p1, OpenSSL 1.0.1e-fips 11 Feb 2013
+
+blocked
+
+
+[root@rbdns02 ~]# ifconfig eth0:1 192.168.2.150 netmask 255.255.255.0 up
+
+[root@rbdns02 ~]# ssh -b 192.168.2.150 rbnetops
+root@rbnetops's password:
+Last login: Thu Feb 26 18:24:14 2015 from 192.168.2.150
+
+ifconfig eth0:1 192.168.2.150 netmask 255.255.255.0 down
+
+[root@rbdns02 ~]# arping -c 3 -I eth1 192.168.2.151
+
+
+https://sandilands.info/sgordon/arp-spoofing-on-wired-lan
+
+
+# XFS
+yum install xfsprogs
+mkfs.xfs -L DATA /dev/vgDATA/lvDATA00
+
+#CENTOS 7 UPGRADE
+wget http://dev.centos.org/centos/6/upg/x86_64/Packages/preupgrade-assistant-1.0.2-33.0.3.el6.centos.x86_64.rpm http://dev.centos.org/centos/6/upg/x86_64/Packages/preupgrade-assistant-contents-0.5.13-1.0.5.el6.centos.noarch.rpm http://dev.centos.org/centos/6/upg/x86_64/Packages/preupgrade-assistant-ui-1.0.2-33.0.3.el6.centos.x86_64.rpm http://dev.centos.org/centos/6/upg/x86_64/Packages/redhat-upgrade-tool-0.7.22-3.el6.centos.noarch.rpm
+
+yum install preupgrade-assistant-*
+yum install redhat-upgrade-tool-0.7.22-3.el6.centos.noarch.rpm
+
+rpm --import http://ftp.plusline.de/centos/7.0.1406/os/x86_64/RPM-GPG-KEY-CentOS-7
+rpm -qa gpg-pubkey* --qf "%{name}-%{release}-%{summary}\n"
+
+redhat-upgrade-tool --network 7.0 --instrepo http://mirror.rackspace.com/CentOS/7.0.1406/os/x86_64/ --force
+
+http://linuxsysconfig.com/2014/07/upgrade-to-centos-7/
+
+#IPv4 FORWARD
+
+[root@rbdns01 ~]# cat /proc/sys/net/ipv4/ip_forward
+0
+
+[root@rbdns01 ~]# ping www.google.com -I eth0
+PING www.google.com (173.194.46.112) from 192.168.56.130 eth0: 56(84) bytes of data.
+^CFrom 192.168.56.130 icmp_seq=2 Destination Host Unreachable
+
+echo "1" > /proc/sys/net/ipv4/ip_forward
+
+[root@rbdns01 ~]# ping www.google.com -I eth1
+PING www.google.com (173.194.46.115) from 192.168.2.130 eth1: 56(84) bytes of data.
+64 bytes from ord08s13-in-f19.1e100.net (173.194.46.115): icmp_seq=1 ttl=54 time=24.3 ms
+
+
+

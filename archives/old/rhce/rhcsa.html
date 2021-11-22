@@ -1,0 +1,3873 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="Generator" content="EditPlus®">
+  <meta name="Author" content="">
+  <meta name="Keywords" content="">
+  <meta name="Description" content="">
+  <title>Notes</title>
+ <link rel="stylesheet" href="css/stylesheet1.css">
+ <link rel="stylesheet" href="css/w3.css">
+ <link rel="stylesheet" href="http://d2j4ekq3nza4ef.cloudfront.net/wp-content/plugins/asdf/images/style/output.css" type="text/css" />
+	 
+	 
+ <style type="text/css" >
+	  
+ </style>
+<script Language="Javascript">
+function toggle() {
+    var x = document.getElementById('contents');
+    if (x.style.display === 'none') {
+		document.getElementById("togglelink").text = "hide"
+        x.style.display = 'block';
+    } else {
+        x.style.display = 'none';
+		document.getElementById("togglelink").text = "show"
+    }
+}
+</script>
+ </head>
+	<body> 
+		<div id="nav">
+			<div id="jumplinks"> Quick notes </div>
+		</div>
+    
+		<div id="body">
+			<div id="content" class="mw-body" role="main">
+ 				<div id="toc" class="toc"><div id="toctitle"><h2>Contents</h2><span class="toctoggle">&nbsp;[<a href="javascript:toggle()" id="togglelink">hide</a>]&nbsp;</span></div>
+					<div id="contents">
+						<ul>
+							<li> <a href="#terminals"> <span class="tocnumber">	1 </span> <span class="toctext"> Terminals 	</span></a> </li>
+							<li> <a href="#packages"> <span class="tocnumber">	2 </span> <span class="toctext"> Packages 	</span></a> </li>
+							<li> <a href="#generic"> <span class="tocnumber">	3 </span> <span class="toctext"> Generic 	</span></a> </li>
+
+ 						</ul>
+					</div>
+				</div>
+
+				<style>
+					html,body,h1,h2,h3,h4,h5,h6 { font-family: "Comic Sans MS", cursive, sans-serif; }
+				</style>
+ 
+
+
+<div class="w3-container">
+	<h1><span class="mw-headline" id="Generic-Basics"> Generic-Basics </h1>	
+<p>
+Differences between shell and a terminal is not completely obvious. For example, the terminal converts keys into control sequences
+	(e.g. Left → \e[D). The shell converts control sequences into commands (e.g. \e[D → backward-char).
+
+</p>
+
+<pre> 
+
+-Disable ICMP's
+
+[root@rhce5 network-scripts]# sysctl -w net.ipv4.icmp_echo_ignore_all=1
+net.ipv4.icmp_echo_ignore_all = 1
+
+[root@rhce5 network-scripts]# cat /proc/sys/net/ipv4/icmp_echo_ignore_all
+1
+
+--Static Route
+
+Static route configuration can be stored per-interface in a /etc/sysconfig/network-scripts/route-interface file.
+For example, static routes for the eth0 interface would be stored in the /etc/sysconfig/network-scripts/route-eth0 
+[root@rhce5 network-scripts]# cat route-eth0
+ADDRESS0=192.168.125.0
+NETMASK0=255.255.255.0
+GATEWAY0=192.168.122.1
+
+
+[root@rhce5 network-scripts]# ip -6 addr show eth0
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 state UP qlen 1000
+    inet6 2001:db8:7a::50/64 scope global noprefixroute
+       valid_lft forever preferred_lft forever
+    inet6 fe80::3b8:ce7c:2c4c:d8b8/64 scope link noprefixroute
+       valid_lft forever preferred_lft forever
+[root@rhce5 network-scripts]# ping6 -I eth0 2001:db8:7a::50
+PING 2001:db8:7a::50(2001:db8:7a::50) from 2001:db8:7a::50 eth0: 56 data bytes
+64 bytes from 2001:db8:7a::50: icmp_seq=1 ttl=64 time=0.064 ms
+^C
+--- 2001:db8:7a::50 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 0.064/0.064/0.064/0.000 ms
+
+--Add permanent static routes 
+
+nmcli ipv4> set routes 192.168.130.0/24 192.168.122.1
+
+
+
+--Useful commands/information 
+pinfo (instead of info)
+yum list * - doc* ( Softwares providing doc as a separate package)
+&> file (Combines stdout and stderr to one file)
+>> file 2>&1 (Sends stderr to stdout through a pipe )
+userdel -r ( always run with -r ), else scan for find / -nouser -o -nogroup 2> /dev/null
+usermod -aG newgroup ( without -a , the existing groups will be removed)
+nlogin will prevent only interactive use of the system, does not prevent upload/retrieve logs via applications, ftp's etc.
+/etc/login.defs has all login default parameters
+Divide the load-average with number of logical CPU's ( grep "model name" /proc/cpuinfo )
+top - z (Color) , C (Absoulte Path), x (Highlight Sorted column), b (Highlight Sorted Column ),u (User filter),P ( Sort by CPU),M (Sort by Memory),m (Memory bar), V (Forest Mode), O (%MEM > 1, %CPU >1 etc.), "=" to clear all filters, save this with W
+
+--IF userdel -r not used, the UID/GID is re-used for the future users..
+find / -nouser -o -nogroup 2>/dev/null
+
+--List all groups from the variant file (Under RepoPackage)
+cat variant.xml | xpath comps/environment/grouplist/groupid
+
+[root@server1 demo]# cat /etc/tmpfiles.d/demo.conf
+d /var/run/demo 0700 root root 5s
+
+[root@server1 tmpfiles.d]# cd /var/run/demo/
+
+[root@server1 demo]# touch afile bfile
+
+[root@server1 demo]# ls -ltr
+total 0
+-rw-rw-r--. 1 root root 0 Nov 29 16:37 bfile
+-rw-rw-r--. 1 root root 0 Nov 29 16:37 afile
+
+[root@server1 demo]# systemd-tmpfiles --clean /etc/tmpfiles.d/demo.conf
+
+[root@server1 demo]# ls -ltr
+total 0
+
+[root@server1 demo]# cat /etc/tmpfiles.d/demo.conf
+d /var/run/demo 0700 root root 5s
+
+
+pkill -STOP -u vivek
+pkill -CONT -u vivek
+
+
+
+--Commands to find the terminals
+
+[root@lab125a ~]# tty
+/dev/ttyS0
+
+--Run who -a
+[root@lab125a ~]# who -a
+           system boot  2017-09-22 09:58
+LOGIN      tty1         2017-09-22 09:58               637 id=tty1
+root     + ttyS0        2017-09-22 10:03   .           638
+           run-level 3  2017-09-22 09:58
+root     + pts/0        2017-09-22 10:00 00:01        2527 (192.168.125.1)
+
+--Better than who, is what - w
+[root@lab125a ~]# w
+ 11:28:51 up  1:30,  2 users,  load average: 0.01, 0.02, 0.05
+USER     TTY      FROM             LOGIN@   IDLE   JCPU   PCPU WHAT
+root     ttyS0                     10:03    2:35   0.28s  0.28s -bash
+root     pts/0    192.168.125.1    10:46    3.00s  0.03s  0.02s w
+
+--Sent message to terminal
+#console terminal
+[root@lab125a ~]# echo &quot;test&quot; > /dev/ttyS0	 
+[root@lab125a ~]# echo &quot;You will be kicked out soon &quot; | write root pts/0
+
+#pts terminal
+[root@lab125a ~]# tty
+/dev/pts/0
+[root@lab125a ~]# echo &quot;test&quot; > /dev/pts/0
+test
+
+--Reset the size of the console/terminal
+virsh console lab125a
+
+[root@lab125a ~]# stty rows 80 columns 120
+[root@lab125a ~]# echo "This is to test the line-folds wont happen on a console after stty reset " | write root pts/0
+
+--Commands to display screen-size/options
+stty size
+tputs columns
+
+
+--Save the current command using CTRL+E , run new and use CTRL+Y to bring back the old one back..
+
+[root@lab125a ~]# echo "This is a test "^C
+CTRL+E  => Gives a new line to execute the command
+ls -lr  => Run that command
+CTRL+Y  => Puts back the previous command which is "echo"
+
+
+--rpm
+rpm -qi (Information on an installed package)
+rpm -ql (List files of an installed package)
+rpm -q --whatrequires iproute ( What packages require iproute inorder for them to operate properly).
+
+--Lost file /etc/ntp.conf
+root@panchajanya:/tmp\> rpm -q --whatprovides /etc/ntp.conf
+ntp-4.2.6p5-22.el7.centos.x86_64
+
+root@panchajanya:/tmp\> rpm -qf /etc/ntp.conf
+ntp-4.2.6p5-22.el7.centos.x86_64
+
+--rpm2cpio, cpio -id => i = extract files, d= create directories
+
+root@panchajanya:/tmp/extract\> ls -ltr
+total 544
+-r--r--r--. 1 root root 556104 Sep 28 12:13 ntp-4.2.6p5-22.el7.centos.x86_64.rpm
+root@panchajanya:/tmp/extract\> rpm2cpio ntp-4.2.6p5-22.el7.centos.x86_64.rpm | cpio -id
+2812 blocks
+root@panchajanya:/tmp/extract\> ls -ltr
+total 544
+-r--r--r--. 1 root root 556104 Sep 28 12:13 ntp-4.2.6p5-22.el7.centos.x86_64.rpm
+drwxr-xr-x. 5 root root     58 Sep 28 12:16 etc
+drwxr-xr-x. 6 root root     49 Sep 28 12:16 usr
+drwxr-xr-x. 4 root root     26 Sep 28 12:16 var
+
+--Verify signature
+root@panchajanya:/tmp/extract\> rpm -K --nosignature ntp-4.2.6p5-22.el7.centos.x86_64.rpm
+ntp-4.2.6p5-22.el7.centos.x86_64.rpm: sha1 md5 OK
+
+-- PKI files
+/etc/pki/rpm-gpg
+
+
+--Verify if the package is altered.
+root@panchajanya:/tmp/extract\> rpm -Vv ntp-4.2.6p5-22.el7.centos.x86_64
+.........    /etc/dhcp/dhclient.d
+.........    /etc/dhcp/dhclient.d/ntp.sh
+.........  c /etc/ntp.conf
+.........    /etc/ntp/crypto
+.........  c /etc/ntp/crypto/pw
+.........  c /etc/sysconfig/ntpd
+.M...UG..    /usr/bin/ntpstat
+
+
+root@panchajanya:/tmp/extract\> rpm -Vf /usr/bin/ntpstat
+.M...UG..    /usr/bin/ntpstat
+
+
+-- Terminates the shell if there's no activity on specified number of seconds, in /etc/profile.
+
+export TMOUT=120
+readonly TMOUT
+
+
+
+--PRevent root user login
+echo > /etc/securetty, PermitRootLogin no (sshd_config), /sbin/nologin (passwd) and PAM
+
+
+
+-- (( double open paranthesis )) for arithmetic, [ square brackets for conditionl expression ], [[ double square paranthesis for regular expressions like =~ ]]
+
+[root@server1 rpm-gpg]# echo $((1+4))
+5
+
+[root@server1 rpm-gpg]# [ $(date +%d -d -100days) -le 30 ] && echo "Test passed"
+Test passed
+
+[root@server1 rpm-gpg]# if  [[ "xyz" =~ "x" ]]; then echo "True" ; fi
+True
+
+--Expressions : == looks for exact string equality vs eq looks for arithmetic equality.
+
+[root@rhce4 ~]#  [ " 1 " == 1 ]  && echo equal || echo not
+not
+
+[root@rhce4 ~]#  [ " 1 " -eq 1 ]  && echo equal || echo not
+equal
+
+
+Difference between command and space!
+--Logical "AND" implied
+pgrep -u root sshd
+
+--Logical &quot;OR&quot; implied
+pgrep -u root,sshd
+
+Files (chattr) - Immutable and only can append data.
+[root@lab125a ~]# chattr +ai afile
+[root@lab125a ~]# lsattr afile
+----ia---------- afile
+
+Find command
+find / -size -1M (Files smaller than 1MB)
+find / -size +1M (Files larger than 1MB)
+find / -user root -not group wheel 
+find / -mtime +10 (Files modified more than 10 days ago)
+find / -mtime 10  (Files modified exactly 10 days ago)
+find . -mtime +0 # find files modified greater than 24 hours ago
+find . -mtime 0 # find files modified between now and 1 day ago
+# (i.e., in the past 24 hours only)
+find . -mtime -1 # find files modified less than 1 day ago (SAME AS -mtime 0)
+find . -mtime 1 # find files modified between 24 and 48 hours ago
+find . -mtime +1 # find files modified more than 48 hours ago
+
+
+--Nice
+Range -20 to +19 (Higher nice, lower execution priority!)
+
+--kill
+kill -l lists all signals
+pgrep -u apache httpd | xargs kill
+killall httpd
+
+--Cron
+
+-cron.deny
+By default only cron.deny exists - all users not listed in it are pemitted.
+
+-cron.allow - Takes priority over cron.deny.
+* If neither file exist, no users are allowed to run crons only root user can access cron.
+/etc/cron.allow takes precedence.
+
+
+
+--setuid
+rwS = (Executable permission bit not set, this is an error) vs rws (setuid and x set) 
+
+
+--Find files by reference
+
+touch -d '1 day ago' cutoff
+
+[root@rhcsa1 ~]# ls -ltr
+total 8
+-rw-------. 1 root root 1504 Nov 22 18:47 anaconda-ks.cfg
+-rw-r--r--. 1 root root 2771 Nov 23 18:34 configfiles.txt
+-rw-r--r--. 1 root root    0 Nov 25 22:23 cutoff
+-rw-r--r--. 1 root root    0 Nov 26 22:23 bfile
+[root@rhcsa1 ~]# date
+Sun Nov 26 22:24:22 EST 2017
+
+[root@rhcsa1 ~]# find . -newer cutoff
+.
+./bfile
+
+--Find older files (excluding the cutoff)
+[root@rhcsa1 ~]# find . ! -newer cutoff --samefile cutoff
+.
+./bfile
+
+
+
+
+-- Schedule a cron to execute on first sunday of every month.
+  0 2 * * sun  [ $(date +%d) -le 07 ] && /script/script.sh
+
+When you specify */5 in minute field means every 5 minutes.
+When you specify 0-10/2 in minute field mean every 2 minutes in the first 10 minute.
+
+
+--systemd-tmpfiles 
+
+When systemd starts a system, one of the first service units launched is systemd-tmpfiles-setup. This service runs the command
+systemd-tmpfiles --create --remove. This command reas configuration files from /usr/lib/tmpfiles.d/*.conf, /run/tmpfiles.d/*.conf and
+/etc/tmpfiles.d/*.conf
+
+
+
+-- Generate SHA512 crypt passwords
+
+
+[root@server1 ~]# python
+Python 2.7.5 (default, Nov 20 2015, 02:00:19)
+[GCC 4.8.5 20150623 (Red Hat 4.8.5-4)] on linux2
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import crypt
+>>> print (crypt.crypt("oracle",crypt.mksalt(crypt.METHOD_SHA512)))
+$6$mS0WeRwcJtXUprd8$Gg3PbM/x5yopaBZ57Hk9atr5W/vDdcfr5tegM28XhjNAkxOpl8DyFe17RHJmtpO.7f21v609r6l0nQUwBXmf60
+>>>
+
+$6 = SHA512, $5 = SHA256, $1 = MD5 ( Format = $ENCRYPTION $SALT $ENCRYPTED PASSWORD)
+
+[root@server1 ~]# doveadm pw -s SHA512-CRYPT -p oracle
+{SHA512-CRYPT}$6$SfFdJ4r.ZiTAqIPj$OXhFnIIJpEU/1.WwSgLv/EOhPtEAbIjm/oFrtHC4ISC4Gn87wQSg9HWtGBsUutQWZCGB5FJrMAkaD/uEuhJsN.
+
+page-out and page-in are called demand paging.
+excessive amount of paging that affects performance is called thrashing
+
+--Create swap
+
+[root@server ~]# lvcreate -L 1G -n swapvol vgdata0
+WARNING: ext4 signature detected on /dev/vgdata0/swapvol at offset 1080. Wipe it? [y/n]: y
+  Wiping ext4 signature on /dev/vgdata0/swapvol.
+  Logical volume "swapvol" created.
+
+[root@server ~]# mkswap /dev/vgdata0/swapvol
+Setting up swapspace version 1, size = 1048572 KiB
+no label, UUID=b4bb1977-2a2d-4d9d-8f91-2eb1efc01156
+
+[root@server ~]# swapon -v /dev/vdb2
+swapon /dev/vdb2
+swapon: /dev/vdb2: found swap signature: version 1, page-size 4, same byte order
+swapon: /dev/vdb2: pagesize=4096, swapsize=1048576, devsize=1048576
+[root@server ~]# swapon -v /dev/vgdata0/swapvol
+swapon /dev/vgdata0/swapvol
+swapon: /dev/mapper/vgdata0-swapvol: found swap signature: version 1, page-size 4, same byte order
+swapon: /dev/mapper/vgdata0-swapvol: pagesize=4096, swapsize=1073741824, devsize=1073741824
+
+swapon -s
+
+
+/dev/device-nodes
+
+#Character(raw) devices are accessed serially - printers, mice, keyboards, terminals, etc and block devices are accessed in parallel via blocks - HDD, optical drives etc.
+
+
+chattr +i afile # Immutable, can't be deleted, renamed or changed
+chattr +a afile # Can only be appended.
+
+Files metadata includes several piece of informaiton, such as files type, size, permissions, owners name, group name, last access/mod time, ACL, link count , bloks and pointers to the location where actual data is stored. This takes 128-byte space in the FS for each file and this tiny storage space is reerred to as inode (index node). inode is assigned a unique
+identifier that is used by kernel to access, track and manage the file.
+
+the file name and corresponding inode number is maintained in directories metadata. 
+
+inode doesn't store file name. 
+
+Hardlinked files share same data location and and unlike soft-links cannot cross file system boundaries and link directories.
+
+#umask
+default umask is 0022 for root and system users and 0002 for all regular users with a bash shell.
+
+[radha@lab11 ~]$ umask
+0002
+
+[radha@lab11 ~]$ umask -S
+u=rwx,g=rwx,o=rx
+
+Linux assigns default permissions by using "preset value" -  "umask value"
+
+For files 666 - umask , directories 777 - umask.
+
+
+#setuid - set's on files. Gives ability for non-owenrs and non-group members the ability to run executables with the privileges of owner.
+
+Find all files in teh system with setuid bit set
+
+[root@server ~]# find / -perm -4000
+
+
+[radha@lab11 ~]$ ll /usr/bin/su
+-rwsr-xr-x. 1 root root 32072 Nov 20  2015 /usr/bin/su
+[radha@lab11 ~]$ su - root
+Password:
+Last login: Thu Aug  3 08:30:04 CDT 2017 from 192.168.134.1 on pts/0
+[root@lab11 ~]# chmod u-s /usr/bin/su
+[root@lab11 ~]# ll /usr/bin/su
+-rwxr-xr-x. 1 root root 32072 Nov 20  2015 /usr/bin/su
+[root@lab11 ~]# su - radha
+Last login: Thu Aug  3 14:17:44 CDT 2017 on pts/0
+[radha@lab11 ~]$ su - root
+Password:
+su: Authentication failure
+
+
+#setgid is set at group level
+
+File can be executed by non-owners by exact same privileges that group members have.
+[root@server ~]# ll /usr/bin/wall
+-r-xr-sr-x. 1 root tty 15344 Jun  9  2014 /usr/bin/wall
+
+wall is used for broadcasting message to all logged in users.
+
+chmod 2555 /usr/bin/wall
+
+Also used for group collaboration
+
+user100@lab11 ~]$ cd /sdata
+[user100@lab11 sdata]$ touch afile
+[user100@lab11 sdata]$ ls -al
+total 4
+drwxrwxr-x.  2 root    sdatagrp   18 Aug  3 14:47 .
+dr-xr-xr-x. 19 root    root     4096 Aug  3 14:43 ..
+-rw-rw-r--.  1 user100 user100     0 Aug  3 14:47 afile
+[user100@lab11 sdata]$ exit
+logout
+[root@lab11 ~]# chmod g+s /sdata
+[root@lab11 ~]# su - user100
+Last login: Thu Aug  3 14:47:48 CDT 2017 on pts/0
+[user100@lab11 ~]$ cd /sdata
+[user100@lab11 sdata]$ ls -l
+total 0
+-rw-rw-r--. 1 user100 user100 0 Aug  3 14:47 afile
+[user100@lab11 sdata]$ touch afile
+[user100@lab11 sdata]$ ls -l
+total 0
+-rw-rw-r--. 1 user100 user100 0 Aug  3 14:48 afile
+[user100@lab11 sdata]$ touch bfile
+[user100@lab11 sdata]$ ls -l
+total 0
+-rw-rw-r--. 1 user100 user100  0 Aug  3 14:48 afile
+-rw-rw-r--. 1 user100 sdatagrp 0 Aug  3 14:48 bfile
+[user100@lab11 sdata]$
+
+Owning group get's automatically changed to the sdatagrp with setgid.
+
+
+#stickybit 
+chmod 1755 public_writable_directory
+
+Set on directories where rw exists for everyone and prevents from moving/dpurging of files owned by other users.
+
+#ACL's
+Before ACL's can be enabled hte FS should be mounted with ACL support.
+
+chacl, getacl, setacl
+
+eg:
+[root@server data]# getfacl afile
+# file: afile
+# owner: root
+# group: root
+user::rw-
+group::r--
+other::r--
+
+1. user:1000:r-  # Means that a user with UID 1000, who is no tthe owner of the file nor member of the owning group is allowed only read access to this file.
+
+sefacl mask permissions - max permissions a specific user/group can have on a file/dir. If it's set to rw_ no specific user/group can have more permissions than read-write
+
+setfacl switches (-b = remove all acl settings, -d applies to default acl's, -k = remove all default acls, -m = modify , -x = remove specific ACL setting)
+
+
+eg:
+
+[root@lab11 sdata]# getfacl -c afile
+user::rw-
+group::rw-
+other::r--
+
+[user200@lab11 sdata]$ echo test > bfile
+
+
+[root@lab11 sdata]# setfacl -m u:user200:r bfile
+
+[root@lab11 sdata]# getfacl bfile
+# file: bfile
+# owner: user100
+# group: sdatagrp
+user::rw-
+user:user200:r--
+group::rw-
+mask::rw-
+other::r--
+
+[user200@lab11 sdata]$ echo test > bfile
+-bash: bfile: Permission denied
+
+#Removes just that permission
+
+[root@lab11 sdata]# setfacl -x u:user200 bfile
+[root@lab11 sdata]# getfacl -c bfile
+user::rw-
+group::rw-
+mask::rw-
+other::r--
+
+#Sets the max permission
+
+[root@lab11 sdata]# setfacl -m m:r bfile
+[root@lab11 sdata]# getfacl -c bfile
+user::rw-
+group::rw-			#effective:r--
+mask::r--
+other::r--
+
+
+[user200@lab11 sdata]$ echo test > bfile
+-bash: bfile: Permission denied
+
+# No need to check acl option for XFS file systems as they are integral part of it.
+
+[user100@lab11 sdata]$ ls -l bfile
+-rw-r--r--. 1 user100 sdatagrp 5 Aug  3 16:17 bfile
+
+[user200@lab11 sdata]$ echo test > bfile
+-bash: bfile: Permission denied
+
+[user100@lab11 sdata]$ getfacl -c bfile
+user::rw-
+group::r--
+other::r--
+
+[user100@lab11 sdata]$ setfacl -m g:sdatagrp:rw bfile
+[user100@lab11 sdata]$ getfacl -c bfile
+user::rw-
+group::r--
+group:sdatagrp:rw-
+mask::rw-
+other::r--
+
+[user200@lab11 sdata]$ echo test > bfile
+
+[user100@lab11 sdata]$ setfacl -x group:sdatagrp bfile
+
+Also, XFS enables user_xattr (extended user attributes) and acl (POSIX access control lists) as default mount options, unlike ext3 or ext4
+
+#Basic file system commands
+
+[root@server ~]# findmnt -t xfs
+TARGET  SOURCE                  FSTYPE OPTIONS
+/       /dev/mapper/vgos-lvroot xfs    rw,relatime,seclabel,attr2,inode64,noquota
+├─/boot /dev/vda1               xfs    rw,relatime,seclabel,attr2,inode64,noquota
+└─/home /dev/mapper/vgos-lvhome xfs    rw,relatime,seclabel,attr2,inode64,noquota
+
+#/etc/fstab - The last column is fsck
+
+Pass (fsck order)
+Fsck order is to tell fsck what order to check the file systems, if set to "0" file system is ignored.
+
+Often a source of confusion, there are only 3 options :
+
+0 == do not check.
+1 == check this partition first.
+2 == check this partition(s) next
+
+
+
+</pre>
+
+</div>
+
+ 	
+	
+<div class="w3-container">
+	<h1><span class="mw-headline" id="LDAP "> LDAP </h1>	
+<p>
+
+</p>
+
+<pre> 
+yum install openldap openldap-clients nss-pam-ldapd sssd authconfig authconfig-gtk
+
+
+ [root@lab11 conf.d]# authconfig --enableldap --enableldapauth --ldapserver=ldap://server --enablesssd --ldapbasedn="dc=example,dc=com" --update
+
+ [root@lab11 sssd]# grep -v ^# /etc/openldap/ldap.conf
+ 
+TLS_CACERTDIR /etc/openldap/cacerts
+
+SASL_NOCANON	on
+URI ldap://server
+BASE dc=example,dc=com
+
+# https://www.certdepot.net/rhel7-configure-ldap-directory-service-user-connection/ 
+
+#Server setup
+yum install -y openldap openldap-clients openldap-servers migrationtools
+
+#Generate ldap password from a secret key.
+
+[root@server ~]# slappasswd -s redhat -n  > /etc/openldap/passwd
+[root@server ~]# cat /etc/openldap/passwd
+{SSHA}yB19hMMrLO+O2wPaIl3ZXk5qqjL8zaRb
+
+
+#Generate a self-signed cert 
+
+[root@server ~]# openssl req -new -x509 -nodes -out /etc/openldap/certs/cert.pem -keyout  /etc/openldap/certs/priv.pem -days 365
+Generating a 2048 bit RSA private key
+.......................................+++
+...............+++
+writing new private key to '/etc/openldap/certs/priv.pem'
+-----
+You are about to be asked to enter information that will be incorporated
+into your certificate request.
+What you are about to enter is what is called a Distinguished Name or a DN.
+There are quite a few fields but you can leave some blank
+For some fields there will be a default value,
+If you enter '.', the field will be left blank.
+-----
+Country Name (2 letter code) [XX]:us
+State or Province Name (full name) []:texas
+Locality Name (eg, city) [Default City]:round rock
+Organization Name (eg, company) [Default Company Ltd]:intercloudzone.com
+Organizational Unit Name (eg, section) []:dba
+Common Name (eg, your name or your server's hostname) []:server.intercloudzone.com
+
+
+
+#Secure the contents 
+
+[root@server certs]# chown ldap:ldap *
+[root@server certs]# chmod 600 priv.pem
+[root@server certs]# pwd
+/etc/openldap/certs
+
+
+#Prepare the database
+[root@server certs]# cp /usr/share/openldap-servers/DB_CONFIG.example /var/lib/ldap/DB_CONFIG
+
+#Generate database files.
+
+[root@server certs]# slaptest
+59822d10 hdb_db_open: database "dc=my-domain,dc=com": db_open(/var/lib/ldap/id2entry.bdb) failed: No such file or directory (2).
+59822d10 backend_startup_one (type=hdb, suffix="dc=my-domain,dc=com"): bi_db_open failed! (2)
+slap_startup failed (test would succeed using the -u switch)
+
+
+[root@server certs]# chown ldap:ldap /var/lib/ldap/*
+
+#Enable and start slapd
+
+[root@server certs]# systemctl enable slapd
+Created symlink from /etc/systemd/system/multi-user.target.wants/slapd.service to /usr/lib/systemd/system/slapd.service.
+[root@server certs]# systemctl start slapd
+[root@server certs]# systemctl status slapd
+
+
+
+[root@server certs]# netstat -lt |grep ldap
+tcp        0      0 0.0.0.0:ldap            0.0.0.0:*               LISTEN
+tcp6       0      0 [::]:ldap               [::]:*                  LISTEN
+
+## Ss another tool to investigate sockets
+
+[root@server certs]# ss -ltap | grep ldap
+LISTEN     0      128        *:ldap                     *:*                     users:(("slapd",pid=2828,fd=8))
+LISTEN     0      128       :::ldap                    :::*                     users:(("slapd",pid=2828,fd=9))
+
+
+
+#To start the configuration of the LDAP server, add the cosine & nis LDAP schemas:
+
+
+cd /etc/openldap/schema/
+
+
+[root@server schema]# ldapadd -Y EXTERNAL -H ldapi:/// -D "cn=config" -f cosine.ldif
+SASL/EXTERNAL authentication started
+SASL username: gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth
+SASL SSF: 0
+adding new entry "cn=cosine,cn=schema,cn=config"
+ 
+[root@server schema]# ldapadd -Y EXTERNAL -H ldapi:/// -D "cn=config" -f nis.ldif
+SASL/EXTERNAL authentication started
+SASL username: gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth
+SASL SSF: 0
+adding new entry "cn=nis,cn=schema,cn=config"
+
+
+#Create changes.ldif file
+
+[root@server schema]# cat /etc/openldap/changes.ldif
+dn: olcDatabase={2}hdb,cn=config
+changetype: modify
+replace: olcSuffix
+olcSuffix: dc=intercloudzone,dc=com
+
+dn: olcDatabase={2}hdb,cn=config
+changetype: modify
+replace: olcRootDN
+olcRootDN: cn=Manager,dc=intercloudzone,dc=com
+
+dn: olcDatabase={2}hdb,cn=config
+changetype: modify
+replace: olcRootPW
+olcRootPW: {SSHA}yB19hMMrLO+O2wPaIl3ZXk5qqjL8zaRb
+
+dn: cn=config
+changetype: modify
+replace: olcTLSCertificateFile
+olcTLSCertificateFile: /etc/openldap/certs/cert.pem
+
+dn: cn=config
+changetype: modify
+replace: olcTLSCertificateKeyFile
+olcTLSCertificateKeyFile: /etc/openldap/certs/priv.pem
+
+dn: cn=config
+changetype: modify
+replace: olcLogLevel
+olcLogLevel: -1
+
+dn: olcDatabase={1}monitor,cn=config
+changetype: modify
+replace: olcAccess
+olcAccess: {0}to * by dn.base="gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth" read by dn.base="cn=Manager,dc=intercloudzone,dc=com" read by * none
+
+#Send changes to LDAP DB
+
+[root@server schema]# ldapmodify -Y EXTERNAL -H ldapi:/// -f /etc/openldap/changes.ldif
+SASL/EXTERNAL authentication started
+SASL username: gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth
+SASL SSF: 0
+modifying entry "olcDatabase={2}hdb,cn=config"
+
+modifying entry "olcDatabase={2}hdb,cn=config"
+
+modifying entry "olcDatabase={2}hdb,cn=config"
+
+modifying entry "cn=config"
+
+modifying entry "cn=config"
+
+modifying entry "cn=config"
+
+modifying entry "olcDatabase={1}monitor,cn=config"
+
+
+#Create base ldif file
+
+[root@server schema]# cat /etc/openldap/base.ldif
+dn: dc=intercloudzone,dc=com
+dc: intercloudzone
+objectClass: top
+objectClass: domain
+
+dn: ou=People,dc=intercloudzone,dc=com
+ou: People
+objectClass: top
+objectClass: organizationalUnit
+
+dn: ou=Group,dc=intercloudzone,dc=com
+ou: Group
+objectClass: top
+objectClass: organizationalUnit
+
+#Create base directory structure in ldap
+
+[root@server schema]# ldapadd -x -w redhat -D cn=Manager,dc=intercloudzone,dc=com -f /etc/openldap/base.ldif
+adding new entry "dc=intercloudzone,dc=com"
+
+adding new entry "ou=People,dc=intercloudzone,dc=com"
+
+adding new entry "ou=Group,dc=intercloudzone,dc=com"
+
+#Create two users for testing
+
+[root@server schema]# mkdir /home/guests
+[root@server schema]# useradd -d /home/guests/ldapuser01 ldapuser01
+[root@server schema]# useradd -d /home/guests/ldapuser02 ldapuser02
+
+
+[root@server migrationtools]# egrep '^\$DEFAULT_BASE|^\$DEFAULT_MAIL_DOMAIN' migrate_common.ph
+$DEFAULT_MAIL_DOMAIN = "intercloudzone.com";
+$DEFAULT_BASE = "dc=intercloudzone,dc=com";
+
+
+#Migrate users to ldap
+
+[root@server migrationtools]# grep ":10[0-9][0-9]" /etc/passwd > passwd
+[root@server migrationtools]# ./migrate_passwd.pl passwd users.ldif
+
+
+[root@server migrationtools]# ldapadd -x -w redhat -D cn=Manager,dc=intercloudzone,dc=com -f users.ldif
+adding new entry "uid=kuttu,ou=People,dc=intercloudzone,dc=com"
+
+
+[root@server migrationtools]# ldapsearch -x cn=ldapuser01 -b dc=intercloudzone,dc=com
+# extended LDIF
+#
+# LDAPv3
+# base <dc=intercloudzone,dc=com> with scope subtree
+# filter: cn=ldapuser01
+# requesting: ALL
+#
+
+# ldapuser01, People, intercloudzone.com
+dn: uid=ldapuser01,ou=People,dc=intercloudzone,dc=com
+uid: ldapuser01
+cn: ldapuser01
+objectClass: account
+objectClass: posixAccount
+objectClass: top
+objectClass: shadowAccount
+userPassword:: e2NyeXB0fSQ2JER5elgwQlMwJDBEUzZJVy9ET1lReG9FRWdQYThrZXhLMmgzSGZ
+ BcmxzbTZRQWExTkRiOGo2bzFhWGVVMnBiL3NPN1FyU1IyUzdLTU1uZWxRQ2dzYnpIS0ZCalc3WlYu
+shadowLastChange: 17380
+shadowMin: 0
+shadowMax: 99999
+shadowWarning: 7
+loginShell: /bin/bash
+uidNumber: 1012
+gidNumber: 1012
+homeDirectory: /home/guests/ldapuser01
+
+# search result
+search: 2
+result: 0 Success
+
+
+
+
+
+#Migrate groups 
+
+cd /usr/share/migrationtools
+cat /etc/group > group
+./migrate_group.pl group groups.ldif
+
+
+[root@server migrationtools]# ldapadd -x -w redhat -D "cn=Manager,dc=intercloudzone,dc=com" -f groups.ldif
+adding new entry "cn=root,ou=Group,dc=intercloudzone,dc=com"
+
+-- Generate rsyslog messages
+[root@server1 rsyslog.d]# echo "*.debug /var/log/messages-debug" > /etc/rsyslog.d/debug.conf
+[root@server1 rsyslog.d]# cat debug.conf
+*.debug /var/log/messages-debug
+[root@server1 rsyslog.d]# systemctl restart rsyslog
+[root@server1 rsyslog.d]# logger -p user.debug "Debug message test"
+
+--Make journals permanent.
+[root@server1 html]# systemd-tmpfiles --create --prefix /var/log/journal/
+[root@server1 html]# ls -ld /var/log/journal/
+drwxr-sr-x+ 2 root systemd-journal 4096 Nov 17 16:58 /var/log/journal/
+[root@server1 html]# systemctl restart systemd-journald
+
+[root@server1 html]# ls -ltr /var/log/journal/
+total 8
+drwxr-xr-x+ 2 root systemd-journal 4096 Nov 17 16:59 d3c8d48d2a8343fbb7674d25dd8da8e0
+[root@server1 html]# cat /etc/machine-id
+d3c8d48d2a8343fbb7674d25dd8da8e0
+
+#Add service to fw
+
+firewall-cmd --permanent --add-service=ldap
+
+
+Edit the /etc/rsyslog.conf file and add the following line:
+
+local4.* /var/log/ldap.log
+
+systemctl restart rsyslog
+
+
+# On the client
+authconfig --enableldap --enableldapauth --ldapserver=ldap://server --enablesssd --ldapbasedn="dc=intercloudzone,dc=com" --update
+
+[root@lab11 ~]# getent passwd ldapuser01
+ldapuser01:*:1012:1012:ldapuser01:/home/guests/ldapuser01:/bin/bash
+
+[root@lab11 ~]# su - ldapuser01
+su: warning: cannot change directory to /home/guests/ldapuser01: No such file or directory
+id: cannot find name for group ID 1012
+
+[root@lab11 ~]# authconfig --enablemkhomedir --update
+[root@lab11 ~]# su - ldapuser01
+Creating directory '/home/guests/ldapuser01'.
+Last login: Wed Aug  2 15:50:08 CDT 2017 on pts/0
+id: cannot find name for group ID 1012
+
+
+#On Server - adding a user
+
+[root@server migrationtools]# ldapadd -x -W -D cn=Manager,dc=intercloudzone,dc=com -f babu.ldif
+Enter LDAP Password:
+adding new entry "uid=babu,ou=People,dc=intercloudzone,dc=com"
+
+[root@server migrationtools]# cat babu.ldif
+dn: uid=babu,ou=People,dc=intercloudzone,dc=com
+uid: babu
+cn: babu
+objectClass: account
+objectClass: posixAccount
+objectClass: top
+objectClass: shadowAccount
+userPassword: {crypt}$6$/3bu6bR7$kDwUZNT88YMB3dScmfm2xEHYLLKYA9O.O3MJi1jMQDSg7asebqtoPGoio2LV.2ZkfZguwWoVamjbk2meNgPqN1
+shadowLastChange: 17380
+shadowMin: 0
+shadowMax: 99999
+shadowWarning: 7
+loginShell: /bin/bash
+uidNumber: 1013
+gidNumber: 1013
+homeDirectory: /home/guests/babu
+
+
+#USER ADD
+
+[root@server migrationtools]# ldapadd -x -w redhat -D "cn=Manager,dc=intercloudzone,dc=com" -f radha.ldif
+adding new entry "uid=radha,ou=People,dc=intercloudzone,dc=com"
+
+
+[root@lab11 ~]# su - radha
+Creating directory '/home/guests/radha'.
+id: cannot find name for group ID 2000
+
+
+Adding OpenLDAP POSIX groups
+
+
+[root@server migrationtools]# cat radha-group.ldif
+dn: cn=radha,ou=Group,dc=intercloudzone,dc=com
+objectClass: top
+objectClass: posixGroup
+cn: radha
+userPassword: {crypt}$6$/3bu6bR7$kDwUZNT88YMB3dScmfm2xEHYLLKYA9O.O3MJi1jMQDSg7asebqtoPGoio2LV.2ZkfZguwWoVamjbk2meNgPqN1
+gidNumber: 2000
+
+
+[root@server migrationtools]# ldapadd -x -w redhat -D "cn=Manager,dc=intercloudzone,dc=com" -f radha-group.ldif
+adding new entry "cn=radha,ou=Group,dc=intercloudzone,dc=com"
+
+
+[root@lab11 ~]# su - radha
+Last login: Wed Aug  2 16:54:53 CDT 2017 on pts/0
+
+
+https://techhelplist.com/index.php/tech-tutorials/34-openldap/48-user-management-in-openldap
+
+#Change Password
+
+[root@lab11 ~]# ldappasswd -x -D "cn=Manager,dc=intercloudzone,dc=com" -w redhat "uid=radha,ou=People,dc=intercloudzone,dc=com"
+New password: OQMBvAHI
+[root@lab11 ~]# ldappasswd -x -D "cn=Manager,dc=intercloudzone,dc=com" -w redhat "uid=radha,ou=People,dc=intercloudzone,dc=com" -s radha
+
+[root@lab11 ~]# ldapsearch -x -D "cn=Manager,dc=intercloudzone,dc=com" -w redhat -s sub "cn=*radha*"
+# extended LDIF
+#
+# LDAPv3
+
+
+
+#Search every entry
+[root@lab11 ~]# ldapsearch -x -D "cn=Manager,dc=intercloudzone,dc=com" -w redhat -s sub "objectclass=*"
+
+#Display only dn
+ldapsearch -x -D "cn=Manager,dc=intercloudzone,dc=com" -w redhat -s sub "objectclass=*" dn
+
+#Change admin password
+
+[root@server cn=config]# grep ldapadm olcDatabase\=\{2\}hdb.ldif
+olcRootDN: cn=ldapadm,dc=intercloudzone,dc=com
+[root@server cn=config]# pwd
+/etc/openldap/slapd.d/cn=config
+
+[root@lab11 ~]# ldapsearch -x -D "cn=ldapadm,dc=intercloudzone,dc=com" -w redhat -s sub "objectclass=*" dn
+</pre>
+
+</div>
+	
+	
+<div class="w3-container">
+	<h1><span class="mw-headline" id="Virtualization "> Virtualization </h1>
+	
+<p>
+
+</p>
+
+	
+<pre> 
+
+
+=> Refere xpath 
+
+yum provides xpath
+yum install perl-XML-XPath
+
+root@panchajanya:~\> cat server.xml | xpath domain/devices/interface
+Found 4 nodes:
+-- NODE --
+<interface type="bridge">
+      <mac address="52:54:00:2c:19:87" />
+      <source bridge="br_fe" />
+      <target dev="vnet0" />
+      <model type="virtio" />
+      <alias name="net0" />
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x03" function="0x0" />
+    </interface>-- NODE --
+<interface type="network">
+      <mac address="52:54:00:4b:a2:98" />
+      <source network="vnetnat" bridge="vbrnat" />
+      <target dev="vnet1" />
+      <model type="virtio" />
+      <alias name="net1" />
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x04" function="0x0" />
+    </interface>-- NODE --
+<interface type="network">
+      <mac address="52:54:00:f1:15:ef" />
+      <source network="vnetrou" bridge="vbrrou" />
+      <target dev="vnet2" />
+      <model type="virtio" />
+      <alias name="net2" />
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x05" function="0x0" />
+    </interface>-- NODE --
+<interface type="network">
+      <mac address="52:54:00:82:2f:44" />
+      <source network="vnetnat" bridge="vbrnat" />
+      <target dev="vnet3" />
+      <model type="virtio" />
+      <alias name="net3" />
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x10" function="0x0" />
+    </interface>
+
+=> Found from anywhere in doc
+
+root@panchajanya:~\> xpath server.xml //interface
+Found 4 nodes:
+
+=> FInd attributes
+xpath server.xml //@type
+
+
+virsh # net-list
+ Name                 State      Autostart     Persistent
+----------------------------------------------------------
+ default              active     yes           yes
+ virnet1              active     yes           yes
+ virnet2              active     yes           yes
+ vnetiso              active     yes           yes
+ vnetnat              active     yes           yes
+ vnetrou              active     yes           yes
+
+virsh # domiflist server
+Interface  Type       Source     Model       MAC
+-------------------------------------------------------
+vnet0      bridge     br_fe      virtio      52:54:00:2c:19:87
+vnet1      network    vnetnat    virtio      52:54:00:4b:a2:98
+vnet2      network    vnetrou    virtio      52:54:00:f1:15:ef
+vnet3      network    vnetnat    virtio      52:54:00:82:2f:44
+
+
+
+
+=> Supersedes all notes on detach/attach interfaces and recreate the iface files.
+
+
+
+virsh # detach-interface --domain server --type network --mac '52:54:00:82:2f:44' --persistent --live
+Interface detached successfully
+
+virsh # attach-interface --domain server --type network --source vnetnat --mac '52:54:00:82:2f:44' --model virtio --persistent --live
+Interface attached successfully
+
+
+[root@server network-scripts]# nmcli con delete a9dac657-c4ff-4296-a570-65bf15e54da8
+
+[root@server network-scripts]# nmcli dev connect eth3
+Device 'eth3' successfully activated with '19abec3c-668d-4e4a-865c-a49b4a767138'.
+
+=> Create interface file with the below
+
+[root@server network-scripts]# nmcli con add type ethernet con-name eth3 ifname eth3
+Connection 'eth3' (d9dc89bc-3cf1-467a-9907-f05ccb7f927b) successfully added.
+
+
+=> Bonding
+
+[root@server network-scripts]# nmcli con add type bond ifname bond0 bond.options "mode=balance-rr"
+Connection 'bond-bond0' (a31cd78a-a51c-43a9-9ba5-4fb4b0e976ae) successfully added.
+
+
+[root@server network-scripts]# nmcli con add type ethernet ifname eth3 master bond0
+Connection 'bond-slave-eth3' (4d2aa71a-b338-4af4-b447-4543fe49bbf6) successfully added.
+
+[root@server network-scripts]# nmcli con add type ethernet ifname eth1 master bond0
+Connection 'bond-slave-eth1' (ecc5ac47-7785-4b94-b2ce-5a85f15fa153) successfully added.
+
+
+=> Reboot
+
+[root@server ~]# nmcli con show
+NAME             UUID                                  TYPE            DEVICE
+System eth0      b6870dc4-b183-4bdd-b310-6d789c3e9ce0  802-3-ethernet  eth0
+System eth2      260c99eb-2a00-44b5-a3d6-e731d936a3b4  802-3-ethernet  eth2
+bond-bond0       a31cd78a-a51c-43a9-9ba5-4fb4b0e976ae  bond            bond0
+bond-slave-eth1  ecc5ac47-7785-4b94-b2ce-5a85f15fa153  802-3-ethernet  eth1
+bond-slave-eth3  4d2aa71a-b338-4af4-b447-4543fe49bbf6  802-3-ethernet  eth3
+
+3: eth1: <BROADCAST,MULTICAST,SLAVE,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast master bond0 state UP qlen 1000
+    link/ether 52:54:00:4b:a2:98 brd ff:ff:ff:ff:ff:ff
+
+5: eth3: <BROADCAST,MULTICAST,SLAVE,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast master bond0 state UP qlen 1000
+    link/ether 52:54:00:4b:a2:98 brd ff:ff:ff:ff:ff:ff
+
+6: bond0: <BROADCAST,MULTICAST,MASTER,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP
+    link/ether 52:54:00:4b:a2:98 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.134.179/24 brd 192.168.134.255 scope global dynamic bond0
+       valid_lft 2722sec preferred_lft 2722sec
+    inet6 fe80::5054:ff:fe4b:a298/64 scope link tentative dadfailed
+       valid_lft forever preferred_lft forever
+
+
+
+=> Change IP address to static 
+
+[root@server network-scripts]# nmcli con edit bond-bond0
+
+===| nmcli interactive connection editor |===
+
+Editing existing 'bond' connection: 'bond-bond0'
+
+Type 'help' or '?' for available commands.
+Type 'describe [<setting>.<prop>]' for detailed property description.
+
+You may edit the following settings: connection, bond, 802-3-ethernet (ethernet), ipv4, ipv6
+nmcli> print ipv4
+['ipv4' setting values]
+ipv4.method:                            auto
+
+....
+
+root@panchajanya:~\> virsh net-update vnetnat add ip-dhcp-host '<host mac="52:54:00:4b:a2:98" ip="192.168.134.52" />'
+Updated network vnetnat live state
+
+nmcli> set ipv4.address 192.168.134.52/24,ipv4.method manual
+Do you also want to set 'ipv4.method' to 'manual'? [yes]: yes
+
+nmcli> save
+Connection 'bond-bond0' (a31cd78a-a51c-43a9-9ba5-4fb4b0e976ae) successfully updated.
+
+
+
+=> Out of context command: dhclient
+
+[root@server network-scripts]# dhclient -v -r eth0
+Internet Systems Consortium DHCP Client 4.2.5
+Copyright 2004-2013 Internet Systems Consortium.
+All rights reserved.
+For info, please visit https://www.isc.org/software/dhcp/
+
+Listening on LPF/eth0/52:54:00:2c:19:87
+Sending on   LPF/eth0/52:54:00:2c:19:87
+Sending on   Socket/fallback
+
+
+=> Modifying bond options
+
+
+[root@server network-scripts]# nmcli dev mod bond0 +bond.options mii=100
+Connection successfully reapplied to device 'bond0'
+
+[root@server network-scripts]# nmcli dev mod bond0 +bond.options "mode=balance=rr,mii=100"
+Error: failed to modify bond.options: 'balance=rr' not among [balance-rr, active-backup, balance-xor, broadcast, 802.3ad, balance-tlb, balance-alb].
+
+[root@server network-scripts]# nmcli dev mod bond0 +bond.options "mode=balance-rr,mii=100"
+Connection successfully reapplied to device 'bond0'.
+
+
+
+=> Edited via nmtui 
+
+
+[root@server network-scripts]# nmcli con mod bond-bond0 +bond.options "mode=active-backup"
+ 
+[root@server network-scripts]# grep OPTS ifcfg-bond-bond0
+BONDING_OPTS=mode=active-backup
+
+nmcli con load /etc/sysconfig/network-scripts/ifcfg-bond-bond0
+
+
+[root@server network-scripts]# cat /sys/class/net/bonding_masters
+bond0
+
+=> To dynamically change the bonding parameters..
+ cd /sys/class/net/bond0/bonding/
+ echo 1000 > /sys/class/net/bond0/bonding/miimon
+
+
+==Channel Bonding
+
+virsh # attach-interface --domain server --type network --source vnetnat --model virtio --persistent --live
+Interface attached successfully
+
+virsh # attach-interface --domain server --type network --source vnetnat --model virtio --persistent --live
+Interface attached successfully
+
+=> Total number of macs now
+
+root@panchajanya:~\> virsh dumpxml server | xpath "count(//interface)"
+6
+
+root@panchajanya:~\> virsh dumpxml server | xpath "//interface/mac/@address"
+Found 6 nodes:
+-- NODE --
+ address="52:54:00:2c:19:87"-- NODE --
+ address="52:54:00:4b:a2:98"-- NODE --
+ address="52:54:00:f1:15:ef"-- NODE --
+ address="52:54:00:82:2f:44"-- NODE --
+ address="52:54:00:10:aa:ca"-- NODE --
+ address="52:54:00:17:9a:92"
+
+
+=> Create bonded interface.
+
+[root@server network-scripts]# nmcli con add type bond ifname bond1 bond.options "mode=balance-rr"
+Connection 'bond-bond1' (93592271-228b-46a6-b354-3404d779575e) successfully added.
+[root@server network-scripts]# ls -lr ifcfg-bond-*
+-rw-r--r--. 1 root root 123 Aug  8 22:36 ifcfg-bond-slave-eth3
+-rw-r--r--. 1 root root 123 Aug  8 22:36 ifcfg-bond-slave-eth1
+-rw-r--r--. 1 root root 359 Aug 10 10:45 ifcfg-bond-bond1
+-rw-r--r--. 1 root root 373 Aug  9 17:48 ifcfg-bond-bond0
+
+=> Switch slaves
+
+[root@server network-scripts]# nmcli con add type ethernet ifname eth4 master bond1
+Connection 'bond-slave-eth4' (e4b1d9d0-3820-4e70-bf4a-12c023497713) successfully added.
+ 
+[root@server network-scripts]# nmcli con add type ethernet ifname eth5 master bond1
+Connection 'bond-slave-eth5' (8a8ce8e0-81c4-43f1-9155-d8c0b2386c28) successfully added.
+[root@server network-scripts]# ls -ltr ifcfg-*
+-rw-r--r--. 1 root root 254 Sep 16  2015 ifcfg-lo
+-rw-r--r--. 1 root root 319 Jul 26 12:46 ifcfg-eth2
+-rw-r--r--. 1 root root 335 Jul 26 12:46 ifcfg-eth0
+-rw-r--r--. 1 root root 123 Aug  8 22:36 ifcfg-bond-slave-eth3
+-rw-r--r--. 1 root root 123 Aug  8 22:36 ifcfg-bond-slave-eth1
+-rw-r--r--. 1 root root 373 Aug  9 17:48 ifcfg-bond-bond0
+-rw-r--r--. 1 root root 359 Aug 10 10:45 ifcfg-bond-bond1
+-rw-r--r--. 1 root root 123 Aug 10 10:57 ifcfg-bond-slave-eth4
+-rw-r--r--. 1 root root 123 Aug 10 10:57 ifcfg-bond-slave-eth5
+
+[root@server network-scripts]# cat ifcfg-bond-slave-eth4
+TYPE=Ethernet
+NAME=bond-slave-eth4
+UUID=e4b1d9d0-3820-4e70-bf4a-12c023497713
+DEVICE=eth4
+ONBOOT=yes
+MASTER=bond1
+SLAVE=yes
+
+=> Bring connections up.
+
+[root@server network-scripts]# nmcli dev
+DEVICE  TYPE      STATE                                  CONNECTION
+bond0   bond      connected                              bond-bond0
+eth0    ethernet  connected                              System eth0
+eth1    ethernet  connected                              bond-slave-eth1
+eth2    ethernet  connected                              System eth2
+eth3    ethernet  connected                              bond-slave-eth3
+eth4    ethernet  connected                              Wired connection 1
+eth5    ethernet  connected                              Wired connection 2
+bond1   bond      connecting (getting IP configuration)  bond-bond1
+
+[root@server network-scripts]# nmcli con up bond-slave-eth4
+Connection successfully activated (D-Bus active path: /org/freedesktop/NetworkManager/ActiveConnection/10)
+
+[root@server network-scripts]# nmcli dev
+DEVICE  TYPE      STATE      CONNECTION
+bond0   bond      connected  bond-bond0
+bond1   bond      connected  bond-bond1
+
+
+10: bond1: <BROADCAST,MULTICAST,MASTER,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP
+    link/ether 52:54:00:10:aa:ca brd ff:ff:ff:ff:ff:ff
+    inet 192.168.134.94/24 brd 192.168.134.255 scope global dynamic bond1
+       valid_lft 3508sec preferred_lft 3508sec
+    inet6 fe80::4ddc:6a30:5cb2:1f24/64 scope link
+       valid_lft forever preferred_lft forever
+
+
+=> CHange the bonded interface to static ip address
+
+edit ifcfg-bond-bond1
+
+IPADDR=192.168.134.53
+GATEWAY=192.168.134.1
+BOOTPROT=none
+
+
+=> Reboot
+
+
+=> View Bonding Master
+
+[root@server network-scripts]# cat /sys/class/net/bonding_masters
+bond1 bond0
+
+
+**Note : Somehow the "mod" on same command isn't working. Cannot use add like below as it would create bond-bond1-1 interface.
+nmcli con add type bond ifname bond1 bond.options "mode=balance-rr"
+
+
+# To load bonding module (Persistent)
+
+# echo "# Load the bonding kernel module at boot" > /etc/modules-load.d/bonding.conf
+# echo "bonding" >> /etc/modules-load.d/bonding.conf
+
+
+=> Monitor the bonded interface via
+watch -dc -n 1 netstat -i
+
+=> Change Primary via OPTS to eth1 and check if kernel picked up change
+
+[root@server network-scripts]# grep OPTS ifcfg-bond-bond0
+BONDING_OPTS="miimon=100 updelay=200 downdelay=300 mode=active-backup primary=eth1"
+
+
+=> Check if kernel sees it
+[root@server network-scripts]# cat /proc/net/bonding/bond0
+Ethernet Channel Bonding Driver: v3.7.1 (April 27, 2011)
+
+Bonding Mode: fault-tolerance (active-backup)
+Primary Slave: None
+Currently Active Slave: eth1
+MII Status: up
+..
+
+
+=> To check the actual configuration
+
+[root@server network-scripts]# cat /sys/class/net/bond0/bonding/mode
+active-backup 1
+[root@server network-scripts]# cat /sys/class/net/bond1/bonding/mode
+balance-rr 0
+
+
+=> Check interface status
+
+[root@server network-scripts]# ethtool bond1 | grep "Link detected"
+	Link detected: yes
+
+
+=> Man pages
+
+man 5 nmcli-examples
+https://people.freedesktop.org/~lkundrak/nm-docs/nmcli-examples.html
+https://www.kernel.org/doc/Documentation/networking/bonding.txt
+
+teamd uses libteam to control one instance of team driver. Logic common to all
+
+
+
+[root@server ~]# find /lib/modules/$(uname -r)/kernel/drivers -iname "bond*"
+/lib/modules/3.10.0-327.el7.x86_64/kernel/drivers/net/bonding
+/lib/modules/3.10.0-327.el7.x86_64/kernel/drivers/net/bonding/bonding.ko
+[root@server ~]# find /lib/modules/$(uname -r)/kernel/drivers -iname "team*"
+/lib/modules/3.10.0-327.el7.x86_64/kernel/drivers/net/team
+/lib/modules/3.10.0-327.el7.x86_64/kernel/drivers/net/team/team.ko
+/lib/modules/3.10.0-327.el7.x86_64/kernel/drivers/net/team/team_mode_activebackup.ko
+/lib/modules/3.10.0-327.el7.x86_64/kernel/drivers/net/team/team_mode_broadcast.ko
+/lib/modules/3.10.0-327.el7.x86_64/kernel/drivers/net/team/team_mode_loadbalance.ko
+/lib/modules/3.10.0-327.el7.x86_64/kernel/drivers/net/team/team_mode_random.ko
+/lib/modules/3.10.0-327.el7.x86_64/kernel/drivers/net/team/team_mode_roundrobin.ko
+
+
+
+[root@server ~]# echo "team" > /etc/modules-load.d/team.conf
+[root@server ~]# cat /etc/modules-load.d/team.conf
+team
+
+[root@server ~]# lsmod |grep team
+[root@server ~]#
+
+
+[root@server network-scripts]# systemctl status teamd
+● teamd.service
+   Loaded: not-found (Reason: No such file or directory)
+   Active: inactive (dead)
+
+=> Add interface
+
+virsh # attach-interface server --source vnetnat  --type network  --model virtio --persistent --live
+Interface attached successfully
+
+virsh # attach-interface server --source vnetnat  --type network  --model virtio --persistent --live
+Interface attached successfully
+
+=> Configured via nmtui
+
+[root@server network-scripts]# cat ifcfg-Team-0
+DEVICE=team0
+BOOTPROTO=none
+DEFROUTE=yes
+IPV4_FAILURE_FATAL=no
+IPV6INIT=yes
+IPV6_AUTOCONF=yes
+IPV6_DEFROUTE=yes
+IPV6_FAILURE_FATAL=no
+IPV6_ADDR_GEN_MODE=stable-privacy
+NAME=team0
+UUID=93d89704-0c10-46fa-a653-02df2eb2cb27
+ONBOOT=yes
+DEVICETYPE=Team
+IPADDR=192.168.134.55
+PREFIX=32
+GATEWAY=192.168.2.1
+IPV6_PEERDNS=yes
+IPV6_PEERROUTES=yes
+
+[root@server network-scripts]# cat ifcfg-System-eth6
+NAME=eth6
+UUID=dac2bf67-ecab-47c0-a404-286f19dd4b5e
+DEVICE=eth6
+ONBOOT=yes
+TEAM_MASTER=team0
+DEVICETYPE=TeamPort
+TEAM_MASTER_UUID=93d89704-0c10-46fa-a653-02df2eb2cb27
+
+
+[root@server network-scripts]# cat ifcfg-System-eth7
+NAME=eth7
+UUID=e5be80f7-5806-4673-aca5-9bd378e6058a
+DEVICE=eth7
+ONBOOT=yes
+TEAM_MASTER=team0
+DEVICETYPE=TeamPort
+TEAM_MASTER_UUID=93d89704-0c10-46fa-a653-02df2eb2cb27
+
+=> Adding team via nmcli
+
+[root@server network-scripts]# nmcli con add type team con-name team0 ifname eth6
+Connection 'team0' (d1dfa81c-8b73-48e9-ab61-0a49ff71b7fb) successfully added.
+
+[root@server network-scripts]# cat ifcfg-team0
+DEVICE=eth6
+BOOTPROTO=dhcp
+DEFROUTE=yes
+PEERDNS=yes
+PEERROUTES=yes
+IPV4_FAILURE_FATAL=no
+IPV6INIT=yes
+IPV6_AUTOCONF=yes
+IPV6_DEFROUTE=yes
+IPV6_PEERDNS=yes
+IPV6_PEERROUTES=yes
+IPV6_FAILURE_FATAL=no
+IPV6_ADDR_GEN_MODE=stable-privacy
+NAME=team0
+UUID=d1dfa81c-8b73-48e9-ab61-0a49ff71b7fb
+ONBOOT=yes
+DEVICETYPE=Team
+
+[root@server network-scripts]# nmcli con add type team con-name team0 ifname eth7
+Connection 'team0' (9ca87de1-3c17-401c-97e3-d8020724ba8a) successfully added.
+
+[root@server network-scripts]# nmcli con edit 5a0dcb56-d2c3-362d-abc0-b2b5ca797851
+
+===| nmcli interactive connection editor |===
+
+Editing existing '802-3-ethernet' connection: '5a0dcb56-d2c3-362d-abc0-b2b5ca797851'
+
+Type 'help' or '?' for available commands.
+Type 'describe [<setting>.<prop>]' for detailed property description.
+
+You may edit the following settings: connection, 802-3-ethernet (ethernet), 802-1x, dcb, ipv4, ipv6
+nmcli> print ipv4
+['ipv4' setting values]
+ipv4.method:                            auto
+ipv4.dns:
+ipv4.dns-search:
+ipv4.dns-options:                       (default)
+ipv4.dns-priority:                      0
+ipv4.addresses:
+ipv4.gateway:                           --
+ipv4.routes:
+ipv4.route-metric:                      -1
+ipv4.ignore-auto-routes:                no
+ipv4.ignore-auto-dns:                   no
+ipv4.dhcp-client-id:                    --
+ipv4.dhcp-timeout:                      0
+ipv4.dhcp-send-hostname:                yes
+ipv4.dhcp-hostname:                     --
+ipv4.dhcp-fqdn:                         --
+ipv4.never-default:                     no
+ipv4.may-fail:                          yes
+ipv4.dad-timeout:                       -1 (default)
+nmcli> set ipv4.address=192.168.134.56/24
+Error: invalid property: 'address=192.168.134.56/24' not among [method, dns, dns-search, dns-options, dns-priority, addresses, gateway, routes, route-metric, ignore-auto-routes, ignore-auto-dns, dhcp-hostname, dhcp-send-hostname, never-default, may-fail, dad-timeout, dhcp-timeout, dhcp-client-id, dhcp-fqdn]
+
+nmcli> set ipv4.addresses 192.168.134.56/24
+Do you also want to set 'ipv4.method' to 'manual'? [yes]: yes
+nmcli> print ipv4
+['ipv4' setting values]
+ipv4.method:                            manual
+ipv4.dns:
+ipv4.dns-search:
+ipv4.dns-options:                       (default)
+ipv4.dns-priority:                      0
+ipv4.addresses:                         192.168.134.56/24
+ipv4.gateway:                           --
+ipv4.routes:
+ipv4.route-metric:                      -1
+ipv4.ignore-auto-routes:                no
+ipv4.ignore-auto-dns:                   no
+ipv4.dhcp-client-id:                    --
+ipv4.dhcp-timeout:                      0
+ipv4.dhcp-send-hostname:                yes
+ipv4.dhcp-hostname:                     --
+ipv4.dhcp-fqdn:                         --
+ipv4.never-default:                     no
+ipv4.may-fail:                          yes
+ipv4.dad-timeout:                       -1 (default)
+nmcli> save
+Connection 'Wired connection 1' (5a0dcb56-d2c3-362d-abc0-b2b5ca797851) successfully updated.
+nmcli> quit
+
+
+=> File name created as 
+
+-rw-r--r--. 1 root root   254 Aug 10 18:37 ifcfg-lo
+-rw-r--r--. 1 root root   425 Aug 10 19:31 ifcfg-bond-bond0
+-rw-r--r--. 1 root root   421 Aug 10 20:02 ifcfg-mybond
+-rw-r--r--. 1 root root   368 Aug 11 18:51 ifcfg-Wired_connection_1
+
+[root@server network-scripts]# nmcli con modify 5a0dcb56-d2c3-362d-abc0-b2b5ca797851 connection.name eth6
+Error: invalid property 'name': 'name' not among [id, uuid, interface-name, type, permissions, autoconnect, autoconnect-priority, timestamp, read-only, zone, master, slave-type, autoconnect-slaves, secondaries, gateway-ping-timeout, metered, lldp, stable-id].
+
+Start here: https://access.redhat.com/solutions/2592561
+
+
+=> Connection 
+[root@server network-scripts]# nmcli con add type team con-name team0 ifname team0 ip4  192.168.134.70/24 gw4 192.168.2.1
+
+[root@server network-scripts]# cat ifcfg-team0
+DEVICE=team0
+BOOTPROTO=none
+IPADDR=192.168.134.70
+PREFIX=24
+GATEWAY=192.168.2.1
+DEFROUTE=yes
+IPV4_FAILURE_FATAL=no
+IPV6INIT=yes
+IPV6_AUTOCONF=yes
+IPV6_DEFROUTE=yes
+IPV6_PEERDNS=yes
+IPV6_PEERROUTES=yes
+IPV6_FAILURE_FATAL=no
+IPV6_ADDR_GEN_MODE=stable-privacy
+NAME=team0
+UUID=ed3d1376-bb3c-448f-8f08-391ecb097506
+ONBOOT=yes
+DEVICETYPE=Team
+
+Bestway to edit/create team configurations is to copy a templaet and edit 
+
+[root@server network-scripts]# ls -ltr /usr/share/doc/teamd-1.17/example_configs/
+total 64
+-rw-r--r--. 1 root root  97 Apr  2  2015 roundrobin.conf
+-rw-r--r--. 1 root root 244 Apr  2  2015 roundrobin_2.conf
+-rw-r--r--. 1 root root  93 Apr  2  2015 random.conf
+-rw-r--r--. 1 root root 183 Apr  2  2015 loadbalance_3.conf
+-rw-r--r--. 1 root root 140 Apr  2  2015 loadbalance_2.conf
+-rw-r--r--. 1 root root  98 Apr  2  2015 loadbalance_1.conf
+-rw-r--r--. 1 root root 209 Apr  2  2015 lacp_1.conf
+-rw-r--r--. 1 root root  96 Apr  2  2015 broadcast.conf
+-rw-r--r--. 1 root root 318 Apr  2  2015 activebackup_tipc.conf
+-rw-r--r--. 1 root root 285 Apr  2  2015 activebackup_nsna_ping_1.conf
+-rw-r--r--. 1 root root 447 Apr  2  2015 activebackup_multi_lw_1.conf
+-rw-r--r--. 1 root root 241 Apr  2  2015 activebackup_ethtool_3.conf
+-rw-r--r--. 1 root root 212 Apr  2  2015 activebackup_ethtool_2.conf
+-rw-r--r--. 1 root root 194 Apr  2  2015 activebackup_ethtool_1.conf
+-rw-r--r--. 1 root root 465 Apr  2  2015 activebackup_arp_ping_2.conf
+-rw-r--r--. 1 root root 305 Apr  2  2015 activebackup_arp_ping_1.conf
+
+=> Team89 example
+
+virsh # attach-interface server --source vnetnat  --type network  --model virtio --persistent --live
+Interface attached successfully
+
+virsh # attach-interface server --source vnetnat  --type network  --model virtio --persistent --live
+Interface attached successfully
+
+19: eth8: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 52:54:00:02:c3:a1 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.134.5/24 brd 192.168.134.255 scope global dynamic eth8
+       valid_lft 3600sec preferred_lft 3600sec
+    inet6 fe80::5506:7254:be0:f513/64 scope link
+       valid_lft forever preferred_lft forever
+20: eth9: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 52:54:00:4b:3b:c6 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.134.43/24 brd 192.168.134.255 scope global dynamic eth9
+       valid_lft 3600sec preferred_lft 3600sec
+    inet6 fe80::d594:df13:9875:802/64 scope link
+       valid_lft forever preferred_lft forever
+
+
+       -rw-r--r--. 1 root root 374 Aug 14 12:29 ifcfg-eth6
+-rw-r--r--. 1 root root 339 Aug 14 12:39 ifcfg-team89
+[root@server network-scripts]# cat ifcfg-team89
+DEVICE=team89
+BOOTPROTO=none
+IPADDR=192.168.134.75
+PREFIX=24
+GATEWAY=192.168.2.1
+DEFROUTE=yes
+IPV4_FAILURE_FATAL=no
+IPV6INIT=yes
+IPV6_AUTOCONF=yes
+IPV6_DEFROUTE=yes
+IPV6_PEERDNS=yes
+IPV6_PEERROUTES=yes
+IPV6_FAILURE_FATAL=no
+IPV6_ADDR_GEN_MODE=stable-privacy
+NAME=team89
+UUID=9a44fa39-d1d7-486d-b9b5-ca331b9c230e
+ONBOOT=yes
+DEVICETYPE=Team
+
+
+[root@server network-scripts]# nmcli con add type team-slave con-name eth8 ifname eth8 master team89
+Connection 'eth8' (26151597-6a17-4b55-baef-8a9e2126e1bb) successfully added.
+[root@server network-scripts]# nmcli con add type team-slave con-name eth9 ifname eth9 master team89
+Connection 'eth9' (a00735db-35a7-4fad-b387-c13c5cc0a79e) successfully added.
+[root@server network-scripts]# ls -ltr ifcfg-eth
+ifcfg-eth0    ifcfg-eth2    ifcfg-eth6    ifcfg-eth6-1  ifcfg-eth7    ifcfg-eth7-1  ifcfg-eth8    ifcfg-eth9
+
+[root@server network-scripts]# cat ifcfg-eth8
+NAME=eth8
+UUID=26151597-6a17-4b55-baef-8a9e2126e1bb
+DEVICE=eth8
+ONBOOT=yes
+TEAM_MASTER=team89
+DEVICETYPE=TeamPort
+[root@server network-scripts]# cat ifcfg-eth9
+NAME=eth9
+UUID=a00735db-35a7-4fad-b387-c13c5cc0a79e
+DEVICE=eth9
+ONBOOT=yes
+TEAM_MASTER=team89
+DEVICETYPE=TeamPort
+
+nmcli con up team89
+
+21: team89: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc noqueue state DOWN
+    link/ether ea:53:89:b1:c7:cf brd ff:ff:ff:ff:ff:ff
+    inet 192.168.134.75/24 brd 192.168.134.255 scope global team89
+       valid_lft forever preferred_lft forever
+
+19: eth8: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 52:54:00:02:c3:a1 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.134.5/24 brd 192.168.134.255 scope global dynamic eth8
+       valid_lft 3312sec preferred_lft 3312sec
+    inet6 fe80::5506:7254:be0:f513/64 scope link
+       valid_lft forever preferred_lft forever
+20: eth9: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 52:54:00:4b:3b:c6 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.134.43/24 brd 192.168.134.255 scope global dynamic eth9
+       valid_lft 3312sec preferred_lft 3312sec
+    inet6 fe80::d594:df13:9875:802/64 scope link
+       valid_lft forever preferred_lft forever
+
+
+=> eth8 & eth9 still using IP's (dhcp). Reload did not work. 
+
+[root@server network-scripts]# ifdown eth8
+Device 'eth8' successfully disconnected.
+[root@server network-scripts]# ifdown eth9
+Device 'eth9' successfully disconnected.
+
+Use nmcli to bring the devices up
+
+[root@server network-scripts]# nmcli con up eth8
+[root@server network-scripts]# nmcli con up eth9
+
+19: eth8: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast master team89 state UP qlen 1000
+    link/ether 52:54:00:02:c3:a1 brd ff:ff:ff:ff:ff:ff
+20: eth9: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast master team89 state UP qlen 1000
+    link/ether 52:54:00:02:c3:a1 brd ff:ff:ff:ff:ff:ff
+
+
+    [root@server network-scripts]# teamdctl team89 state
+setup:
+  runner: roundrobin
+ports:
+  eth8
+    link watches:
+      link summary: up
+      instance[link_watch_0]:
+        name: ethtool
+        link: up
+        down count: 0
+  eth9
+    link watches:
+      link summary: up
+      instance[link_watch_0]:
+        name: ethtool
+        link: up
+        down count: 0
+
+
+[root@server network-scripts]# teamnl team89 ports
+ 20: eth9: up 0Mbit HD
+ 19: eth8: up 0Mbit HD
+
+ [root@server network-scripts]# teamnl team0 setoption mode activebackup
+[root@server network-scripts]# teamnl team0 options
+ activeport 0
+ mcast_rejoin_interval 0
+ mcast_rejoin_count 0
+ notify_peers_interval 0
+ notify_peers_count 0
+ mode activebackup
+
+=> Add ip address to existing team
+
+[root@server network-scripts]# ip addr show team0
+18: team0: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc noqueue state DOWN
+    link/ether 7e:71:79:28:e3:05 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.134.70/24 brd 192.168.134.255 scope global team0
+       valid_lft forever preferred_lft forever
+[root@server network-scripts]# ip addr add 192.168.134.78/24 dev team0
+[root@server network-scripts]# ip addr show team0
+18: team0: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc noqueue state DOWN
+    link/ether 7e:71:79:28:e3:05 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.134.70/24 brd 192.168.134.255 scope global team0
+       valid_lft forever preferred_lft forever
+    inet 192.168.134.78/24 scope global secondary team0
+       valid_lft forever preferred_lft forever
+
+=> To add/remove ports
+
+teamdctl team0 port add eth9
+teamdctl team0 port remove eth9
+
+
+https://documentation.meraki.com/MS/Layer_3_Switching/Layer_3_versus_Layer_2_Switch_for_VLANs
+
+
+
+--To send keys to hung guests
+root@panchajanya:~\> virsh send-key lab125a KEY_LEFTALT KEY_SYSRQ KEY_H
+
+
+
+</pre>
+
+</div>
+	
+	
+<div class="w3-container">
+	<h1><span class="mw-headline" id="Performance"> Performance </h1>
+<p>
+
+Taking the discussion back to the machinery at hand, the load averages tell us by increasing duration whether our physical CPUs are over- or under-utilized. 
+The point of perfect utilization, meaning that the CPUs are always busy and, yet, no process ever waits for one, is the average matching the number of CPUs. 
+If there are four CPUs on a machine and the reported one-minute load average is 4.00, the machine has been utilizing its processors perfectly for the last 60 seconds. 
+This understanding can be extrapolated to the 5- and 15-minute averages. Load average narrowly focuses on what is actively demanding CPU time. This differs greatly from the CPU percentage. 
+The CPU percentage is the amount of a time interval (that is, the sampling interval) that the system's processes were found to be active on the CPU. If there are four CPUs on a machine and
+the reported one-minute load average is 4.00, the machine has been utilizing its processors perfectly for the last 60 seconds. This understanding can be extrapolated to the 5- and 15-minute averages.
+
+	<BR>
+Reference: 
+	<BR>
+http://www.linuxjournal.com/article/9001?page=0,0
+
+</p>
+
+
+<pre> 
+http://www.binarytides.com/linux-ss-command/
+
+yum install iproute2-doc
+
+
+--ss examples
+ss -t4 src 192.168.2.0/24 dst 192.168.1.0/24 '( sport = :ssh or dport \> :4000 )'
+
+
+--Find memory used by a single process
+ps aux --sort -rss
+
+https://stackoverflow.com/questions/7880784/what-is-rss-and-vsz-in-linux-memory-management
+https://techtalk.intersec.com/2013/07/memory-part-2-understanding-process-memory/
+
+
+
+--CPU Overloaded in last minute
+	 
+[root@lab125a yum.repos.d]# cat /proc/cpuinfo  |grep processor
+processor	: 0
+
+[root@lab125a yum.repos.d]# stress --cpu 2 --timeout 60
+stress: info: [3764] dispatching hogs: 2 cpu, 0 io, 0 vm, 0 hdd
+stress: info: [3764] successful run completed in 60s
+
+[root@lab125a yum.repos.d]# uptime
+14:19:58 up  4:21,  2 users,  load average: 1.24, 0.40, 0.17
+
+
+--Load CPU via stress 
+
+[root@lab125a yum.repos.d]# stress --cpu 1 --timeout 5
+stress: info: [3761] dispatching hogs: 1 cpu, 0 io, 0 vm, 0 hdd
+
+[root@lab125a ~]# dstat -cmdnt
+----total-cpu-usage---- ------memory-usage----- -dsk/total- -net/total- ----system----
+usr sys idl wai hiq siq| used  buff  cach  free| read  writ| recv  send|     time
+  0   0  99   0   0   0| 192M  952k  278M  522M|  11k 9864B|   0     0 |22-09 14:18:10
+  0   0 100   0   0   0| 192M  952k  278M  522M|   0     0 | 170B  102B|22-09 14:18:11
+  0   0 100   0   0   0| 192M  952k  278M  522M|   0     0 |  66B  166B|22-09 14:18:12
+  0   0 100   0   0   0| 192M  952k  278M  522M|   0     0 | 170B  118B|22-09 14:18:13
+  0   0 100   0   0   0| 192M  952k  278M  522M|   0     0 |  66B  118B|22-09 14:18:14
+ 32   0  68   0   0   0| 192M  952k  278M  522M|   0     0 | 170B  118B|22-09 14:18:15
+100   0   0   0   0   0| 192M  952k  278M  522M|   0     0 |  66B  118B|22-09 14:18:16
+100   0   0   0   0   0| 192M  952k  278M  522M|   0     0 | 170B  118B|22-09 14:18:17
+100   0   0   0   0   0| 192M  952k  278M  522M|   0     0 |  66B  118B|22-09 14:18:18
+100   0   0   0   0   0| 192M  952k  278M  522M|   0     0 | 170B  102B|22-09 14:18:19
+ 66   0  34   0   0   0| 192M  952k  278M  522M|   0     0 |  66B  102B|22-09 14:18:20
+  0   0 100   0   0   0| 192M  952k  278M  522M|   0     0 | 170B  118B|22-09 14:18:21
+  0   0 100   0   0   0| 192M  952k  278M  522M|   0     0 |  66B  134B|22-09 14:18:22^C
+
+
+--More granular
+
+dstat -cmdn ( c = cpu, m = memory, d= disk, n = network)
+dstat -gyprs ( g = paging, y = system stats, p = process stats, r = read/write stats, s = swap stats)
+
+
+-- Memory details (flag = htm )
+
+[root@lab125a yum.repos.d]# free -htm
+			  total        used        free      shared  buff/cache   available
+Mem:           993M         62M        852M        1.4M         78M        822M
+Swap:          511M         98M        413M
+Total:         1.5G        161M        1.2G
+
+[root@lab125a yum.repos.d]# cat /proc/sys/vm/drop_caches
+0
+
+[root@lab125a yum.repos.d]# echo 3 > /proc/sys/vm/drop_caches
+
+[root@lab125a yum.repos.d]# cat /proc/sys/vm/drop_caches
+3
+
+--Notice the buff/cache drop afer the flush!
+
+[root@lab125a yum.repos.d]# free -htm
+			  total        used        free      shared  buff/cache   available
+Mem:           993M         61M        876M        1.4M         55M        835M
+Swap:          511M         98M        413M
+Total:         1.5G        160M        1.3G
+
+
+[root@lab125a yum.repos.d]# swapoff -a
+
+[root@lab125a yum.repos.d]# free -htm
+			  total        used        free      shared  buff/cache   available
+Mem:           993M        127M        801M        7.2M         63M        762M
+Swap:            0B          0B          0B
+Total:         993M        127M        801M
+
+
+--To free pagecache:
+# echo 1 > /proc/sys/vm/drop_caches
+
+To free dentries and inodes:
+# echo 2 > /proc/sys/vm/drop_caches
+
+To free pagecache, dentries and inodes:
+# echo 3 > /proc/sys/vm/drop_caches
+
+--ss syntax
+
+[root@rhce1 samba]# ss -nt sport \< :1024
+State      Recv-Q Send-Q                  Local Address:Port                                 Peer Address:Port
+ESTAB      0      0                      192.168.122.10:22                                  192.168.122.1:60664
+
+--Stress-ng example
+[root@lab125a ~]# stress-ng -c 2 --cpu-ops 10000 -t 10 --metrics
+stress-ng: info:  [2744] dispatching hogs: 2 cpu
+stress-ng: info:  [2744] successful run completed in 10.01s
+
+
+
+
+
+</pre>
+
+</div>
+
+
+	
+<div class="w3-container">
+	<h1><span class="mw-headline" id="Security"> Security </h1>
+<p>
+
+</p>
+
+
+<pre> 
+
+--Login/Logout Details
+Data Stored @ /var/log/wtmp 
+last
+last reboot
+
+--Failed User attempts
+Data stored @ /var/log/btmp
+lastb
+
+--Users who has never logged in
+lastlog
+
+
+--Login/Logout Details
+Data Stored @ /var/log/wtmp 
+last
+last reboot
+
+--Failed User attempts
+Data stored @ /var/log/btmp
+lastb
+
+--Users who has never logged in
+lastlog
+
+--setuid/setgid/stickybit (4 - 2 - 1)
+	
+#setuid 
+[root@lab125a ~]# ll /usr/bin/su
+-rwsr-xr-x. 1 root root 32072 Nov 20  2015 /usr/bin/su
+
+#setuid is bit so other users can execute su with 'root' privileges. (chmod 4755)
+find / -perm -4000 
+
+#setgid
+Non-owners can execute with exact privileges that the group members have.(chmod 2755)
+find / -perm -4000 
+
+[root@lab125a ~]# ll /usr/bin/wall
+-r-xr-sr-x. 1 root tty 15344 Jun  9  2014 /usr/bin/wall
+
+#Can also be set on group-shared directories to allow files/sub-dirs to inherit the owning group. The standard behavior 
+when a directory/file is created to always receive the creator's group.
+
+#stickybit 
+[root@lab125a ~]# ll -d /tmp/
+drwxrwxrwt. 12 root root 4096 Sep 25 19:52 /tmp/
+
+Protects the files being removed/deleted by non-owners even though the directory has the rw permissions.
+
+--passwd/shadow/group/gshadow
+
+Limits are defined in /etc/login.defs
+[root@lab125a etc]# cat /etc/login.defs | grep -v ^# |grep -v ^$
+MAIL_DIR	/var/spool/mail
+PASS_MAX_DAYS	99999
+PASS_MIN_DAYS	0
+PASS_MIN_LEN	5
+..
+
+--shadow
+!! at the beginning of 2nd field(password filed) means user is locked.
+root:$6$CYV0wm.5tR7eWgd4fRFGVmWrdD8vQwIavP.::0:99999:7:::
+bin:*:16659:0:99999:7:::
+babu:!!:17396:0:99999:7:::
+
+Lock password (passwd -l babu), Unlock(passwd -u babu), Lock Account(usermod -L babu), Unlock Account(usermod -U babu)
+[root@lab125a etc]# passwd -S babu
+babu NP 2017-08-17 0 99999 7 -1 (Empty password.)
+[root@lab125a etc]# passwd -S user1
+user1 LK 2017-08-21 0 99999 7 -1 (Password locked.)
+
+--Number of days before which the passwords should be changed
+change -m user 10
+passwd -n user 15
+
+
+
+--Perms on gshadow file is 000
+[root@lab125a etc]# ls -ltr gshadow
+----------. 1 root root 658 Sep 19 09:42 gshadow
+
+-VErify integrity of passwd/shadow files
+pwck
+grpck
+
+--vipwd and vigr
+
+--Activate & Deactivate shadow mechanism
+pwconv, pwunconv , grpconv, grpunconv
+
+--/etc/skel
+[root@lab125a etc]# echo "Welcome to Lab125a" > /etc/skel/readme.txt
+[root@lab125a etc]# useradd usertest
+[root@lab125a etc]# ls -l /home/usertest/
+total 4
+-rw-r--r--. 1 usertest usertest 19 Sep 29 16:43 readme.txt
+
+--useradd
+Picks default values from /etc/default/useradd and /etc/login.defs
+
+--.bashrc/.bash_profile/.bash_logout behaviour during su and su -
+
+
+[root@lab125a ~]# su user3
+ This is from .bashrc
+[user3@lab125a root]$ exit
+exit
+
+[root@lab125a profile.d]# su - user3
+Last login: Sat Sep 30 11:08:48 CDT 2017 on pts/0
+This is set in /etc/profile.d/runme.sh : Setting vi editor for shell
+ This is from .bashrc
+This is from .bash_profile
+[user3@lab125a ~]$ exit
+logout
+This is from .bash_logout
+
+Note:When you login (type username and password) via console, either sitting at the machine,
+or remotely via ssh: .bash_profile is executed to configure your shell before the initial command prompt.
+But, if you’ve already logged into your machine and open a new terminal window (xterm) inside Gnome or KDE,
+then .bashrc is executed before the window command prompt. .bashrc is also run when you start a new bash instance by typing /bin/bash in a terminal.
+
+--Example (Expire users passwod and prompt it to change at next login (-d 0) , be unable to change the password within 5 days following last
+password change (-m 5) and disable account expiration ( -E -1 )
+
+[root@lab125a ~]# chage -E -1 -d 0 -m 5 user3
+
+
+--su - (Hypen) ensures that directory is switched to the homedirectory of new user , changes environment variables to that of new user.
+
+--System wide scripts 
+/etc/bashrc and /etc/profile executes scripts in /etc/profile.d for all users.
+Env variables like HOSTNAME, HISTSIZE, HISTCONTROL are set in /etc/profile
+
+
+Shows the difference from the defaults..
+
+[root@server1 demo]# semanage boolean -l -C
+SELinux boolean                State  Default Description
+
+zoneminder_run_sudo            (on   ,  off)  Allow zoneminder to run sudo
+httpd_enable_homedirs          (on   ,   on)  Allow httpd to enable homedirs
+
+
+
+/etc/hosts.allow is parsed first followed by /etc/hosts/deny. <BR> 
+netcat not a good tool to validate the connectivity as it will show connected but the ssh itself wouldn't work. <BR>
+This can only be used to restrict wrapper-aware programs like finger,sssh,telnet, rsh, talk. <BR>
+	
+service : user@source
+
+--suoders reference
+http://sleepyhead.de/howto/?href=sudo
+http://toroid.org/sudoers-syntax
+
+User Host = (Runas) Command
+
+Runas
+If you also specify a target group, e.g., (postgres:postgres), sudo will accept any combination of the listed 
+users and groups (see the section on aliases below). If you specify only a target group, e.g., (:postgres),
+ sudo will accept and act on “-g postgres” but run commands only as the invoking user.
+
+ams ALL=/bin/ls, /bin/df -h /, /bin/date ""
+Double quotes implies command can be executed only without arguments.
+
+Options
+Before the command, you can specify zero or more options to control how it will be executed. The most important options are NOPASSWD (to not require a password) and SETENV (to allow the user to set environment variables for the command).
+ams ALL=(ALL) NOPASSWD: SETENV: /bin/ls
+
+
+-- Limit access to su
+
+Add ID's to the wheel group
+
+-bash-4.2$ grep wheel /etc/group
+wheel:x:10:arjun,oracle
+
+Enable PAM module ( Uncomment below line )
+[root@server1 security]# cat /etc/pam.d/su
+#%PAM-1.0
+...
+# Uncomment the following line to require a user to be in the "wheel" group.
+auth		required	pam_wheel.so use_uid
+
+--Two ways to check whether a library supports the tcpwrapper
+
+
+[root@lab19 ~]# ldd /usr/sbin/sshd | grep libwrap
+	libwrap.so.0 => /lib64/libwrap.so.0 (0x00007f51bb5ba000)
+
+or
+
+[root@lab125a ~]# strings -f /usr/sbin/* | grep hosts_access
+/usr/sbin/auditd: hosts_access
+/usr/sbin/rpcbind: hosts_access
+/usr/sbin/rpc.mountd: hosts_access
+/usr/sbin/rpc.rquotad: hosts_access
+/usr/sbin/rpc.statd: hosts_access
+/usr/sbin/sshd: hosts_access
+
+-How to check if TCPDB would behave 
+
+[root@rhce1 exports.d]# grep rpc /etc/hosts.deny
+rpcbind,rpc.mountd :	192.168.122.20
+
+[root@rhce1 exports.d]# tcpdmatch rpcbind 192.168.122.20
+client:   address  192.168.122.20
+server:   process  rpcbind
+access:   denied
+[root@rhce1 exports.d]# tcpdmatch rpcbind 192.168.122.30
+client:   address  192.168.122.30
+server:   process  rpcbind
+access:   granted
+
+
+
+ ausearch -c "httpd" -m AVC
+ time->Tue Nov 14 20:43:36 2017
+type=PROCTITLE msg=audit(1510713816.781:964): proctitle=2F7573722F7362696E2F6874747064002D44464F524547524F554E44
+type=SYSCALL msg=audit(1510713816.781:964): arch=c000003e syscall=4 success=no exit=-13 a0=55d49b0f2100 a1=7ffc0a425640 a2=7ffc0a425640 a3=7f04064e9792 items=0 ppid=11184 pid=11188 auid=4294967295 uid=48 gid=48 euid=48 suid=48 fsuid=48 egid=48 sgid=48 fsgid=48 tty=(none) ses=4294967295 comm="httpd" exe="/usr/sbin/httpd" subj=system_u:system_r:httpd_t:s0 key=(null)
+type=AVC msg=audit(1510713816.781:964): avc:  denied  { getattr } for  pid=11188 comm="httpd" path="/custom/index.html" dev="dm-0" ino=149255 scontext=system_u:system_r:httpd_t:s0 tcontext=unconfined_u:object_r:default_t:s0 tclass=file
+
+
+--Example usecase-1 ( The 'twist' directive is used to replace the service with a selected command )
+
+Lead to the discovery of hte SELINUX NIS context error...
+
+
+[root@lab125a ~]# tail -1 /etc/hosts.allow
+sshd: user1@192.168.2.55
+
+[root@lab125a ~]# tail -1 /etc/hosts.deny
+sshd : ALL : twist /bin/echo "Service suspended for abuse!"
+
+--Use spawn directive to spawn a command capture messages from the host
+sshd : ALL : spawn /bin/echo VSFTP requested to %h >> /var/log/vsftp.log
+
+
+--Ideally user1 should have allowed..
+
+[root@lab19 ~]# ssh user1@lab125a
+ssh_exchange_identification: read: Connection reset by peer
+
+==> /var/log/messages <==
+Oct  3 19:14:18 lab125a dbus[596]: [system] Successfully activated service 'org.fedoraproject.Setroubleshootd'
+Oct  3 19:14:18 lab125a dbus-daemon: dbus[596]: [system] Successfully activated service 'org.fedoraproject.Setroubleshootd'
+Oct  3 19:14:18 lab125a setroubleshoot: SELinux is preventing /usr/sbin/sshd from name_connect access on the tcp_socket port 113. For complete SELinux messages. 
+run sealert -l cd9b7da6-cb08-43ae-81e0-dbd7dd928036
+Oct  3 19:14:18 lab125a python: SELinux is preventing /usr/sbin/sshd from name_connect access on the tcp_socket port 113.#012#012*****  Plugin catchall_boolean (47.5 confidence) suggests   
+******************#012#012If you want to allow nis to enabled#012Then you must tell SELinux about this by enabling the 'nis_enabled' boolean.#012
+You can read 'None' man page for more details.#012Do#012setsebool -P nis_enabled 1#012#012*****  Plugin catchall_boolean (47.5 confidence) suggests   ******************#012#012
+If you want to allow daemons to use tcp wrapper#012Then you must tell SELinux about this by enabling the 'daemons_use_tcp_wrapper' boolean.#012
+
+--Run sealert
+
+[root@lab125a ~]# sealert -l cd9b7da6-cb08-43ae-81e0-dbd7dd928036
+SELinux is preventing /usr/sbin/sshd from name_connect access on the tcp_socket port 113.
+
+*****  Plugin catchall_boolean (47.5 confidence) suggests   ******************
+
+If you want to allow nis to enabled
+Then you must tell SELinux about this by enabling the 'nis_enabled' boolean.
+You can read 'None' man page for more details.
+Do
+setsebool -P nis_enabled 1
+
+*****  Plugin catchall_boolean (47.5 confidence) suggests   ******************
+
+If you want to allow daemons to use tcp wrapper
+Then you must tell SELinux about this by enabling the 'daemons_use_tcp_wrapper' boolean.
+You can read 'None' man page for more details.
+Do
+setsebool -P daemons_use_tcp_wrapper 1
+
+*****  Plugin catchall (6.38 confidence) suggests   **************************
+
+If you believe that sshd should be allowed name_connect access on the port 113 tcp_socket by default.
+Then you should report this as a bug.
+You can generate a local policy module to allow this access.
+Do
+allow this access for now by executing:
+# ausearch -c 'sshd' --raw | audit2allow -M my-sshd
+# semodule -i my-sshd.pp
+
+
+Additional Information:
+Source Context                system_u:system_r:sshd_t:s0-s0:c0.c1023
+Target Context                system_u:object_r:auth_port_t:s0
+Target Objects                port 113 [ tcp_socket ]
+Source                        sshd
+Source Path                   /usr/sbin/sshd
+Port                          113
+Host                          lab125a
+Source RPM Packages
+Target RPM Packages
+Policy RPM                    selinux-policy-3.13.1-102.el7_3.16.noarch
+Selinux Enabled               True
+Policy Type                   targeted
+Enforcing Mode                Enforcing
+Host Name                     lab125a
+Platform                      Linux lab125a 3.10.0-327.el7.x86_64 #1 SMP Thu Nov
+                              19 22:10:57 UTC 2015 x86_64 x86_64
+Alert Count                   24
+First Seen                    2017-10-03 18:37:56 CDT
+Last Seen                     2017-10-03 19:14:17 CDT
+Local ID                      cd9b7da6-cb08-43ae-81e0-dbd7dd928036
+
+Raw Audit Messages
+type=AVC msg=audit(1507076057.918:1493): avc:  denied  { name_connect } for  pid=3693 comm="sshd" dest=113 scontext=system_u:system_r:sshd_t:s0-s0:c0.c1023 tcontext=system_u:object_r:auth_port_t:s0 tclass=tcp_socket
+
+
+Hash: sshd,sshd_t,auth_port_t,tcp_socket,name_connect
+
+AllowTCPForwarding
+This tells whether or not the tunneled connections are allowed.
+
+--Disable login for all users ..
+[root@rhce4 ~]# cat /etc/nologin
+LOgins temporarily disabled for maintanence
+
+
+[root@server ssh]# grep banner sshd_config
+# no default banner path
+Banner /etc/banner
+
+ClientAliveCountMax
+This sets the number of attempts the OpenSSH server should make contacting the client before issuing a disconnect ( Zero means session stays connected indefinitely.
+ )and will be sent in intervals defined by ClientAliveInterval.
+
+
+TCPKeepAlive
+sshd will send keep-alive requests to the clients. So in case of a client crash, the server side process will be terminated.
+
+X11Forwarding
+Will establish a tunnel and automatically set the $DISPLAY variable. eg 10:1 (Where X11DisplayOffset 10) If a user resets the DISPLAY variable to use a different one for eg.rack:0.1
+then encryption is defeated.
+
+#Enabling Port 99 in addition to port 22 and restart of sshd.
+
+*******************#012#012If you believe that sshd should be allowed name_bind access on the port 99 tcp_socket by default.#012Then you should report this as a bug.#012You can generate a local policy module to allow this access.#012Do#012allow this access for now by executing:#012# ausearch -c 'sshd' --raw | audit2allow -M my-sshd#012# semodule -i my-sshd.pp#012
+Aug  1 14:32:18 server setroubleshoot: SELinux is preventing /usr/sbin/sshd from name_bind access on the tcp_socket port 99. For complete SELinux messages. run sealert -l fc07953e-1392-421e-a4db-21705ffa9df1
+Aug  1 14:32:18 server python: SELinux is preventing /usr/sbin/sshd from name_bind access on the tcp_socket port 99.#012#012*****  Plugin bind_ports (99.5 confidence) suggests   ************************#012#012If you want to allow /usr/sbin/sshd to bind to network port 99#012Then you need to modify the port type.#012Do#012# semanage port -a -t PORT_TYPE -p tcp 99#012    where PORT_TYPE is one of the following: ssh_port_t, vnc_port_t, xserver_port_t.#012#012*****  Plugin catchall (1.49 confidence) suggests   **************************#012#012If you believe that sshd should be allowed name_bind access on the port 99 tcp_socket by default.#012Then you should report this as a bug.#012You can generate a local policy module to allow this access.#012Do#012allow this access for now by executing:#012# ausearch -c 'sshd' --raw | audit2allow -M my-sshd#012# semodule -i my-sshd.pp#012
+
+
+[root@server ~]# sealert -l fc07953e-1392-421e-a4db-21705ffa9df1
+SELinux is preventing /usr/sbin/sshd from name_bind access on the tcp_socket port 99.
+
+*****  Plugin bind_ports (99.5 confidence) suggests   ************************
+
+If you want to allow /usr/sbin/sshd to bind to network port 99
+Then you need to modify the port type.
+Do
+# semanage port -a -t PORT_TYPE -p tcp 99
+    where PORT_TYPE is one of the following: ssh_port_t, vnc_port_t, xserver_port_t.
+
+*****  Plugin catchall (1.49 confidence) suggests   **************************
+
+If you believe that sshd should be allowed name_bind access on the port 99 tcp_socket by default.
+Then you should report this as a bug.
+You can generate a local policy module to allow this access.
+Do
+allow this access for now by executing:
+# ausearch -c 'sshd' --raw | audit2allow -M my-sshd
+# semodule -i my-sshd.pp
+
+
+Additional Information:
+Source Context                system_u:system_r:sshd_t:s0-s0:c0.c1023
+Target Context                system_u:object_r:reserved_port_t:s0
+Target Objects                port 99 [ tcp_socket ]
+Source                        sshd
+Source Path                   /usr/sbin/sshd
+Port                          99
+Host                          server
+Source RPM Packages
+Target RPM Packages
+Policy RPM                    selinux-policy-3.13.1-102.el7_3.16.noarch
+Selinux Enabled               True
+Policy Type                   targeted
+Enforcing Mode                Enforcing
+Host Name                     server
+Platform                      Linux server 3.10.0-327.el7.x86_64 #1 SMP Thu Nov
+                              19 22:10:57 UTC 2015 x86_64 x86_64
+Alert Count                   5
+First Seen                    2017-08-01 12:38:53 CDT
+Last Seen                     2017-08-01 14:32:04 CDT
+Local ID                      fc07953e-1392-421e-a4db-21705ffa9df1
+
+Raw Audit Messages
+type=AVC msg=audit(1501615924.31:403): avc:  denied  { name_bind } for  pid=3067 comm="sshd" src=99 scontext=system_u:system_r:sshd_t:s0-s0:c0.c1023 tcontext=system_u:object_r:reserved_port_t:s0 tclass=tcp_socket
+
+
+Hash: sshd,sshd_t,reserved_port_t,tcp_socket,name_bind
+
+
+# Update semanage context.
+
+[root@server ~]# semanage port -a -t ssh_port_t -p tcp 99
+[root@server ~]# semanage port -l |grep ssh
+ssh_port_t                     tcp      99, 22
+
+
+TCPWrappers 
+
+Makes use of /etc/hosts.allow and /etc/hosts.deny ( allow consulted first by tcpd)
+
+[root@server etc]# vi hosts.deny
+[root@server etc]# tcpdmatch -d sshd hosts.deny
+client:   address  198.105.244.228
+server:   process  sshd
+access:   denied
+
+client:   address  198.105.254.228
+server:   process  sshd
+access:   denied
+
+
+
+--To enable IPTables disable firwalld and install iptables-service.
+
+[root@lab125a ~]# systemctl disable firewalld
+Removed symlink /etc/systemd/system/dbus-org.fedoraproject.FirewallD1.service.
+Removed symlink /etc/systemd/system/basic.target.wants/firewalld.service.
+
+[root@lab125a ~]# systemctl enable iptables
+Failed to execute operation: Access denied
+
+
+[root@lab125a yum.repos.d]# yum install iptables-services -y
+
+[root@lab125a yum.repos.d]# systemctl enable iptables
+Created symlink from /etc/systemd/system/basic.target.wants/iptables.service to /usr/lib/systemd/system/iptables.service.
+[root@lab125a yum.repos.d]# systemctl start iptables
+[root@lab125a yum.repos.d]# systemctl status iptables
+● iptables.service - IPv4 firewall with iptables
+   Loaded: loaded (/usr/lib/systemd/system/iptables.service; enabled; vendor preset: disabled)
+   Active: active (exited) since Fri 2017-10-06 14:32:16 CDT; 3s ago
+  Process: 3096 ExecStart=/usr/libexec/iptables/iptables.init start (code=exited, status=0/SUCCESS)
+ Main PID: 3096 (code=exited, status=0/SUCCESS)
+
+Oct 06 14:32:16 lab125a systemd[1]: Starting IPv4 firewall with iptables...
+Oct 06 14:32:16 lab125a iptables.init[3096]: iptables: Applying firewall rules: [  OK  ]
+Oct 06 14:32:16 lab125a systemd[1]: Started IPv4 firewall with iptables.
+
+
+--Rich rules are the ones with greater level of control. Firewalld has the ability to pass security rules
+directly through iptables using direct interface mode but rules arent persistent. rich language rules come in
+place to address this problem.
+
+man firewalld.richlanguage
+
+
+example:
+firewall-cmd --zone=public --add-rich-rule="rule family="ipv4" source address="192.168.2.0/24" log prefix="ftp_firewalld" level="info" accept"
+
+--Temporary rule that expires in 24 hours
+
+  [root@lab125a zones]# firewall-cmd --add-rich-rule 'rule family="ipv4" source address="192.168.130.0/24" service name="telnet" log prefix="telnet blocked:" level="info" reject' --timeout="86400" --zone myzone
+success
+
+
+Create rules to address these: <BR> Delete all existing rules, append rules to filter table to allow egress on 80, reject outbound on ICMP with no
+return notification, forward all inbound traffic to subnet 192.168.2.0/24. Insert a rule to allow first/subsequent FTP connections on 21. Append
+rule to disallow all outgoing to port 25. Save rules and reboot to check for persistency.
+
+
+--Change context type of /etc/shadow
+
+[root@server ~]# ls -lZ /etc/shadow
+----------. root root system_u:object_r:shadow_t:s0    /etc/shadow
+
+[root@server ~]# chcon -t public_content_t /etc/shadow
+
+[root@server ~]# ls -lZ /etc/shadow
+----------. root root system_u:object_r:public_content_t:s0 /etc/shadow
+
+
+--Try to change the password
+
+[root@server ~]# passwd user3
+Changing password for user user3.
+New password:
+BAD PASSWORD: The password is shorter than 8 characters
+Retype new password:
+passwd: Authentication token manipulation error
+
+
+--Check logs..
+
+
+systemctl status auditd states it's running. So instead of rsyslogd sending messages to /var/log/messages auditd would be sending it to audit.log
+
+
+type=AVC msg=audit(1501520443.317:502): avc:  denied  { read } for  pid=3069 comm="unix_chkpwd" name="shadow" dev="dm-0" ino=16970057 scontext=unconfined_u:unconfined_r:chkpwd_t:s0-s0:c0.c1023 tcontext=system_u:object_r:public_content_t:s0 tclass=file
+type=SYSCALL msg=audit(1501520443.317:502): arch=c000003e syscall=2 success=no exit=-13 a0=7f3e393350b3 a1=80000 a2=1b6 a3=24 items=0 ppid=3068 pid=3069 auid=0 uid=0 gid=0 euid=0 suid=0 fsuid=0 egid=0 sgid=0 fsgid=0 tty=(none) ses=1 comm="unix_chkpwd" exe="/usr/sbin/unix_chkpwd" subj=unconfined_u:unconfined_r:chkpwd_t:s0-s0:c0.c1023 key=(null)
+
+type=AVC msg=audit(1501520449.941:504): avc:  denied  { read } for  pid=3068 comm="passwd" name="shadow" dev="dm-0" ino=16970057 scontext=unconfined_u:unconfined_r:passwd_t:s0-s0:c0.c1023 tcontext=system_u:object_r:public_content_t:s0 tclass=file
+type=SYSCALL msg=audit(1501520449.941:504): arch=c000003e syscall=2 success=no exit=-13 a0=7f1c854832d4 a1=0 a2=1 a3=7f1c8d23bc8c items=0 ppid=2550 pid=3068 auid=0 uid=0 gid=0 euid=0 suid=0 fsuid=0 egid=0 sgid=0 fsgid=0 tty=pts2 ses=1 comm="passwd" exe="/usr/bin/passwd" subj=unconfined_u:unconfined_r:passwd_t:s0-s0:c0.c1023 key=(null)
+
+
+--Check the selinux 
+
+[root@server ~]# sestatus
+SELinux status:                 enabled
+SELinuxfs mount:                /sys/fs/selinux
+SELinux root directory:         /etc/selinux
+Loaded policy name:             targeted
+Current mode:                   enforcing
+Mode from config file:          enforcing
+Policy MLS status:              enabled
+Policy deny_unknown status:     allowed
+Max kernel policy version:      28
+
+--It's enforcing, let's temporarily set the context types to permissive
+
+
+[root@server ~]# semanage permissive -a chkpwd_t
+[root@server ~]# semanage permissive -a passwd_t
+[root@server ~]# semanage permissive -l
+
+--Customized Permissive Types
+
+chkpwd_t
+httpd_t
+passwd_t
+
+--Builtin Permissive Types
+
+-Retry password change
+
+[root@server ~]# passwd user3
+Changing password for user user3.
+New password:
+BAD PASSWORD: The password is shorter than 8 characters
+Retype new password:
+passwd: all authentication tokens updated successfully.
+
+-Password change worked, although avc_denied re-appers since permissive allows access bug logs the denials.
+
+
+--Backout policy changes 
+
+[root@server ~]# semanage permissive -d chkpwd_t
+libsemanage.semanage_direct_remove_key: Removing last permissive_chkpwd_t module (no other permissive_chkpwd_t module exists at another priority).
+[root@server ~]# semanage permissive -d passwd_t
+libsemanage.semanage_direct_remove_key: Removing last permissive_passwd_t module (no other permissive_passwd_t module exists at another priority).
+
+
+--What happens on context preservation
+
+a) IF file is copied over on same directory or different directory the context will be switched to the destination file's attributes.
+b) If a file is copied to a new directory as a new file - the context of the destination directory is preserved.
+c) If a file is moved to same or different directory the user attribute (subject) will be changed to unconfined_u
+d) For tar archives use --selinux opttion to preserve contexts
+
+
+[root@server ~]# ls -ldZ /usr/bin/
+dr-xr-xr-x. root root system_u:object_r:bin_t:s0       /usr/bin/
+[root@server ~]# ls -ldZ /usr/etc/
+drwxr-xr-x. root root system_u:object_r:etc_t:s0       /usr/etc/
+[root@server ~]# cd /usr/bin/
+[root@server bin]# touch afile
+[root@server bin]# ls -lZ afile
+-rw-r--r--. root root unconfined_u:object_r:bin_t:s0   afile
+[root@server bin]# cp afile ../etc/
+[root@server bin]# cd ../etc/
+[root@server etc]# ls -lZ afile
+-rw-r--r--. root root unconfined_u:object_r:etc_t:s0   afile
+-rw-r--r--. root root unconfined_u:object_r:etc_t:s0   ../etc/afile
+[root@server bin]# cp afile ../etc/ --preserve=context
+cp: overwrite ‘../etc/afile’? y
+[root@server bin]# ls -lZ ../etc/afile
+-rw-r--r--. root root unconfined_u:object_r:bin_t:s0   ../etc/afile
+
+
+[root@server bin]# ls -lZ zcat.test
+-rwxr-xr-x. root root system_u:object_r:bin_t:s0       zcat.test
+[root@server bin]# ls -lZ zcat.test
+-rwxr-xr-x. root root unconfined_u:object_r:bin_t:s0   zcat.test
+
+--To set booleans 
+
+setsebool 
+sestatus -b
+
+
+root@panchajanya:/var/ftp\> ls -Z vnetiso.xml
+-rw-r--r--. root root unconfined_u:object_r:unlabeled_t:s0 vnetiso.xml
+
+root@panchajanya:/var/ftp\> chcon -t public_content_t vnetiso.xml
+root@panchajanya:/var/ftp\> ls -Z vnetiso.xml
+-rw-r--r--. root root unconfined_u:object_r:public_content_t:s0 vnetiso.xml
+
+#Adding a user
+[root@server bin]# semanage login -a -s user_u user4
+[root@server bin]# semanage login -l
+
+Login Name           SELinux User         MLS/MCS Range        Service
+
+__default__          unconfined_u         s0-s0:c0.c1023       *
+root                 unconfined_u         s0-s0:c0.c1023       *
+system_u             system_u             s0-s0:c0.c1023       *
+user4                user_u               s0                   *
+user5                staff_u              s0-s0:c0.c1023       *
+
+#change default selinux login context
+
+[root@server bin]# semanage login -l
+
+Login Name           SELinux User         MLS/MCS Range        Service
+
+__default__          unconfined_u         s0-s0:c0.c1023       *
+root                 unconfined_u         s0-s0:c0.c1023       *
+system_u             system_u             s0-s0:c0.c1023       *
+user4                user_u               s0                   *
+user5                staff_u              s0-s0:c0.c1023       *
+[root@server bin]# semanage login -m -S targeted -s staff_u __default__
+[root@server bin]# semanage login -l
+
+Login Name           SELinux User         MLS/MCS Range        Service
+
+__default__          staff_u              s0-s0:c0.c1023       *
+root                 unconfined_u         s0-s0:c0.c1023       *
+system_u             system_u             s0-s0:c0.c1023       *
+user4                user_u               s0                   *
+user5                staff_u              s0-s0:c0.c1023       *
+
+[root@server bin]# semanage login -m -S targeted -r s0:c0 -s staff_u __default__
+^[[A[root@server bi^C
+[root@server bin]# semanage login -l
+
+Login Name           SELinux User         MLS/MCS Range        Service$
+se$
+
+
+__default__          staff_u              s0:c0                *
+root                 unconfined_u         s0-s0:c0.c1023       *
+system_u             system_u             s0-s0:c0.c1023       *
+user4                user_u               s0                   *
+user5                staff_u              s0-s0:c0.c1023       *
+
+
+
+--Add persistent context for a file
+[root@server ~]# semanage fcontext -a  -S targeted -s user_u -t public_content_t /root/afile
+
+[root@server ~]# cat /etc/selinux/targeted/contexts/files/file_contexts.local | grep afile
+/root/afile    user_u:object_r:public_content_t:s0
+
+[root@server ~]# ls -Zd /root/
+dr-xr-x---. root root system_u:object_r:admin_home_t:s0 /root/
+[root@server ~]# chcon -u user_u -t var_run_t /root
+[root@server ~]# ls -Zd /root/
+dr-xr-x---. root root user_u:object_r:var_run_t:s0     /root/
+
+[root@server ~]# restorecon -Fv /root/
+restorecon reset /root context user_u:object_r:var_run_t:s0->system_u:object_r:admin_home_t:s0
+[root@server ~]# ls -Zd /root/
+dr-xr-x---. root root system_u:object_r:admin_home_t:s0 /root/
+
+[root@server ~]# semanage port -a -t http_port_t -p tcp 8010
+[root@server ~]# semanage port -l |grep http_port_t
+http_port_t                    tcp      8010, 80, 81, 443, 488, 8008, 8009, 8443, 9000
+pegasus_http_port_t            tcp      5988
+[root@server ~]# semanage port -d -t http_Port_t -p tcp 8010
+[root@server ~]# semanage port -l |grep http_port_t
+http_port_t                    tcp      80, 81, 443, 488, 8008, 8009, 8443, 9000
+pegasus_http_port_t            tcp      5988
+
+--Quick Reference
+https://wiki.centos.org/HowTos/SELinux
+https://wiki.gentoo.org/wiki/SELinux/Users_and_logins
+ 
+
+--Add User/login example.
+semanage user --add -r s0:c0 -R "auditadm_r sysadm_r" auditor_u
+semanage login --add -s auditor_u phil
+		
+
+[root@server phil]# semanage permissive -a httpd_t
+[root@server phil]# seinfo --permissive
+
+Permissive Types: 7
+   httpd_t
+   blkmapd_t
+   hsqldb_t
+   ipmievd_t
+   sanlk_resetd_t
+   systemd_hwdb_t
+   targetd_t
+
+--Triaging a SEALERT
+
+-Error message.
+type=AVC msg=audit(1218128130.653:334): avc:  denied  { connectto } for  pid=9111 comm="smtpd" path="/var/spool/postfix/postgrey/socket"
+scontext=system_u:system_r:postfix_smtpd_t:s0 tcontext=system_u:system_r:initrc_t:s0 tclass=unix_stream_socket
+
+--Check the scontext, which is postfix_smtpd_t
+semanage permissive -a postfix_smtpd_t
+
+Watch the audit logs to see what postfix_smtpd_t needs to be allowed to do in order to succesfully operate. Once we're finished we can put that type back into enforcing mode:
+
+
+--Allow apache to listen on port 81
+semanage port -a -t http_port_t -p tcp 81 
+		
+semanage permissive -d postfix_smtpd_t
+This approach doesn't suffer from the heavy-handedness of setenforce 0 and allows all other services on the system to keep benefiting from the access controls of SELinux.
+
+
+		
+Set correct SELInux port 
+
+yum whatprovides semanage
+yum whatprovides seinfo
+
+[root@lab125a ~]# seinfo -t  |grep syslogd |grep port
+   syslogd_port_t
+
+[root@lab125a ~]# semanage port -l | grep syslogd
+syslogd_port_t                 tcp      601
+syslogd_port_t                 udp      514, 601
+
+[root@lab125a ~]# semanage port -m -t syslogd_port_t -p tcp 514
+
+
+[root@lab125a ~]# semanage port -l | grep syslogd
+syslogd_port_t                 tcp      514, 601
+syslogd_port_t                 udp      514, 601
+
+
+#Accessing a resource.
+
+[root@server1 ~]# cd /var/www/html/
+[root@server1 html]# ls -lZ *
+-rw-r--r--. root root unconfined_u:object_r:httpd_sys_content_t:s0 index.html
+
+
+[root@server1 html]# ps -eZ |grep httpd
+system_u:system_r:httpd_t:s0     4266 ?        00:00:00 httpd
+system_u:system_r:httpd_t:s0     4267 ?        00:00:00 httpd
+
+
+[root@server1 ~]# sesearch --allow --source httpd_t --target httpd_sys_content_t --class dir
+Found 16 semantic av rules:
+   allow httpd_t httpd_sys_content_t : dir { ioctl read getattr lock search open } ;
+   
+[root@server1 html]# chcon -t var_t index.html
+[root@server1 html]# ls -lZ index.html
+-rw-r--r--. root root unconfined_u:object_r:var_t:s0   index.html
+
+[root@server1 ~]# curl -s http://localhost/index.html
+..
+<p>You don't have permission to access /index.html
+..
+
+-In audit log
+type=AVC msg=audit(1508807842.331:542): avc:  denied  { getattr } for  pid=4270 comm="httpd" path="/var/www/html/index.html" dev="dm-0" ino=137566 
+scontext=system_u:system_r:httpd_t:s0 tcontext=unconfined_u:object_r:var_t:s0 tclass=file
+type=SYSCALL msg=audit(1508807842.331:542): arch=c000003e syscall=6 success=no exit=-13 
+a0=7fc5ba752c08 a1=7ffffad80a30 a2=7ffffad80a30 a3=ffffffe0 items=0 ppid=4266 pid=4270 auid=4294967295 uid=48 gid=48 euid=48 
+suid=48 fsuid=48 egid=48 sgid=48 fsgid=48 tty=(none) ses=4294967295 comm="httpd" exe="/usr/sbin/httpd" subj=system_u:system_r:httpd_t:s0 key=(null)
+
+-Temporarily reset to permissive for triaging
+[root@server1 ~]# semanage permissive -a httpd_t
+[root@server1 ~]# semanage permissive -l
+
+Customized Permissive Types
+
+httpd_t
+
+Builtin Permissive Types
+
+sanlk_resetd_t
+hsqldb_t
+systemd_hwdb_t
+blkmapd_t
+ipmievd_t
+targetd_t
+
+[root@server1 ~]# curl -s http://localhost/index.html
+Hello this is from server1.intercloudzone.com
+
+-Scan the audit.log
+
+sealert -a /var/log/audit/audit.log
+
+...
+If you want to fix the label.
+/var/www/html/index.html default label should be httpd_sys_content_t.
+Then you can run restorecon.
+Do
+# /sbin/restorecon -v /var/www/html/index.html
+	
+...
+
+[root@server1 html]# restorecon -vR index.html
+restorecon reset /var/www/html/index.html context unconfined_u:object_r:var_t:s0->unconfined_u:object_r:httpd_sys_content_t:s0
+
+--Context Inheritance for Files and Directories
+SELinux enforces something we can term as "context inheritance". What this means is that unless specified by the policy, processes and files are created with the contexts of their parents.
+
+This inheritance is not preserved when files are copied to another location. In a copy operation, the copied file or directory will assume the type context of the target location.
+
+-- Changing the fcontext 
+
+[root@server1 ~]# ls -lZ /www/html/
+-rw-r--r--. root root unconfined_u:object_r:default_t:s0 index.html
+
+
+[root@server1 ~]# curl -s http://localhost/index.html
+...
+<p>You don't have permission to access /index.html
+..
+
+
+[root@server1 html]# matchpathcon -V index.html
+index.html has context unconfined_u:object_r:var_t:s0, should be system_u:object_r:httpd_sys_content_t:s0
+
+
+[root@server1 ~]# matchpathcon -V /www/html/index.html
+/www/html/index.html verified.
+
+Reference 
+https://www.digitalocean.com/community/tutorials/an-introduction-to-selinux-on-centos-7-part-2-files-and-processes#how-processes-access-resources
+
+time->Tue Oct 24 17:35:24 2017
+type=SYSCALL msg=audit(1508884524.050:482): arch=c000003e syscall=6 success=no exit=-13 a0=7f248c01fbf0 a1=7ffd21904f00 a2=7ffd21904f00 a3=7ffd21904c80 items=0 ppid=3385 pid=3391 auid=4294967295 uid=48 gid=48 euid=48 suid=48 fsuid=48 egid=48 sgid=48 fsgid=48 tty=(none) ses=4294967295 comm="httpd" exe="/usr/sbin/httpd" subj=system_u:system_r:httpd_t:s0 key=(null)
+type=AVC msg=audit(1508884524.050:482): avc:  denied  { getattr } for  pid=3391 comm="httpd" path="/www/html/index.html" dev="dm-0" ino=136145 scontext=system_u:system_r:httpd_t:s0 tcontext=unconfined_u:object_r:default_t:s0 tclass=file
+[root@server1 ~]# ausearch -m avc -c httpd
+
+
+</pre>
+
+</div>
+	
+	
+
+
+<div class="w3-container">
+	<h1><span class="mw-headline" id="kickstart"> Kickstart </h1>	
+<p>
+
+</p>
+
+<pre> 
+
+
+
+
+virt-install -n rhce1 --memory 1024 --vcpus 1 --os-variant rhel7 --disk vol=virspd01/rhce1.img --network network=default --location ftp://192.168.2.20/pub/rhel74 --extra-args ks=ftp://192.168.2.20/pub/ksconfig/rhce1.cfg
+
+
+
+root@mayura:/var/ftp/pub/ksconfig\> cat rhce1.cfg | grep -v ^# |grep -v ^$
+auth --enableshadow --passalgo=sha512
+url --url="ftp://192.168.2.21/pub/rhel74"
+firstboot --enable
+ignoredisk --only-use=vda
+keyboard --vckeymap=us --xlayouts='us'
+lang en_US.UTF-8
+reboot
+network  --bootproto=static --device=eth0 --gateway=192.168.122.1 --ip=192.168.122.10 --netmask=255.255.255.0 --ipv6=auto --activate
+network  --hostname=rhce1.intercloudzone.com
+services --enabled="chronyd"
+rootpw --plaintext oracle
+timezone America/Chicago --isUtc
+bootloader --location=mbr --boot-drive=vda --append=" console=ttyS0,115200,tty0"
+clearpart --all --initlabel --drives=vda
+part /boot --fstype="xfs" --ondisk=vda --size=500
+part pv.1 --fstype="lvmpv" --ondisk=vda --size=8000
+volgroup vgos --pesize=4096 pv.1
+logvol /home  --fstype="xfs" --size=1000 --name=home --vgname=vgos
+logvol /  --fstype="xfs" --size=4000 --name=root --vgname=vgos
+logvol swap  --fstype="swap" --size=500 --name=swap --vgname=vgos
+%packages
+@^minimal
+@core
+chrony
+kexec-tools
+%end
+%addon com_redhat_kdump --enable --reserve-mb='auto'
+%end
+%anaconda
+pwpolicy root --minlen=6 --minquality=1 --notstrict --nochanges --notempty
+pwpolicy user --minlen=6 --minquality=1 --notstrict --nochanges --emptyok
+pwpolicy luks --minlen=6 --minquality=1 --notstrict --nochanges --notempty
+%end
+
+
+root@mayura:/var/ftp/pub/ksconfig\> diff rhce1.cfg rhce2.cfg
+18,19c18,19
+< network  --bootproto=static --device=eth0 --gateway=192.168.122.1 --ip=192.168.122.10 --netmask=255.255.255.0 --ipv6=auto --activate
+< network  --hostname=rhce1.intercloudzone.com
+---
+> network  --bootproto=static --device=eth0 --gateway=192.168.122.1 --ip=192.168.122.20 --netmask=255.255.255.0 --ipv6=auto --activate
+> network  --hostname=rhce2.intercloudzone.com
+
+
+
+--Two interfaces with console
+virt-install --name "server1" --memory=1024 --disk vol=virspd00/server1.img --vcpus=1 --os-variant=rhel7 --os-type=linux --location=ftp://192.168.2.20/pub/rhel7 --network bridge=virbr1 --network bridge=virbr1 -x "ks=ftp://192.168.2.20/pub/ksconfig/server1.cfg console=ttyS0,115200,tty0"
+
+--How to configure 4 interfaces, all on DHCP. Note that there is NO 'network' specific configuration in the ks.cfg.All the IP's were configured as eth0, eth1, eth2, eth3 - with dynamic IP's
+
+virsh # vol-create-as virpool0 server10.img 8G
+Vol server10.img created
+
+virt-install --name=server10 --ram=1024 --vcpus=1 --autostart --os-type=linux --os-variant=rhel7 --location=ftp://192.168.2.11/pub/rhel7 --network bridge=br_fe --network bridge=virbr0 --network bridge=virbr1 --network bridge=virbr2 --disk vol=virpool0/server10.img --extra-args ks=ftp://192.168.2.11/pub/rhel7/ks.cfg
+
+--Configure STATIC ip address for the bridges configured via libvirt and br_fe bridge on the physical net is connected to the netgear router on the 192.168.2.0/24 subnet which is always dhcp.
+
+root@panchajanya:/var/ftp/pub/rhel7\> grep network ks.cfg
+# Use network installation
+network --device=eth0 --bootproto=dhcp --ipv6=auto --activate
+network --device=eth1 --bootproto=dhcp --ipv6=auto --activate
+network --device=eth2 --bootproto=static --ip=192.168.125.10 --netmask=255.255.255.0 --ipv6=auto --activate
+network --device=eth3 --bootproto=static --ip=192.168.130.10 --netmask=255.255.255.0 --ipv6=auto --activate
+network  --hostname=server10
+ 
+
+
+</pre>
+
+</div>
+
+ 	
+	
+<div class="w3-container">
+	<h1><span class="mw-headline" id="dhcp"> DHCP </h1>	
+<p>
+DHCP addresses can be converted to static ones by editing the net files 	
+</p>
+
+<pre> 
+root@panchajanya:/etc/libvirt/qemu\> virsh dumpxml server3  | grep -A1 mac
+&lt;partition&gt;/machine&lt;/partition&gt;
+&lt;/resource&gt;
+--
+    &lt;type arch='x86_64' machine='pc-i440fx-rhel7.0.0'&gt;hvm&lt;/type&gt;
+    &lt;boot dev='hd'/&gt;
+--
+      &lt;mac address='52:54:00:66:0f:5c'/&gt;
+      &lt;source bridge='br_fe'/&gt;
+--
+      &lt;mac address='52:54:00:92:75:f2'/&gt;
+      &lt;source network='default' bridge='virbr0'/&gt;
+--
+      &lt;mac address='52:54:00:d4:23:62'/&gt;
+      &lt;source network='mvirnet0' bridge='mvirbr0'/&gt;
+
+&lt;network&gt;
+  &lt;name&gt;default&lt;/name&gt;
+  &lt;uuid&gt;b4b845ef-b92c-411e-9b62-e4bec3160a21&lt;/uuid&gt;
+  &lt;forward mode='nat'/&gt;
+  &lt;bridge name='virbr0' stp='on' delay='0'/&gt;
+  &lt;mac address='52:54:00:5c:45:35'/&gt;
+  &lt;ip address='192.168.122.1' netmask='255.255.255.0'&gt;
+    &lt;dhcp&gt;
+      &lt;range start='192.168.122.2' end='192.168.122.254'/&gt;
+      &lt;host mac='52:54:00:66:ab:13' name='server2' ip='192.168.122.3'/&gt;
+      &lt;host mac='52:54:00:92:75:f2' name='server3' ip='192.168.122.4'/&gt;
+    &lt;/dhcp&gt;
+  &lt;/ip&gt;
+&lt;/network&gt;
+
+
+
+root@panchajanya:/etc/libvirt/qemu\> virsh net-destroy mvirnet0
+Network mvirnet0 destroyed
+
+root@panchajanya:/etc/libvirt/qemu\> virsh net-destroy default
+Network default destroyed
+
+root@panchajanya:/etc/libvirt/qemu\> virsh shutdown server3
+Domain server3 is being shutdown
+
+root@panchajanya:/etc/libvirt/qemu\> virsh net-start default
+Network default started
+
+root@panchajanya:/etc/libvirt/qemu\> virsh net-start mvirnet0
+Network mvirnet0 started
+
+        
+&lt;network&gt;
+  &lt;name&gt;mvirnet0&lt;/name&gt;
+  &lt;uuid&gt;f8d83856-2c18-4688-a128-679bbf9937ce&lt;/uuid&gt;
+  &lt;forward mode='nat'&gt;
+    &lt;nat&gt;
+      &lt;port start='1024' end='65535'/&gt;
+    &lt;/nat&gt;
+  &lt;/forward&gt;
+  &lt;bridge name='mvirbr0' stp='on' delay='0'/&gt;
+  &lt;mac address='52:54:00:fd:63:7f'/&gt;
+  &lt;ip address='192.168.123.1' netmask='255.255.255.0'&gt;
+    &lt;dhcp&gt;
+      &lt;range start='192.168.123.2' end='192.168.123.254'/&gt;
+      &lt;host mac='52:54:00:d4:23:62' name='server3' ip='192.168.123.4'/&gt;
+    &lt;/dhcp&gt;
+  &lt;/ip&gt;
+&lt;/network&gt;
+
+=> Create two VM's with two different networks.
+
+virsh # vol-create-as vspd2 lab125a.img 13G
+virsh # vol-create-as vspd2 lab130a.img 13G
+
+
+
+virt-install --name lab125a --memory 1024 --vcpus=1 --disk vol=vspd2/lab125a.img --os-type=linux --os-variant=rhel7 --location=ftp://192.168.2.11/pub/rhel7 --network bridge=br_fe --network network=virnet1 --extra-args ks=ftp://192.168.2.11/pub/ksconfig/lab125a.cfg
+
+virt-install --name lab130a --memory 1024 --vcpus=1 --disk vol=vspd2/lab130a.img --os-type=linux --os-variant=rhel7 --location=ftp://192.168.2.11/pub/rhel7 --network bridge=br_fe --network network=virnet2 --extra-args ks=ftp://192.168.2.11/pub/ksconfig/lab130a.cfg
+
+</pre>
+
+</div>
+	
+	
+<div class="w3-container">
+	<h1><span class="mw-headline" id="interfaces"> Interfaces </h1>
+	
+<p>
+
+</p>
+
+	
+<pre> 
+[root@server ~]# nmcli d show eth3
+GENERAL.DEVICE:                         eth3
+GENERAL.TYPE:                           ethernet
+GENERAL.HWADDR:                         52:54:00:82:2F:44			==> MAC we are interested in..
+....
+
+virsh # domiflist server
+Interface  Type       Source     Model       MAC
+-------------------------------------------------------
+vnet0      bridge     br_fe      virtio      52:54:00:2c:19:87
+vnet1      network    vnetnat    virtio      52:54:00:4b:a2:98
+vnet2      network    vnetrou    virtio      52:54:00:f1:15:ef
+vnet3      network    vnetiso    virtio      52:54:00:82:2f:44
+
+=> From server
+
+13: vbriso: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP qlen 1000
+    link/ether 52:54:00:ec:60:6e brd ff:ff:ff:ff:ff:ff
+    inet 192.168.132.1/24 brd 192.168.132.255 scope global vbriso
+       valid_lft forever preferred_lft forever
+
+14: vbriso-nic: <BROADCAST,MULTICAST> mtu 1500 qdisc pfifo_fast master vbriso state DOWN qlen 1000
+    link/ether 52:54:00:ec:60:6e brd ff:ff:ff:ff:ff:ff
+
+
+[root@server network-scripts]# cat ifcfg-eth3
+# Generated by parse-kickstart
+UUID=a9dac657-c4ff-4296-a570-65bf15e54da8
+IPV6_AUTOCONF=yes
+BOOTPROTO=none
+DEVICE=eth3
+ONBOOT=yes
+IPV6INIT=yes
+TYPE=Ethernet
+IPADDR=192.168.132.50
+PREFIX=24
+DEFROUTE=yes
+IPV4_FAILURE_FATAL=no
+IPV6_DEFROUTE=yes
+IPV6_PEERDNS=yes
+IPV6_PEERROUTES=yes
+IPV6_FAILURE_FATAL=no
+NAME="System eth3"
+
+=> Detach and attach interfaces
+
+virsh # detach-interface --domain server --type network --mac 52:54:00:82:2f:44 --persistent
+Interface detached successfully
+
+root@panchajanya:~\> virsh dumpxml server | egrep 'source network'
+      <source network='vnetnat' bridge='vbrnat'/>
+      <source network='vnetrou' bridge='vbrrou'/>
+
+virsh # attach-interface --domain server --type network --source vnetiso --model virtio --mac 52:54:00:82:2f:44 --persistent --live
+Interface attached successfully
+
+
+root@panchajanya:~\> virsh dumpxml server | egrep 'source network'
+      <source network='vnetnat' bridge='vbrnat'/>
+      <source network='vnetrou' bridge='vbrrou'/>
+      <source network='vnetiso' bridge='vbriso'/>
+
+
+#Remove file ifcfg-eth3, once interface is added it will show up and running on the server 
+
+# Recreate the file via nmcli
+
+[root@server network-scripts]# nmcli con add type ethernet con-name eth3 ifname eth3
+Connection 'eth3' (116655f8-71c3-4063-9a11-1fbafef00296) successfully added.
+
+
+[root@server network-scripts]# ls -l ifcfg-eth3
+-rw-r--r--. 1 root root 274 Aug  7 16:53 ifcfg-eth3
+
+[root@server network-scripts]# nmcli con delete eth3
+Connection 'eth3' (f816ae72-a947-4eb2-be7f-f434a121f18f) successfully deleted.
+
+
+[root@server network-scripts]# nmcli con add type ethernet con-name eth3 ifname eth3 ip4 192.168.132.50/24
+Connection 'eth3' (ce3bf3c8-f3b2-42d0-ab94-7c8771d335bd) successfully added.
+
+[root@server network-scripts]# cat ifcfg-eth3
+TYPE=Ethernet
+BOOTPROTO=none
+IPADDR=192.168.132.50
+PREFIX=24
+DEFROUTE=yes
+IPV4_FAILURE_FATAL=no
+IPV6INIT=yes
+IPV6_AUTOCONF=yes
+IPV6_DEFROUTE=yes
+IPV6_PEERDNS=yes
+IPV6_PEERROUTES=yes
+IPV6_FAILURE_FATAL=no
+NAME=eth3
+UUID=ce3bf3c8-f3b2-42d0-ab94-7c8771d335bd
+DEVICE=eth3
+ONBOOT=yes
+
+
+[root@server network-scripts]# nmcli con add type ethernet con-name eth3 ifname eth3
+Connection 'eth3' (f816ae72-a947-4eb2-be7f-f434a121f18f) successfully added.
+
+[root@server network-scripts]# nmcli con load $(pwd)/ifcfg-eth3
+ 
+[root@server network-scripts]# nmcli general logging
+LEVEL  DOMAINS INFO   PLATFORM,RFKILL,ETHER,WIFI,BT,MB,DHCP4,DHCP6,PPP,IP4,IP6,AUTOIP4,DNS,VPN,SHARING,
+SUPPLICANT,AGENTS, SETTINGS,SUSPEND,CORE,DEVICE,OLPC,WIMAX,INFINIBAND,FIREWALL,ADSL,
+BOND,VLAN,BRIDGE,TEAM,CONCHECK,DCB,DISPATCH
+
+
+[root@server network-scripts]# nmcli con delete a9dac657-c4ff-4296-a570-65bf15e54da8
+Connection 'System eth3' (a9dac657-c4ff-4296-a570-65bf15e54da8) successfully deleted.
+
+[root@server network-scripts]# nmcli dev
+DEVICE  TYPE      STATE         CONNECTION
+eth0    ethernet  connected     System eth0
+eth1    ethernet  connected     System eth1
+eth2    ethernet  connected     System eth2
+eth3    ethernet  disconnected  --
+
+
+
+# Delete the interface..
+[root@server network-scripts]# nmcli con down a9dac657-c4ff-4296-a570-65bf15e54da8
+ 
+[root@server network-scripts]# nmcli con delete a9dac657-c4ff-4296-a570-65bf15e54da8
+
+
+# Re-added the interface as eth4 instead of eth3, hence removing it again.
+
+virsh # attach-interface --domain server --type network --source vnetnat --model virtio --mac 52:54:00:82:2f:44 --persistent --live
+Interface attached successfully
+
+7: eth3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 52:54:00:82:2f:44 brd ff:ff:ff:ff:ff:ff
+8: eth4: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 52:54:00:82:2f:44 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.134.188/24 brd 192.168.134.255 scope global dynamic eth4
+       valid_lft 3471sec preferred_lft 3471sec
+    inet6 fe80::5054:ff:fe82:2f44/64 scope link
+       valid_lft forever preferred_lft forever
+
+
+virsh # detach-interface --domain server --type network --mac 52:54:00:82:2f:44 --persistent
+error: Domain has multiple interfaces matching MAC address 52:54:00:82:2f:44. You must use detach-device and specify the device pci address to remove it.
+
+#if two devices are mapped with same mac, to remove 
+
+
+    <interface type='network'>
+      <mac address='52:54:00:82:2f:44'/>
+      <source network='vnetnat' bridge='vbrnat'/>
+      <target dev='eth4'/>
+      <model type='virtio'/>
+      <alias name='net6'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x13' function='0x0'/>
+    </interface>
+
+
+root@panchajanya:~\> virsh dumpxml server | egrep -A7  "interface type"
+
+
+
+virsh # attach-interface --domain server --type network --source vnetnat --model virtio --mac 52:54:00:82:2f:44 --persistent --live eth3
+Interface attached successfully
+
+virsh # attach-interface --domain server --type network --source vnetnat --model virtio --mac 52:54:00:82:2f:44 --persistent --live eth4
+Interface attached successfully
+
+
+virsh dumpxml server | egrep -A7  "interface type"
+
+
+Note: Always do persistent
+
+root@panchajanya:~\> virsh detach-device server remove.xml --persistent
+Device detached successfully
+
+root@panchajanya:~\> cat remove.xml
+<interface type='network'>
+      <mac address='52:54:00:82:2f:44'/>
+      <source network='vnetnat' bridge='vbrnat'/>
+      <target dev='eth4'/>
+      <model type='virtio'/>
+      <alias name='net6'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x13' function='0x0'/>
+    </interface>
+
+
+#Change it to a different network 
+virsh # attach-interface --domain server --type network --source vnetnat --model virtio --mac 52:54:00:82:2f:44 --persistent --live eth3
+Interface attached successfully
+
+
+[root@server network-scripts]# nmcli con show
+NAME                UUID                                  TYPE            DEVICE
+System eth1         dbfe8c4c-abc6-4a98-b953-d8475dd2217d  802-3-ethernet  eth1
+System eth2         260c99eb-2a00-44b5-a3d6-e731d936a3b4  802-3-ethernet  eth2
+Wired connection 1  2463dcd8-dca0-478e-9843-81c23a2de560  802-3-ethernet  eth3
+System eth0         b6870dc4-b183-4bdd-b310-6d789c3e9ce0  802-3-ethernet  eth0
+
+
+
+[root@server network-scripts]# nmcli dev connect eth3
+Device 'eth3' successfully activated with '2463dcd8-dca0-478e-9843-81c23a2de560'.
+
+
+=> vnet3 is usinv vnetiso , for bonding experiment switch it to vnetnat prior
+
+
+virsh # detach-interface --persistent server --mac 52:54:00:82:2f:44 --type network
+
+virsh # attach-interface server --source vnetnat  --type network --target vnet3 --mac 52:54:00:82:2f:44 --model virtio --persistent --live
+Interface attached successfully
+
+
+
+=> Change the IP address to static : 192.168.134.51
+
+3: eth1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 52:54:00:4b:a2:98 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.134.50/24 brd 192.168.134.255 scope global eth1
+       valid_lft forever preferred_lft forever
+
+
+7: eth3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 52:54:00:82:2f:44 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.134.188/24 brd 192.168.134.255 scope global dynamic eth3
+
+
+=> Option-1
+	root@panchajanya:~\> virsh net-edit vnetnat, append below line
+		<host mac='52:54:00:82:2f:44' ip='192.168.134.51' />
+
+	Network vnetnat XML configuration not changed.
+
+=> Option-2
+
+root@panchajanya:~\> virsh net-update vnetnat add ip-dhcp-host '<host mac="52:54:00:82:2f:44" ip="192.168.134.51" />' --live --config
+Updated network vnetnat persistent config and live state
+
+
+root@panchajanya:~\> virsh net-dumpxml vnetnat
+<network>
+  <name>vnetnat</name>
+  <uuid>f1ab3ba4-18a7-412f-8904-daa4e1d65526</uuid>
+  <forward mode='nat'>
+    <nat>
+      <port start='1024' end='65535'/>
+    </nat>
+  </forward>
+  <bridge name='vbrnat' stp='on' delay='0'/>
+  <mac address='52:54:00:a0:e1:86'/>
+  <ip address='192.168.134.1' netmask='255.255.255.0'>
+    <dhcp>
+      <range start='192.168.134.2' end='192.168.134.254'/>
+      <host mac='52:54:00:82:2f:44' ip='192.168.134.51'/>
+    </dhcp>
+  </ip>
+</network>
+
+
+#Ways to find the IP address of hte VM running
+
+
+virsh # domiflist lab11
+Interface  Type       Source     Model       MAC
+-------------------------------------------------------
+vnet4      bridge     br_fe      virtio      52:54:00:86:73:f2
+vnet5      network    vnetnat    virtio      52:54:00:57:e4:ff
+vnet6      network    vnetrou    virtio      52:54:00:a0:8e:2e
+vnet7      network    vnetiso    virtio      52:54:00:ba:e7:ce
+
+
+domifaddr lab11 - isn't returning anything (BUG ) - so going for fallback option
+
+# Try to get access to console 
+virsh console lab11 
+
+#Doesn't work until the console access is enabled. Enable via kpartx
+
+
+root@panchajanya:~\> virsh domblklist lab11
+Target     Source
+------------------------------------------------
+vda        /data/sdd01/vspd1/lab11.img
+
+root@panchajanya:~\> kpartx -av /data/sdd01/vspd1/lab11.img
+add map loop0p1 (253:14): 0 1048576 linear /dev/loop0 2048
+add map loop0p2 (253:15): 0 20971520 linear /dev/loop0 1050624
+add map loop0p3 (253:16): 0 1048576 linear /dev/loop0 22022144
+
+
+root@panchajanya:~\> mount /dev/mapper/loop0p1 /mnt/
+root@panchajanya:~\> cd /mnt/
+root@panchajanya:/mnt\> ls
+config-3.10.0-327.el7.x86_64                             initrd-plymouth.img
+grub                                                     symvers-3.10.0-327.el7.x86_64.gz
+grub2                                                    System.map-3.10.0-327.el7.x86_64
+initramfs-0-rescue-d88dc0e9818b405383649087000b224a.img  vmlinuz-0-rescue-d88dc0e9818b405383649087000b224a
+initramfs-3.10.0-327.el7.x86_64.img                      vmlinuz-3.10.0-327.el7.x86_64
+initramfs-3.10.0-327.el7.x86_64kdump.img
+
+root@panchajanya:/mnt\> vi grub2/grub.cfg
+
+root@panchajanya:/mnt\> grep console grub2/grub.cfg
+terminal_output console
+	linux16 /vmlinuz-3.10.0-327.el7.x86_64 root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet LANG=en_US.UTF-8 console=ttyS0
+
+umount /dev/mapper/loop0p1
+kpartx -dv /data/sdd01/vspd1/lab11.img
+
+
+
+#Option 2, once logged into the server
+
+--Example-1: Update all kernels with same arguments
+grubby --update-kernel=ALL --args=console=ttyS0,115200
+
+--Example-2: Remove args,add args - update kernel
+grubby --remove-args="rhgb quiet" --args=console=ttyS0,115200 --update-kernel /boot/vmlinuz-4.2.0-1.fc23.x86_64
+
+
+[root@lab11 ~]# grubby --help |grep kernel |grep update
+                                      new arguments for kernel being updated
+                                      kernel being updated
+  --update-kernel=kernel-path         updated information for the specified
+
+
+[root@lab11 ~]# grubby --default-kernel
+/boot/vmlinuz-3.10.0-327.el7.x86_64
+[root@lab11 ~]# grubby --default-index
+0
+[root@lab11 ~]# grubby --info=ALL
+index=0
+kernel=/boot/vmlinuz-3.10.0-327.el7.x86_64
+args="ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet LANG=en_US.UTF-8 console=ttyS0"
+root=/dev/mapper/vgos-lvroot
+initrd=/boot/initramfs-3.10.0-327.el7.x86_64.img
+title=CentOS Linux (3.10.0-327.el7.x86_64) 7 (Core)
+index=1
+kernel=/boot/vmlinuz-0-rescue-d88dc0e9818b405383649087000b224a
+args="ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet"
+root=/dev/mapper/vgos-lvroot
+initrd=/boot/initramfs-0-rescue-d88dc0e9818b405383649087000b224a.img
+title=CentOS Linux (0-rescue-d88dc0e9818b405383649087000b224a) 7 (Core)
+index=2
+non linux entry
+
+
+[root@lab11 ~]# grep linux16 /etc/grub2.cfg
+	linux16 /vmlinuz-3.10.0-327.el7.x86_64 root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet LANG=en_US.UTF-8 console=ttyS0
+	linux16 /vmlinuz-0-rescue-d88dc0e9818b405383649087000b224a root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet
+
+[root@lab11 ~]# grubby --remove-args="console=ttys0" --update-kernel=/boot/vmlinuz-3.10.0-327.el7.x86_64
+[root@lab11 ~]# grep linux16 /etc/grub2.cfg
+	linux16 /vmlinuz-3.10.0-327.el7.x86_64 root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet LANG=en_US.UTF-8
+	linux16 /vmlinuz-0-rescue-d88dc0e9818b405383649087000b224a root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet
+
+[root@lab11 ~]# grubby --update-kernel=/boot/vmlinuz-3.10.0-327.el7.x86_64 --args="console=ttyS0 console=tty0 console=ttyS0,115200"
+[root@lab11 ~]# grep linux16 /boot/grub2/grub.cfg
+	linux16 /vmlinuz-3.10.0-327.el7.x86_64 root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet LANG=en_US.UTF-8 console=ttyS0 console=tty0 console=ttyS0,115200
+	linux16 /vmlinuz-0-rescue-d88dc0e9818b405383649087000b224a root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet
+
+#Option-3
+
+[root@lab11 default]# grep CMD grub
+GRUB_CMDLINE_LINUX="crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet console=ttyS0 console=tty0 console=ttyS0,115200 "
+
+[root@lab11 default]# grep linux16 /boot/grub2/grub.cfg
+	linux16 /vmlinuz-3.10.0-327.el7.x86_64 root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet
+	linux16 /vmlinuz-0-rescue-d88dc0e9818b405383649087000b224a root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet
+
+[root@lab11 default]# grub2-mkconfig -o /boot/grub2/grub.cfg
+Generating grub configuration file ...
+Found linux image: /boot/vmlinuz-3.10.0-327.el7.x86_64
+Found initrd image: /boot/initramfs-3.10.0-327.el7.x86_64.img
+Found linux image: /boot/vmlinuz-0-rescue-d88dc0e9818b405383649087000b224a
+Found initrd image: /boot/initramfs-0-rescue-d88dc0e9818b405383649087000b224a.img
+done
+
+[root@lab11 default]# grep linux16 /boot/grub2/grub.cfg
+	linux16 /vmlinuz-3.10.0-327.el7.x86_64 root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet console=ttyS0 console=tty0 console=ttyS0,115200
+	linux16 /vmlinuz-0-rescue-d88dc0e9818b405383649087000b224a root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet console=ttyS0 console=tty0 console=ttyS0,115200	
+
+</pre>
+
+</div>
+	
+	
+
+
+<div class="w3-container">
+	<h1><span class="mw-headline" id="Storage"> Storage </h1>	
+<p>
+
+</p>
+
+<pre> 
+
+
+--Create Directory Pool 
+root@mayura:/var/ftp/pub/ksconfig\> virsh pool-define-as --name="vpoolsdd02" --type=dir --target=/data/sdd02
+Pool vpoolsdd02 defined
+
+root@mayura:/var/ftp/pub/ksconfig\> virsh pool-start vpoolsdd02
+Pool vpoolsdd02 started
+
+root@mayura:/var/ftp/pub/ksconfig\> virsh pool-list --all
+ Name                 State      Autostart
+-------------------------------------------
+ default              active     yes
+ u01                  inactive   yes
+ virpool0             active     yes
+ virpool1             active     yes
+ vpoolsdd02           active     no
+
+root@mayura:/var/ftp/pub/ksconfig\> virsh pool-autostart vpoolsdd02
+Pool vpoolsdd02 marked as autostarted
+                                                                            
+root@mayura:/var/ftp/pub/ksconfig\> virsh vol-create-as vpoolsdd02 rhce_hdd0.img 10G
+Vol rhce_hdd0.img created
+                                                                                                             
+
+root@mayura:/var/ftp/pub/ksconfig\> virsh vol-create-as vpoolsdd02 rhce_hdd0.img 10G
+Vol rhce_hdd0.img created
+
+root@mayura:/var/ftp/pub/ksconfig\> virt-install --name=rhce --ram=1024 --vcpus=1 --autostart --os-type=linux --os-variant=rhel7 --location=ftp://192.168.2.21/pub/rhel7 --network bridge=br_fe --network bridge=virbr0 --network bridge=virbr1 --network bridge=virbr2 --disk vol=vpoolsdd02/rhce_hdd0.img --extra-args ks=ftp://192.168.2.21/pub/ksconfig/rhce.cfg
+WARNING  Graphics requested but DISPLAY is not set. Not running virt-viewer.
+WARNING  No console to launch for the guest, defaulting to --wait -1
+
+
+                  
+virsh # pool-define-as --name="virpool0" --type=dir --target=/data/sdd00/
+Pool virpool0 defined
+
+virsh # pool-start virpool0
+Pool virpool0 started
+
+virsh # pool-dumpxml virpool0
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;pool type=&quot;dir&quot;&gt;
+   &lt;name&gt;virpool0&lt;/name&gt;
+   &lt;uuid&gt;7da5a3d1-1b95-4ec2-9585-ebcfa22deaac&lt;/uuid&gt;
+   &lt;capacity unit=&quot;bytes&quot;&gt;52710309888&lt;/capacity&gt;
+   &lt;allocation unit=&quot;bytes&quot;&gt;54550528&lt;/allocation&gt;
+   &lt;available unit=&quot;bytes&quot;&gt;52655759360&lt;/available&gt;
+   &lt;source /&gt;
+   &lt;target&gt;
+      &lt;path&gt;/data/sdd00&lt;/path&gt;
+      &lt;permissions&gt;
+         &lt;mode&gt;0755&lt;/mode&gt;
+         &lt;owner&gt;0&lt;/owner&gt;
+         &lt;group&gt;0&lt;/group&gt;
+         &lt;label&gt;system_u:object_r:unlabeled_t:s0&lt;/label&gt;
+      &lt;/permissions&gt;
+   &lt;/target&gt;
+&lt;/pool&gt;
+
+--Create Volume Group pool
+
+virsh # pool-define-as --name virpool50 --type logical --target /dev/vgdatae --source-name vgdatae --source-format lvm2
+Pool virpool50 defined
+
+virsh # pool-start virpool50
+Pool virpool50 started
+
+virsh # vol-create-as --pool virpool50 --name lvdatae00 --capacity 25G --allocation 10G
+Vol lvdatae00 created
+
+root@panchajanya:/etc/libvirt/storage\> cat virpool50.xml
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;pool type=&quot;dir&quot;&gt;
+   &lt;name&gt;virpool0&lt;/name&gt;
+   &lt;uuid&gt;7da5a3d1-1b95-4ec2-9585-ebcfa22deaac&lt;/uuid&gt;
+   &lt;capacity unit=&quot;bytes&quot;&gt;52710309888&lt;/capacity&gt;
+   &lt;allocation unit=&quot;bytes&quot;&gt;54550528&lt;/allocation&gt;
+   &lt;available unit=&quot;bytes&quot;&gt;52655759360&lt;/available&gt;
+   &lt;source /&gt;
+   &lt;target&gt;
+      &lt;path&gt;/data/sdd00&lt;/path&gt;
+      &lt;permissions&gt;
+         &lt;mode&gt;0755&lt;/mode&gt;
+         &lt;owner&gt;0&lt;/owner&gt;
+         &lt;group&gt;0&lt;/group&gt;
+         &lt;label&gt;system_u:object_r:unlabeled_t:s0&lt;/label&gt;
+      &lt;/permissions&gt;
+   &lt;/target&gt;
+&lt;/pool&gt;
+
+
+virsh # vol-create-as --pool mdatad03 --name lvdatad04 --capacity 9G --allocation 1G
+Vol lvdatad04 created
+
+root@panchajanya:/etc/libvirt/storage\> lvs
+LV        VG      Attr       LSize  Pool Origin              Data%  Meta%  Move Log Cpy%Sync Convert
+..
+lvdatad02 vgdatad -wi-ao---- 50.00g
+lvdatad03 vgdatad -wi-ao---- 50.00g
+lvdatae00 vgdatae swi-a-s--- 10.00g      [lvdatae00_vorigin] 0.00
+
+virsh # vol-dumpxml --pool virpool50 lvdatae00
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;pool type=&quot;dir&quot;&gt;
+   &lt;name&gt;virpool0&lt;/name&gt;
+   &lt;uuid&gt;7da5a3d1-1b95-4ec2-9585-ebcfa22deaac&lt;/uuid&gt;
+   &lt;capacity unit=&quot;bytes&quot;&gt;52710309888&lt;/capacity&gt;
+   &lt;allocation unit=&quot;bytes&quot;&gt;54550528&lt;/allocation&gt;
+   &lt;available unit=&quot;bytes&quot;&gt;52655759360&lt;/available&gt;
+   &lt;source /&gt;
+   &lt;target&gt;
+      &lt;path&gt;/data/sdd00&lt;/path&gt;
+      &lt;permissions&gt;
+         &lt;mode&gt;0755&lt;/mode&gt;
+         &lt;owner&gt;0&lt;/owner&gt;
+         &lt;group&gt;0&lt;/group&gt;
+         &lt;label&gt;system_u:object_r:unlabeled_t:s0&lt;/label&gt;
+      &lt;/permissions&gt;
+   &lt;/target&gt;
+&lt;/pool&gt;
+
+
+--
+root@mayura:/data/sdd00\> virsh attach-disk server10 --source /data/sdd00/server10-sdb.img --target vdb --persistent --live
+Disk attached successfully
+
+
+
+</pre>
+
+</div>
+<div class="w3-container">
+	<h1><span class="mw-headline" id="networking"> Networking </h1>
+<p>
+
+	   
+</p>
+
+
+<pre> 
+
+--Add a virtual network interface
+
+virsh # net-define /data/sdc01/rhsa/stage/virnet1.xml
+Network virnet1 defined from /data/sdc01/rhsa/stage/virnet1.xml
+
+virsh # net-list --all
+Name                 State      Autostart     Persistent
+----------------------------------------------------------
+default              active     yes           yes
+virnet1              inactive   no            yes
+
+virsh # net-start virnet1
+Network virnet1 started
+
+virsh # net-define /data/sdc01/rhsa/stage/virnet2.xml
+Network virnet2 defined from /data/sdc01/rhsa/stage/virnet2.xml
+
+virsh # net-start virnet2
+Network virnet2 started
+
+virsh # net-list --all
+Name                 State      Autostart     Persistent
+----------------------------------------------------------
+default              active     yes           yes
+virnet1              active     no            yes
+virnet2              active     no            yes
+
+
+root@panchajanya:/data/sdc01/rhsa/stage\> cat virnet1.xml
+&lt;network&gt;
+	&lt;name&gt;virnet1&lt;/name&gt;
+	&lt;forward mode=&apos;nat&apos;&gt;
+		&lt;nat&gt;&lt;port start=&apos;1024&apos; end=&apos;65535&apos;/&gt;&lt;/nat&gt;
+	&lt;/forward&gt;
+	&lt;bridge name=&apos;virbr1&apos; stp=&apos;on&apos; delay=&apos;0&apos;/&gt;
+	&lt;ip address=&apos;192.168.125.1&apos; netmask=&apos;255.255.255.0&apos;&gt;
+		&lt;dhcp&gt; &lt;range start=&apos;192.168.125.2&apos; end=&apos;192.168.125.254&apos;/&gt;&lt;/dhcp&gt;
+	&lt;/ip&gt;
+&lt;/network&gt;
+
+root@panchajanya:/data/sdc01/rhsa/stage\> cat virnet2.xml
+&lt;network&gt;
+	&lt;name&gt;virnet2&lt;/name&gt;
+	&lt;forward mode=&apos;nat&apos;&gt;
+		&lt;nat&gt;&lt;port start=&apos;1024&apos; end=&apos;65535&apos;/&gt;&lt;/nat&gt;
+	&lt;/forward&gt;
+	&lt;bridge name=&apos;virbr2&apos; stp=&apos;on&apos; delay=&apos;0&apos;/&gt;
+	&lt;ip address=&apos;192.168.130.1&apos; netmask=&apos;255.255.255.0&apos;&gt;
+		&lt;dhcp&gt; &lt;range start=&apos;192.168.130.2&apos; end=&apos;192.168.130.254&apos;/&gt;&lt;/dhcp&gt;
+	&lt;/ip&gt;
+&lt;/network&gt;
+
+root@panchajanya:/data/sdc01/rhsa/stage\> brctl show
+bridge name	bridge id		STP enabled	interfaces
+br_fe		8000.001fbc020167	no		enp8s0
+virbr0		8000.5254005c4535	yes		virbr0-nic
+virbr1		8000.525400d1bdd6	yes		virbr1-nic
+virbr2		8000.525400b5c764	yes		virbr2-nic
+
+--Update network (live)
+
+https://wiki.libvirt.org/page/Networking#NAT_forwarding_.28aka_.22virtual_networks.22.29
+net-update live
+
+
+#Before
+
+&lt;network&gt;
+  &lt;name&gt;virnet2&lt;/name&gt;
+  &lt;uuid&gt;3faf7664-46f9-49fa-938c-654d257dfe44&lt;/uuid&gt;
+  &lt;forward mode=&apos;nat&apos;&gt;
+    &lt;nat&gt;
+      &lt;port start=&apos;1024&apos; end=&apos;65535&apos;/&gt;
+    &lt;/nat&gt;
+  &lt;/forward&gt;
+  &lt;bridge name=&apos;virbr2&apos; stp=&apos;on&apos; delay=&apos;0&apos;/&gt;
+  &lt;mac address=&apos;52:54:00:10:66:8e&apos;/&gt;
+  &lt;ip address=&apos;192.168.230.1&apos; netmask=&apos;255.255.255.0&apos;&gt;
+    &lt;dhcp&gt;
+      &lt;range start=&apos;192.168.230.2&apos; end=&apos;192.168.230.254&apos;/&gt;
+    &lt;/dhcp&gt;
+  &lt;/ip&gt;
+&lt;/network&gt;
+
+
+
+#Update live
+virsh net-update virnet2 add ip-dhcp-host "<host mac='52:54:00:5c:dc:c3' name='server10' ip='192.168.230.11' />" --live --config
+
+#After
+&lt;network&gt;
+  &lt;name&gt;virnet2&lt;/name&gt;
+  &lt;uuid&gt;3faf7664-46f9-49fa-938c-654d257dfe44&lt;/uuid&gt;
+  &lt;forward mode=&apos;nat&apos;&gt;
+    &lt;nat&gt;
+      &lt;port start=&apos;1024&apos; end=&apos;65535&apos;/&gt;
+    &lt;/nat&gt;
+  &lt;/forward&gt;
+  &lt;bridge name=&apos;virbr2&apos; stp=&apos;on&apos; delay=&apos;0&apos;/&gt;
+  &lt;mac address=&apos;52:54:00:10:66:8e&apos;/&gt;
+  &lt;ip address=&apos;192.168.230.1&apos; netmask=&apos;255.255.255.0&apos;&gt;
+    &lt;dhcp&gt;
+      &lt;range start=&apos;192.168.230.2&apos; end=&apos;192.168.230.254&apos;/&gt;
+      &lt;host mac=&apos;52:54:00:5c:dc:c3&apos; name=&apos;server10&apos; ip=&apos;192.168.230.11&apos;/&gt;
+    &lt;/dhcp&gt;
+  &lt;/ip&gt;
+&lt;/network&gt;
+
+
+root@mayura:~\> virsh net-update virnet2 delete ip-dhcp-host "<host mac='52:54:00:5c:dc:c3' name='server10' ip='192.168.230.11' />" --live --config
+Updated network virnet2 persistent config and live state
+
+
+virsh # attach-interface --domain lab125a --type network --source vnetrou --model virtio --persistent --live
+Interface attached successfully
+
+
+
+[root@lab125a network-scripts]# nmcli con add type ethernet con-name eth2 ifname eth2 ip4 192.168.133.10/24
+Connection 'eth2' (95fc4e46-552b-44da-941a-74b6f9c6b33b) successfully added.
+
+
+
+[root@lab125a network-scripts]# ls -ltr ifcfg-eth2
+-rw-r--r--. 1 root root 279 Aug 21 10:05 ifcfg-eth2
+[root@lab125a network-scripts]# cat ifcfg-eth2
+TYPE=Ethernet
+BOOTPROTO=none
+IPADDR=192.168.133.10
+PREFIX=24
+DEFROUTE=yes
+IPV4_FAILURE_FATAL=no
+IPV6INIT=yes
+IPV6_AUTOCONF=yes
+IPV6_DEFROUTE=yes
+IPV6_PEERDNS=yes
+IPV6_PEERROUTES=yes
+IPV6_FAILURE_FATAL=no
+NAME=eth2
+UUID=95fc4e46-552b-44da-941a-74b6f9c6b33b
+DEVICE=eth2
+ONBOOT=yes
+
+
+[root@lab125a network-scripts]# ip addr show eth2
+4: eth2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 52:54:00:35:b1:cd brd ff:ff:ff:ff:ff:ff
+    inet 192.168.133.227/24 brd 192.168.133.255 scope global dynamic eth2
+
+    [root@lab125a network-scripts]# nmcli con show
+NAME                UUID                                  TYPE            DEVICE
+Wired connection 1  9ca6cb23-dcf5-44b6-a93d-70040727aa6c  802-3-ethernet  eth2
+System eth0         8ee556e1-20f7-4637-8e2e-1eeb03010504  802-3-ethernet  eth0
+System eth1         f204d5f4-a485-4b9e-822d-d596ce99940d  802-3-ethernet  eth1
+eth2                95fc4e46-552b-44da-941a-74b6f9c6b33b  802-3-ethernet  --
+
+
+virsh net-update vnetrou add ip-dhcp-host "<host mac='52:54:00:35:b1:cd' name='lab125a' ip='192.168.133.10' /> " --live --config
+
+
+--Exammple (Decoding/Escaping XML for display)
+root@mayura:/data/sdd02\> perl -p -e 'BEGIN { use CGI qw(escapeHTML); } $_ = escapeHTML($_); ' virnet3.xml
+&lt;network&gt;
+&lt;name&gt;virnet3&lt;/name&gt;
+&lt;bridge name=&quot;virbr3&quot;&gt;&lt;/bridge&gt;
+&lt;forward mode=&quot;nat&quot;&gt;&lt;/forward&gt;
+&lt;ip address=&quot;192.168.125.1&quot; netmask=&quot;255.255.255.0&quot;&gt;
+  &lt;dhcp&gt;
+    &lt;range start=&quot;192.168.125.10&quot; end=&quot;192.168.125.254&quot;&gt;&lt;/range&gt;
+  &lt;/dhcp&gt;
+&lt;/ip&gt;
+&lt;/network&gt;
+
+
+
+--Example: attacing network interface
+
+virsh # attach-interface --domain lab130a --type network --source vnetrou --model virtio --persistent --config
+Interface attached successfully
+
+[root@lab130a network-scripts]# ip addr show eth2
+4: eth2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 52:54:00:40:5d:67 brd ff:ff:ff:ff:ff:ff
+		
+root@panchajanya:~\> virsh dumpxml lab130a | xpath "//interface[2]"
+Found 1 nodes:
+-- NODE --
+<interface type="network">
+      <mac address="52:54:00:77:03:6f" />
+      <source network="virnet2" bridge="virbr2" />
+      <target dev="vnet4" />
+      <model type="virtio" />
+      <alias name="net1" />
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x04" function="0x0" />
+    </interface>
+
+virsh # net-update vnetrou add ip-dhcp-host "<host name='lab130a' mac='52:54:00:77:03:6f' ip='192.168.133.11' />"  --live --config
+Updated network vnetrou persistent config and live state
+
+virsh # net-dumpxml vnetrou
+<network>
+  <name>vnetrou</name>
+  <uuid>c51060e5-77cc-4756-8d5c-01a041b5c52c</uuid>
+  <forward mode='route'/>
+  <bridge name='vbrrou' stp='on' delay='0'/>
+  <mac address='52:54:00:47:0a:a3'/>
+  <ip address='192.168.133.1' netmask='255.255.255.0'>
+    <dhcp>
+      <range start='192.168.133.2' end='192.168.133.254'/>
+      <host mac='52:54:00:35:b1:cd' name='lab125a' ip='192.168.133.10'/>
+      <host mac='52:54:00:77:03:6f' name='lab130a' ip='192.168.133.11'/>
+    </dhcp>
+  </ip>
+</network>
+
+
+
+
+[root@lab130a network-scripts]# nmcli con down b1ecc890-55bd-4b21-b920-7c5a0bb73c0e
+Connection 'Wired connection 1' successfully deactivated (D-Bus active path: /org/freedesktop/NetworkManager/ActiveConnection/2)
+
+ [root@lab130a network-scripts]# nmcli con add con-name eth2 ifname eth2 type ethernet ip4 192.168.133.11
+Connection 'eth2' (9dcc9258-3c3a-4ff0-81dd-eaf4a9aa0315) successfully added.
+[root@lab130a network-scripts]# cat ifcfg-eth2
+TYPE=Ethernet
+BOOTPROTO=none
+IPADDR=192.168.133.11
+PREFIX=32
+DEFROUTE=yes
+IPV4_FAILURE_FATAL=no
+IPV6INIT=yes
+IPV6_AUTOCONF=yes
+IPV6_DEFROUTE=yes
+IPV6_PEERDNS=yes
+IPV6_PEERROUTES=yes
+IPV6_FAILURE_FATAL=no
+NAME=eth2
+UUID=9dcc9258-3c3a-4ff0-81dd-eaf4a9aa0315
+DEVICE=eth2
+ONBOOT=yes
+
+
+
+
+</pre>  
+
+
+
+
+</pre>
+
+</div>
+
+
+	
+<div class="w3-container">
+	<h1><span class="mw-headline" id="attach-interface"> Attach Network Interface </h1>
+		
+<p>
+
+</p>
+
+	
+
+<pre> 
+
+--Find the network interfaces
+
+virsh # net-list --all
+ Name                 State      Autostart     Persistent
+----------------------------------------------------------
+ default              active     yes           yes
+ virnet1              active     yes           yes
+ virnet2              active     yes           yes
+ vnetiso              active     yes           yes
+ vnetnat              active     yes           yes
+ vnetrou              active     yes           yes
+
+
+--Find the interface list on the VM itself
+
+virsh # domiflist lab19
+Interface  Type       Source     Model       MAC
+-------------------------------------------------------
+vnet3      bridge     br_fe      virtio      52:54:00:45:56:5e
+vnet4      network    vnetnat    virtio      52:54:00:e2:a5:a7
+vnet5      network    vnetrou    virtio      52:54:00:4b:23:3e
+vnet6      network    vnetiso    virtio      52:54:00:01:bd:9f
+
+--Attach the interface 
+
+virsh # attach-interface lab19 network vnetnat --model virtio --persistent --config --live
+Interface attached successfully
+
+--Verify the config file to ensure it's added (persistent)
+root@panchajanya:~\> virsh dumpxml lab19 | xpath "//interface"
+Found 5 nodes:
+-- NODE --
+
+--Print the one that just got added
+
+root@panchajanya:~\> virsh dumpxml lab19 | xpath "//interface[5]"
+Found 1 nodes:
+-- NODE --
+<interface type="network">
+      <mac address="52:54:00:0b:26:70" />
+      <source network="vnetnat" bridge="vbrnat" />
+      <target dev="vnet7" />
+      <model type="virtio" />
+      <alias name="net4" />
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x0c" function="0x0" />
+ </interface>
+	
+--Create the interface configuration file.
+
+[root@lab19 network-scripts]# nmcli con del a1204c59-b274-4e1f-9fd5-f4082a04d6d2
+Connection 'Wired connection 1' (a1204c59-b274-4e1f-9fd5-f4082a04d6d2) successfully deleted.
+
+
+nmcli con add type ethernet con-name eth4  ifname eth4 autoconnect yes save yes ip4 192.168.134.54 gw4 192.168.2.1
+Connection 'eth4' (0f9192f1-b16d-4aaa-85be-07b8ebd2c6a8) successfully added
+
+systemctl reboot
+
+
+
+</pre>
+
+</div>
+	
+	
+</body>
+</html>
+

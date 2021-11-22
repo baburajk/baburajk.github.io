@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>intercloudzone</title>
+	<meta name="description" content="">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<meta property="og:image" content="path/to/image.jpg">
+<!-- favicon -->
+<link rel="shortcut icon" href="img/favicon/favicon.ico" type="image/x-icon">
+<link rel="apple-touch-icon" href="img/favicon/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="72x72" href="img/favicon/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="114x114" href="img/favicon/apple-touch-icon-114x114.png">
+<!-- favicon -->
+<!-- build:css -->
+<link rel="stylesheet" href="css/libs/bootstrap.min.css">
+<link rel="stylesheet" href="css/libs/font-awesome.min.css">
+<link rel="stylesheet" href="css/libs/animate.min.css">
+<link rel="stylesheet" href="css/libs/slick.css">
+<link rel="stylesheet" href="css/libs/magnific-popup.css">
+
+<link rel="stylesheet" href="css/main.css">
+<link rel="stylesheet" href="css/media.css">
+<!-- endbuild -->
+	<!-- Chrome, Firefox OS and Opera -->
+	<meta name="theme-color" content="#000">
+	<!-- Windows Phone -->
+	<meta name="msapplication-navbutton-color" content="#000">
+	<!-- iOS Safari -->
+	<meta name="apple-mobile-web-app-status-bar-style" content="#000">
+	<!-- <style>body { opacity:s 0; overflow-x: hidden; } html { background-color: #fff; }</style> -->
+</head>
+<body data-spy="scroll" data-target=".navbar" data-offset="50" class="loaded">
+<!-- Preloader -->
+<div class="preloader">
+	<div class="cssload-spinner">
+		<div class="cssload-ball cssload-ball-1"></div>
+		<div class="cssload-ball cssload-ball-2"></div>
+		<div class="cssload-ball cssload-ball-3"></div>
+		<div class="cssload-ball cssload-ball-4"></div>
+	</div>
+</div>
+<!-- Preloader -->
+<div class="site-content">
+	<!-- Naviigation -->
+	<div class="navbar-wrap">
+		<div class="navbar">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-12">
+						<nav class="navbar-menu">
+							<div class="navbar-header">
+								<button class="collapsed navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-example-js-navbar-scrollspy">
+									<span class="icon-bar"></span>
+									<span class="icon-bar"></span>
+									<span class="icon-bar"></span>
+								</button>
+							</div>
+							 
+							<div class="navbar-full">
+								<div class="collapse bs-example-js-navbar-scrollspy">
+									<ul class="nav navbar-nav">
+										<li style="display: none;"><a></a></li>
+										<li><a href="http://www.linkedin.com/in/baburajkallarakkal">About Me</a></li>
+										<li><a href="#services">Services</a></li>
+										<li><a href="#video">Video</a></li>
+										<li><a href="#team">Team</a></li>
+										<li><a href="#questions">Questions</a></li>
+										<!-- <li><a href="#subscribe">Subscribe</a></li> -->
+										<li><a href="#contact">Contact us</a></li>
+										<li>
+										</li>
+									</ul>
+									<!-- btn -->
+									<div class="nav-button main-button">
+										<a href="#" class="btn btn-nav btn-block" role="button">
+											Try now
+										</a>
+									</div>
+									<!-- btn -->
+								</div>
+							</div>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Naviigation -->
+	<!-- Header -->
+	<a class="anchor" id="header"></a>
+	<header class="header" style="background-image: url(img/header-bg.jpg); background-position:center; background-size: cover; background-repeat:no-repeat; background-attachment: fixed;">
+		<div class="container">
+			<div class="row">
+				<div class="col-lg-5 col-md-6 col-sm-12">
+					<div class="header-slogan">
+						<div class="header-slogan-centered">
+							<p class="header-slogan-sup-title"> Notes for self reference on </p>
+							<h1> Linux, Networking, Performance, Security and *.*  </h1>
+							<p>  Scratch notes consolidated for easy/quick lookup ...</p>
+							<p> </p>
+
+
+							<div class="header-btns">
+								<!-- btn -->
+								<div class="header-button main-button">
+									<a href="#about" class="btn btn-default btn-block" role="button">
+										Read more
+									</a>
+								</div>
+								<!-- btn -->
+								<!-- btn -->
+								<!--div class="header-button main-button">
+									<a href="#" class="btn btn-default btn-block" role="button">
+										Download
+									</a>
+								</div> -->
+								<!-- btn -->
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-md-6">
+				
+					<!-- /.header-image -->
+				</div>
+			</div>
+		</div>
+	</header>
+	<!-- Header -->
+	<div class="menu-sticky"></div>
+	<!-- About -->
+	<a class="anchor" id="about"></a>
+	<div class="about">
+		<div class="about-wrap">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-4">
+						<div class="about-item">
+							<div class="about-item-icon">
+								<svg xmlns="http://www.w3.org/2000/svg"  class="about-item-icon-icon" viewBox="0 0 24 24">
+									<g stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" fill="none">
+										<path d="M20.254 13.5h3.246v-3h-3.247c-.209-.867-.551-2.181-1.003-2.922l2.296-2.295-2.829-2.829-2.297 2.296c-.74-.451-2.053-.793-2.92-1.002v-3.248h-3v3.248c-.867.209-2.181.551-2.921 1.002l-2.297-2.296-2.829 2.829 2.297 2.296c-.452.74-.794 2.054-1.004 2.921h-3.246v3h3.246c.21.867.552 2.182 1.004 2.921l-2.297 2.297 2.829 2.828 2.296-2.298c.741.454 2.055.796 2.922 1.006v3.246h3v-3.246c.867-.21 2.181-.552 2.92-1.004l2.298 2.296 2.828-2.828-2.296-2.297c.452-.739.794-2.054 1.004-2.921z"
+										/>
+										<circle cx="12" cy="12" r="4.5" />
+									</g>
+								</svg>
+							</div>
+							<!-- /.about-item-icon -->
+							<div class="about-item-text">
+								<h3>Performance</h3>
+								<p><a href="perf.html">Troubleshooting and generic notes related to iperf, top, ss etc. </a></p>
+ 							</div>
+							<!-- /.about-item-text -->
+						</div>
+					</div>
+					<!-- /.col-md-4 -->
+					<div class="col-md-4">
+						<div class="about-item">
+							<div class="about-item-icon">
+								<svg xmlns="http://www.w3.org/2000/svg"  class="about-item-icon-icon" viewBox="0 0 24 24">
+									<g stroke="#000" stroke-linejoin="round" stroke-miterlimit="10" fill="none">
+										<path d="M21.5 4.5v15M4.5 2.5h15M2.5 19.5v-15M19.5 21.5h-15" />
+										<path stroke-linecap="round" d="M.5.5h4v4h-4zM19.5.5h4v4h-4zM.5 19.5h4v4h-4zM19.5 19.5h4v4h-4z" />
+									</g>
+								</svg>
+							</div>
+							<!-- /.about-item-icon -->
+							<div class="about-item-text">
+								<h3>Networking</h3>
+								<p>He visited her regularly each day at certain hours, not so much.</p>
+
+							</div>
+							<!-- /.about-item-text -->
+						</div>
+					</div>
+					<!-- /.col-md-4 -->
+					<div class="col-md-4">
+						<div class="about-item">
+							<div class="about-item-icon">
+								<svg xmlns="http://www.w3.org/2000/svg" class="about-item-icon-icon" viewBox="0 0 24 24">
+									<g stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" fill="none">
+										<path d="M19.5 8c0 4.144-7.5 15.5-7.5 15.5s-7.5-11.356-7.5-15.5c0-4.142 3.357-7.5 7.5-7.5 4.142 0 7.5 3.358 7.5 7.5z" />
+										<circle cx="12" cy="8" r="3" />
+									</g>
+								</svg>
+							</div>
+							<!-- /.about-item-icon -->
+							<div class="about-item-text">
+								<h3>Security</h3>
+								<p>He visited her regularly each day at certain hours, not so much.</p>
+							</div>
+							<!-- /.about-item-text -->
+						</div>
+					</div>
+					<!-- /.col-md-4 -->
+				</div>
+				<!-- /.row -->
+				<div class="row">
+					<div class="col-md-4">
+						<div class="about-item">
+							<div class="about-item-icon">
+								<svg xmlns="http://www.w3.org/2000/svg" class="about-item-icon-icon" viewBox="0 0 24 24">
+									<g stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" fill="none">
+										<path d="M12.5 7.499l10-5v15.501l-10 5-10-5v-15.501zM20.498.975l-8 4.048-8-4.048M12.5 7.499v15.501" />
+									</g>
+								</svg>
+							</div>
+							<!-- /.about-item-icon -->
+							<div class="about-item-text">
+								<h3>Linux</h3>
+								<p>He visited her regularly each day at certain hours, not so much.</p>
+							</div>
+							<!-- /.about-item-text -->
+						</div>
+					</div>
+					<!-- /.col-md-4 -->
+					<div class="col-md-4">
+						<div class="about-item">
+							<div class="about-item-icon">
+								<svg xmlns="http://www.w3.org/2000/svg" class="about-item-icon-icon" viewBox="0 0 24 24">
+									<g stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" fill="none">
+										<path d="M17.5 12.5h1c1.656 0 3 1.344 3 3s-1.344 3-3 3h-1" />
+										<path d="M17.5 21.5c0 1.104-.896 2-2 2h-9c-1.104 0-2-.896-2-2v-11h13v11zM17.381.564c1.033 1.574-.496 2.436-.853 3.282-.377.895-.011 1.752.885 2.129 2.9 1.222 3.764-4.493-.032-5.411zM14.5 10.5l2.609-4.688M18.141 6.156l-1.641 4.344"
+										/>
+										<path d="M8.5 10.5h-3l-1.5-3-.5-3 2.5 1.5zM4 7.5l2-1.5" />
+										<path d="M9.5.5h4v10h-4zM13.5 2.5h-2M13.5 4.5h-1M13.5 6.5h-2M13.5 8.5h-1" />
+									</g>
+								</svg>
+							</div>
+							<!-- /.about-item-icon -->
+							<div class="about-item-text">
+								<h3>Virtualization</h3>
+								<p>He visited her regularly each day at certain hours, not so much.</p>
+							</div>
+							<!-- /.about-item-text -->
+						</div>
+					</div>
+					<!-- /.col-md-4 -->
+					<div class="col-md-4">
+						<div class="about-item">
+							<div class="about-item-icon">
+								<svg xmlns="http://www.w3.org/2000/svg" class="about-item-icon-icon" viewBox="0 0 24 24">
+									<g stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" fill="none">
+										<path d="M18.5 18.5h-2v-11h-11v-2h-3v2h-2v3h2v11h11v2h3v-2h2v-3zm-13 0v-8h8v8h-8zM5.5 18.5l8-8M16.5 7.5l7-7M2 7.5h5M2.5 10.5h3M13.5 18.5h3M13.5 21.5h3"
+										/>
+									</g>
+								</svg>
+							</div>
+							<!-- /.about-item-icon -->
+							<div class="about-item-text">
+								<h3>Generic</h3>
+								<p>He visited her regularly each day at certain hours, not so much.</p>
+							</div>
+							<!-- /.about-item-text -->
+						</div>
+					</div>
+					<!-- /.col-md-4 -->
+				</div>
+				<!-- /.row -->
+			</div>
+			<!-- /.container -->
+		</div>
+		<!-- /.about-wrap -->
+	</div>
+	<!-- About -->
+	<!-- Screen-one -->
+	<div class="screen-one">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="screen-one-title">
+						<h2>Quick Notes</h2>
+					</div>
+				</div>
+			</div>
+		</div>
+	 
+		<div class="container">
+					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0s">
+						<span>01.</span>
+						<div class="screen-one-item-container">
+							<h3>Promiscous Mode</h3>
+							<p>Promiscuous is network visibility from a single observation point, receives all packets even if it's not addressed to the NIC</p>
+						</div>
+					</div>
+
+				   <div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.1s">
+						<span>02.</span>
+						<div class="screen-one-item-container">
+							<h3>MTU and DF </h3>
+							<p>On Layer 2 interfaces frames larger than MTU values are sliently discarded. <br>
+							   Layer 3 will fragment packets larger than the MTU size if the DF unset, and it will drop IP packets sends signal to the sender via the ICMP Fragmentation Required message (Type 3, Code 4).
+							</p>
+						</div>
+					</div>
+
+					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
+						<span>03.</span>
+						<div class="screen-one-item-container">
+							<h3>RFC3927  </h3>
+							<p>IETF reserved 169.254.0.0/16 as a link local address and fe80::/10 for IPv6. </p>
+						</div>
+					</div>
+
+					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
+					<span>04.</span>
+					<div class="screen-one-item-container">
+						<h3>RFC1918 </h3>
+						<p> Defines private address space (non-routable) 10.0.0.0/8 , 172.16.0.0/12, 192.168.0.0/16  </p>
+					</div>
+
+					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
+					<span>05.</span>
+					<div class="screen-one-item-container">
+						<h3> RFC6598 </h3>
+						<p> Used by IANA to reserve CGN (Carrier Grade Network Space): 100.64.0.0/10 </p>
+					</div>
+
+					<!-- /.screen-one-item -->
+					<!-- btn -->
+					<div class="screen-one-button main-button  os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.3s">
+						<a href="#" class="btn btn-default btn-block" role="button">
+							Read more
+						</a>
+					</div>
+
+
+ 			<div class="row">
+				<div class="col-md-5">
+				<!-- 	<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0s">
+						<span>01.</span>
+						<div class="screen-one-item-container">
+							<h3>Promiscous Mode</h3>
+							<p>Promiscuous is network visibility from a single observation point, receives all packets even if it's not addressed to the NIC</p>
+						</div>
+					</div> -->
+					<!-- /.screen-one-item -->
+					<!-- <div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.1s">
+						<span>02.</span>
+						<div class="screen-one-item-container">
+							<h3>MTU and DF </h3>
+							<p>On Layer 2 interfaces frames larger than MTU values are sliently discarded. <br>
+							   Layer 3 will fragment packets larger than the MTU size if the DF unset, and it will drop IP packets sends signal to the sender via the ICMP Fragmentation Required message (Type 3, Code 4).
+							</p>
+						</div>
+					</div> -->
+					<!-- /.screen-one-item -->
+				<!-- 	<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
+						<span>03.</span>
+						<div class="screen-one-item-container">
+							<h3>Layared PSD</h3>
+							<p>For those who have seen the Earth from space, and for the hundreds and perhaps thousands more who.</p>
+						</div>
+					</div> -->
+					<!-- /.screen-one-item -->
+					<!-- btn -->
+					<!-- <div class="screen-one-button main-button  os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.3s">
+						<a href="#" class="btn btn-default btn-block" role="button">
+							Read more
+						</a>
+					</div> -->
+					<!-- btn -->
+				</div>
+				<!-- /.col-md-6 -->
+			</div> 			 
+			<!-- /.row --> 
+		</div>
+		<!-- /.container -->
+	</div>
+	<!-- Screen-one -->
+
+	<!-- Services -->
+	<a class="anchor" id="services"></a>
+	<div class="services" style="background-image: url(img/services-bg.jpg); background-position:center; background-size: cover; background-repeat:no-repeat;">
+		<div class="services-wrap os-animation" data-os-animation="fadeIn" data-os-animation-delay="0s">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-4">
+						<div class="services-item">
+							<div class="services-item-title">
+								<svg dir="ltr" xmlns="http://www.w3.org/2000/svg" class="services-item-title-icon" viewBox="0 0 24 24">
+									<g stroke="#000" stroke-linejoin="round" stroke-miterlimit="10" fill="none">
+										<path d="M8.254 17.941l9.613-9.613c1.456.617 3.201.334 4.389-.854 1.187-1.186 1.469-2.859.853-4.314l-1.913 1.988h-2.121v-2.27l1.915-1.914c-1.458-.617-3.204-.334-4.391.854s-1.47 2.932-.854 4.389l-9.612 9.613c-1.456-.617-3.202-.334-4.389.854s-1.47 2.932-.854 4.389l1.914-1.914h2.27v2.121l-1.988 1.914c1.457.615 3.165.332 4.352-.854 1.187-1.185 1.432-2.934.816-4.389zM11.999 9.951l-3.745-3.744c.616-1.457.334-3.201-.854-4.389-1.186-1.187-2.857-1.47-4.314-.853l1.988 1.914v2.27h-2.27l-1.913-1.989c-.617 1.455-.333 3.164.853 4.352s2.933 1.451 4.389.836l3.746 3.734M11.999 14.193l3.747 3.748c-.616 1.457-.334 3.203.854 4.389 1.187 1.188 2.933 1.469 4.39.854l-1.915-1.914v-2.121h2.121l1.914 1.914c.616-1.457.333-3.201-.854-4.389s-2.933-1.471-4.389-.854l-3.745-3.746"
+										/>
+									</g>
+									<h3 dir="rtl"> Samba, Postfix  </h3>
+								</svg>
+							</div>
+							<p>For those who have seen the Earth from space, and for the hundreds and perhaps thousands more, the experience.</p>
+						</div>
+						<!-- /.services-item -->
+						<div class="services-item">
+							<div class="services-item-title">
+								<svg dir="ltr" xmlns="http://www.w3.org/2000/svg" class="services-item-title-icon" viewBox="0 0 24 24">
+									<g stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" fill="none">
+										<path d="M20.254 13.5h3.246v-3h-3.247c-.209-.867-.551-2.181-1.003-2.922l2.296-2.295-2.829-2.829-2.297 2.296c-.74-.451-2.053-.793-2.92-1.002v-3.248h-3v3.248c-.867.209-2.181.551-2.921 1.002l-2.297-2.296-2.829 2.829 2.297 2.296c-.452.74-.794 2.054-1.004 2.921h-3.246v3h3.246c.21.867.552 2.182 1.004 2.921l-2.297 2.297 2.829 2.828 2.296-2.298c.741.454 2.055.796 2.922 1.006v3.246h3v-3.246c.867-.21 2.181-.552 2.92-1.004l2.298 2.296 2.828-2.828-2.296-2.297c.452-.739.794-2.054 1.004-2.921z"
+										/>
+										<circle cx="12" cy="12" r="4.5" />
+									</g>
+								</svg>
+								<h3 dir="rtl"> Apache, MariaDB </h3>
+							</div>
+							<p>For those who have seen the Earth from space, and for the hundreds and perhaps thousands more, the experience.</p>
+						</div>
+						<!-- /.services-item -->
+						<div class="services-item">
+							<div dir="ltr" class="services-item-title">
+								<svg xmlns="http://www.w3.org/2000/svg" class="services-item-title-icon" viewBox="0 0 24 24">
+									<g stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" fill="none">
+										<path d="M18.5 18.5h-2v-11h-11v-2h-3v2h-2v3h2v11h11v2h3v-2h2v-3zm-13 0v-8h8v8h-8zM5.5 18.5l8-8M16.5 7.5l7-7M2 7.5h5M2.5 10.5h3M13.5 18.5h3M13.5 21.5h3"
+										/>
+									</g>
+								</svg>
+								<h3 dir="rtl">Chrony, NTP </h3>
+							</div>
+							<p>For those who have seen the Earth from space, and for the hundreds and perhaps thousands more, the experience.</p>
+						</div>
+						<!-- /.services-item -->
+					</div>
+					<!-- /.col-md-4 -->
+					<div class="col-md-4">
+						 
+						<!-- /.services-image -->
+					</div>
+					<!-- /.col-md-4 -->
+					<div class="col-md-4">
+						<div class="services-item services-right">
+							<div class="services-item-title">
+								<svg dir="ltr" xmlns="http://www.w3.org/2000/svg" class="services-item-title-icon" viewBox="0 0 24 24">
+									<g stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" fill="none">
+										<path d="M17.5 12.5h1c1.656 0 3 1.344 3 3s-1.344 3-3 3h-1" />
+										<path d="M17.5 21.5c0 1.104-.896 2-2 2h-9c-1.104 0-2-.896-2-2v-11h13v11zM17.381.564c1.033 1.574-.496 2.436-.853 3.282-.377.895-.011 1.752.885 2.129 2.9 1.222 3.764-4.493-.032-5.411zM14.5 10.5l2.609-4.688M18.141 6.156l-1.641 4.344"
+										/>
+										<path d="M8.5 10.5h-3l-1.5-3-.5-3 2.5 1.5zM4 7.5l2-1.5" />
+										<path d="M9.5.5h4v10h-4zM13.5 2.5h-2M13.5 4.5h-1M13.5 6.5h-2M13.5 8.5h-1" />
+									</g>
+								</svg>
+								<h3 dir="rtl"> NFS, ISCSI </h3>
+							</div>
+							<p>For those who have seen the Earth from space, and for the hundreds and perhaps thousands more, the experience.</p>
+						</div>
+						<!-- /.services-item -->
+						<div class="services-item services-right">
+							<div class="services-item-title">
+								<svg dir="ltr" xmlns="http://www.w3.org/2000/svg" class="services-item-title-icon" viewBox="0 0 24 24">
+									<g stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" fill="none">
+										<path d="M12.5 7.499l10-5v15.501l-10 5-10-5v-15.501zM20.498.975l-8 4.048-8-4.048M12.5 7.499v15.501" />
+									</g>
+								</svg>
+								<h3 dir="rtl"> LDAP  </h3>
+							</div>
+							<p>For those who have seen the Earth from space, and for the hundreds and perhaps thousands more, the experience.</p>
+						</div>
+						<!-- /.services-item -->
+						<div class="services-item services-right">
+							<div class="services-item-title">
+								<svg dir="ltr" xmlns="http://www.w3.org/2000/svg" class="services-item-title-icon" viewBox="0 0 24 24">
+									<g stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" fill="none">
+										<path d="M3.868 20.889c-4.491-4.49-4.491-11.773 0-16.264s11.772-4.49 16.264 0 4.491 11.773 0 16.264c-2.147 2.148-5.63 2.148-7.778 0l-4.242-4.242c-.391-.391-1.024-.391-1.414 0-.391.391-.391 1.023 0 1.414.78.781.78 2.047 0 2.828-.782.781-2.049.781-2.83 0z"
+										/>
+										<circle cx="16.242" cy="7.808" r="1.499" />
+										<circle cx="19" cy="12.756" r="1" />
+										<circle cx="16.242" cy="17.707" r="2" />
+										<circle cx="10.232" cy="6.746" r="1.499" />
+									</g>
+								</svg>
+								<h3 dir="rtl">ISCSI</h3>
+							</div>
+							<p>For those who have seen the Earth from space, and for the hundreds and perhaps thousands more, the experience.</p>
+						</div>
+						<!-- /.services-item -->
+					</div>
+					<!-- /.col-md-4 -->
+				</div>
+				<!-- /.row -->
+			</div>
+			<!-- /.container -->
+		</div>
+		<!-- /.services-wrap -->
+	</div>
+	<!-- Services -->
+	<!-- Directions -->
+	<a class="anchor" id="directions"></a>
+	<section class="directions">
+		<div class="directions-wrap">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-12">
+						<div class="directions-title">
+							<h2>Protocols</h2>
+							<p> <br class="disable"/>   </p>
+						</div>
+						<!-- /.directions-title -->
+					</div>
+					<!-- /.col-md-12 -->
+				</div>
+				<!-- /.row -->
+			</div>
+			<!-- /.container -->
+			<div class="directions-container">
+				<div class="container">
+					<div class="row">
+						<div class="col-md-6">
+							<div class="directions-item">
+								<div data-rel="box-1" class="directions-item-container active">
+									<span>01.</span>
+									<h3>QUIC </h3>
+								</div>
+							</div>
+						</div>
+						<!-- /.col-md-6 -->
+						<div class="col-md-6">
+							<div class="directions-box box-1 active">
+								<p> Protocol developed by Google on top of HTTP2/SPDY to <br> tackle HOL problem. More info
+
+								<a href="https://community.akamai.com/customers/s/article/How-does-HTTP-2-solve-the-Head-of-Line-blocking-HOL-issue?language=en_US">Reference</a>
+
+							    </p>
+							</div>
+						</div>
+						<!-- /.col-md-6 -->
+					</div>
+					<!-- /.row -->
+					<div class="row">
+						<div class="col-md-6">
+							<div class="directions-item">
+								<div data-rel="box-2" class="directions-item-container">
+									<span>02.</span>
+									<h3>REST</h3>
+								</div>
+							</div>
+						</div>
+						<!-- /.col-md-6 -->
+						<div class="col-md-6">
+							<div class="directions-box box-2">
+								<p>
+									Client/Server, Stateless, Cacheable at Client , <br> easy scale-ups,  supports all HTTP Methods <br>
+								
+								</p>
+							
+							</div>
+						</div>
+						<!-- /.col-md-6 -->
+					</div>
+					<!-- /.row -->
+					<div class="row">
+						<div class="col-md-6">
+							<div class="directions-item">
+								<div data-rel="box-3" class="directions-item-container">
+									<span>03.</span>
+									<h3>Html 5</h3>
+								
+								</div>
+							</div>
+						</div>
+						<!-- /.col-md-6 -->
+						<div class="col-md-6">
+							<div class="directions-box box-3">
+								<p> Less dependence on plugins,uses audio,video tags, scripting  <br> replaced by markups.
+									Device independence.
+								</p>
+							</div>
+						</div>
+						<!-- /.col-md-6 -->
+					</div>
+					<!-- /.row -->
+					<div class="row">
+						<div class="col-md-6">
+							<div class="directions-item">
+								<div data-rel="box-4" class="directions-item-container">
+									<span>04.</span>
+									<h3>JavaScript</h3>
+								</div>
+							</div>
+						</div>
+						<!-- /.col-md-6 -->
+						<div class="col-md-6">
+							<div class="directions-box box-4">
+								<p>For those who have seen the Earth from space, and for the hundreds and perhaps thousands more who will, the experience.</p>
+							</div>
+						</div>
+						<!-- /.col-md-6 -->
+					</div>
+					<!-- /.row -->
+					<div class="row">
+						<div class="col-md-6">
+							<div class="directions-item">
+								<div data-rel="box-5" class="directions-item-container">
+									<span>05.</span>
+									<h3>Php</h3>
+								</div>
+							</div>
+						</div>
+						<!-- /.col-md-6 -->
+						<div class="col-md-6">
+							<div class="directions-box box-5">
+								<p>For those who have seen the Earth from space, and for the hundreds and perhaps thousands more who will, the experience.</p>
+							</div>
+						</div>
+						<!-- /.col-md-6 -->
+					</div>
+					<!-- /.row -->
+				</div>
+				<!-- /.container -->
+			</div>
+			<!-- /.directions-container -->
+		</div>
+		<!-- /.directions-wrap -->
+	</section>
+	<!-- Directions -->
+	<!-- Video -->
+	<a class="anchor" id="video"></a>
+	<section class="video" style="background-image: url(img/video-bg.jpg); background-position:center; background-size: cover; background-repeat:no-repeat;">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-6">
+					<div class="video-wrap">
+						<h2>Watch video presentation</h2>
+						<p>He visited her regularly each day at certain hours, not so much to talk himself, as to sit and hear her talk.</p>
+						<a href="https://www.youtube.com/watch?v=1wkPMUZ9vX4" class="popup-youtube">
+							<div class="video-icon">
+								<img src="img/video-icon.png" alt="">
+							</div>
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+	<!-- Video -->
+	<!-- Screen-two -->
+	<div class="screen-two">
+	
+		<!-- /.container -->
+		<div class="container">
+
+			<div class="row">
+				<div class="screen-two-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0s">
+						<svg xmlns="http://www.w3.org/2000/svg" class="screen-two-item-icon" viewBox="0 0 24 24">
+							<g stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" fill="none">
+								<path d="M17.5 12.5h1c1.656 0 3 1.344 3 3s-1.344 3-3 3h-1" />
+								<path d="M17.5 21.5c0 1.104-.896 2-2 2h-9c-1.104 0-2-.896-2-2v-11h13v11zM17.381.564c1.033 1.574-.496 2.436-.853 3.282-.377.895-.011 1.752.885 2.129 2.9 1.222 3.764-4.493-.032-5.411zM14.5 10.5l2.609-4.688M18.141 6.156l-1.641 4.344"
+								/>
+								<path d="M8.5 10.5h-3l-1.5-3-.5-3 2.5 1.5zM4 7.5l2-1.5" />
+								<path d="M9.5.5h4v10h-4zM13.5 2.5h-2M13.5 4.5h-1M13.5 6.5h-2M13.5 8.5h-1" />
+							</g>
+						</svg>
+						<h3>Man-In-The-Middle-Attack (MITM) using arpspoof </h3>
+						<p>Man in the middle attack as the name imples is when a possible malicious user hijack's the conversation that's occuring between two parties. Attacker <br>redirects the traffic to go through his system and using sniffing methods he can listen to it and while doing so victim and the router/gateway will have no <br>knowledge that their conversation are being sniffed. </p>
+					</div>
+					<!-- /.screen-two-item -->
+					<div class="screen-two-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.1s">
+						<svg xmlns="http://www.w3.org/2000/svg" class="screen-two-item-icon" viewBox="0 0 24 24">
+							<g stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" fill="none">
+								<path d="M12.5 7.499l10-5v15.501l-10 5-10-5v-15.501zM20.498.975l-8 4.048-8-4.048M12.5 7.499v15.501"></path>
+							</g>
+						</svg>
+						<h3>Hacking Data on NFS mounts using NAT (Network-Address-Translation) </h3>
+						<p> NFS mounts restriced via ACL's can still be mounted by doing SNAT/DNAT  </p>
+					</div>
+					<!-- /.screen-two-item -->
+					<div class="screen-two-item  os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
+						<svg xmlns="http://www.w3.org/2000/svg" class="screen-two-item-icon" viewBox="0 0 24 24">
+							<g stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" fill="none">
+								<path d="M3.868 20.889c-4.491-4.49-4.491-11.773 0-16.264s11.772-4.49 16.264 0 4.491 11.773 0 16.264c-2.147 2.148-5.63 2.148-7.778 0l-4.242-4.242c-.391-.391-1.024-.391-1.414 0-.391.391-.391 1.023 0 1.414.78.781.78 2.047 0 2.828-.782.781-2.049.781-2.83 0z"></path>
+								<circle cx="16.242" cy="7.808" r="1.499"></circle>
+								<circle cx="19" cy="12.756" r="1"></circle>
+								<circle cx="16.242" cy="17.707" r="2"></circle>
+								<circle cx="10.232" cy="6.746" r="1.499"></circle>
+							</g>
+						</svg>
+						<h3>NFS Data Hacking using NAT/ARPSPOOF and preventing it using EBTABLES </h3>
+						<p> Experiment to restrict NFS mounts via IP Addresses, identify the neighbors IP address via NMAP scans and do unauthorized mounts <br>
+						and prevent this via ebtables.  </p>
+					</div>
+					<!-- /.screen-two-item -->
+
+				<div class="col-md-offset-7 col-md-5">
+					
+					
+				</div>
+				<!-- /.col-md-5 -->
+			</div>
+			<!-- /.row -->
+		</div>
+		<!-- /.container -->
+	</div>
+	<!-- Screen-two -->
+	<!-- App -->
+	<div class="app" style="background-image: url(img/app-bg.jpg); background-position:center; background-size: cover; background-repeat:no-repeat;">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-push-7 col-md-5">
+					 
+				</div>
+				<!-- /.col-md-5 -->
+				<div class="col-md-pull-5 col-md-6">
+					<div class="app-item">
+						<h2>QUIC</h2>
+						<p>In HTTP/1.1 each client opens limited number of TCP connections to server(~6 per hostname) and for a new request on same connection
+								has to wait for the previous request on same connection to be complete. This is HOL blocking. HTTP1.1 introduced pipelining which allowed
+								client to several HTTP requests over the same TCP connection but since the HTTP/1.1 required the responses to arrive in order that didn't
+								solve the problem. HTTP/2 solved HOL issue by multiplexing requests over same TCP connection, so a client can make multiple requests to
+								server without having to wait for the previous one to be done and responses can arrive in any order. However since HTTP/2 suffered another
+								HOL as it ran over TCP, which uses congestion control and one lost packet in TCP stream makes all streams wait until the package is re-trans
+								mitted. So the solution google came up with was to use HTTP/2 over UDP which is what QUIC does.</p>
+						<!-- btn -->
+						<div class="app-button main-button">
+							<a href="#" class="btn btn-default btn-block" role="button">
+								Read more
+							</a>
+						</div>
+						<!-- btn -->
+					</div>
+					<!-- /.app-item -->
+				</div>
+				<!-- /.col-md-6 -->
+			</div>
+			<!-- /.row -->
+		</div>
+		<!-- /.container -->
+	</div>
+	<!-- App -->
+
+	<!-- Check -->
+	<section class="check" style="background-image: url(img/check-bg.jpg); background-position:center; background-size: cover; background-repeat:no-repeat;">
+		<div class="check-wrap">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-12">
+						<div class="check-title">
+							<h2>Quick Tips!</h2>
+							<p>  <br class="disable"/>  </p>
+							 
+						</div>
+						<!-- /.check-image -->
+					</div>
+					<!-- /.col-md-12 -->
+				</div>
+				<!-- /.row -->
+			</div>
+			<!-- /.container -->
+		</div>
+		<!-- /.check-wrap -->
+	</section>
+	<!-- Check -->
+	<!-- Questions -->
+	<a class="anchor" id="questions"></a>
+	<div class="questions">
+		<div class="questions-container">
+
+				<div class="questions-container-title">
+							<h2>RHCE Cheat Sheet</h2>
+							<p>For those who have seen the Earth from space, <br class="disable"/>and for the hundreds and perhap.</p>
+						</div>
+						<!-- /.questions-container-title -->
+						<div class="questions-container-accordion">
+							<div class="questions-container-accordion-set">
+								<a><h3>Why our application?</h3><i class="fa fa-chevron-circle-down" aria-hidden="true"></i></a>
+								<div class="content" style="display: block;">
+									<p>Dinosaurs are extinct today because they lacked opposable thumbs and the brainpower to build a space program. That's one small step for man, one giant leap for mankind. They lacked opposable thumbs and the</p>
+								</div>
+							</div>
+							<div class="questions-container-accordion-set">
+								<a><h3>What I get?</h3><i class="fa fa-chevron-circle-down" aria-hidden="true"></i></a>
+								<div class="content">
+									<p>Dinosaurs are extinct today because they lacked opposable thumbs and the brainpower to build a space program. That's one small step for man, one giant leap for mankind. They lacked opposable thumbs and the</p>
+								</div>
+							</div>
+							<div class="questions-container-accordion-set">
+								<a><h3>how much does it cost?</h3><i class="fa fa-chevron-circle-down" aria-hidden="true"></i></a>
+								<div class="content">
+									<p>Dinosaurs are extinct today because they lacked opposable thumbs and the brainpower to build a space program. That's one small step for man, one giant leap for mankind. They lacked opposable thumbs and the</p>
+								</div>
+							</div>
+							<div class="questions-container-accordion-set">
+								<a><h3>Bootstrap 3</h3><i class="fa fa-chevron-circle-down" aria-hidden="true"></i></a>
+								<div class="content">
+									<p>Dinosaurs are extinct today because they lacked opposable thumbs and the brainpower to build a space program. That's one small step for man, one giant leap for mankind. They lacked opposable thumbs and the</p>
+								</div>
+							</div>
+						</div>
+						<!-- /.questions-accordion -->
+			<!-- /.col-md-6 -->
+					<div class="col-md-6">
+						
+					</div>
+					<!-- /.col-md-6 -->
+
+
+			<div class="container">
+				<div class="row">
+					<div class="col-md-6">
+					
+						<!-- /.questions-container-image -->
+					</div>
+					
+				</div>
+				<!-- /.row -->
+			</div>
+			<!-- /.container -->
+		</div>
+		<!-- /.questions-container -->
+	</div>
+	<!-- Questions -->
+
+	<!-- Testimonials -->
+	<a class="anchor" id="testimonials"></a>
+	<section class="testimonials" style="background-image: url(img/testimonials-bg.jpg); background-position:center; background-size: cover; background-repeat:no-repeat;">
+		<div class="testimonials-wrap">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-12">
+						<div class="testimonials-title">
+							<h2>What they say about us</h2>
+							<p>In the vignettes and other embellishments of
+								<br class="disable" />some ancient books you will at times meet.</p>
+						</div>
+						<!-- /.testimonials-title -->
+					</div>
+					<!-- /.col-md-12 -->
+				</div>
+				<!-- /.row -->
+				<div class="row">
+					<div class="testimonials-slider slider">
+						<div class="col-md-6">
+							<div class="testimonials-item">
+								<span class="quotes">“</span>
+								<p>In the vignettes and other embellishments of some ancient books you will at times meet with very curious touches at the whale, where all manner of spouts, jets d'eau, hot springs and cold, Saratoga and Baden-Baden, come bubbling up from his unexhausted brain. In the title-page of the original edition of the. Saratoga and Baden-Baden, come bubbling up from his. jets d'eau, hot springs and cold, Saratoga and Baden-Baden, come bubbling up from his unexhausted brain.</p>
+								<h3>Roberto Patron</h3>
+								<p>CEO, Infotech.inc</p>
+							</div>
+						</div>
+						<!-- /.col-md-6 -->
+						<div class="col-md-6">
+							<div class="testimonials-item">
+								<span class="quotes">“</span>
+								<p>Saratoga and Baden-Baden, come bubbling up from his unexhausted brain. In the title-page of the original edition of the. Saratoga and Baden-Baden, come bubbling up from his. jets d'eau, hot springs and cold, Saratoga and Baden-Baden, come bubbling up from his unexhausted brain. In the vignettes and other embellishments of some ancient books you will at times meet with very curious touches at the whale, where all manner of spouts, jets d'eau, hot springs and cold.</p>
+								<h3>Roberto Patron</h3>
+								<p>CEO, Infotech.inc</p>
+							</div>
+						</div>
+						<!-- /.col-md-6 -->
+						<!-- BLOCK -->
+						<div class="col-md-6">
+							<div class="testimonials-item">
+								<span class="quotes">“</span>
+								<p>In the vignettes and other embellishments of some ancient books you will at times meet with very curious touches at the whale, where all manner of spouts, jets d'eau, hot springs and cold, Saratoga and Baden-Baden, come bubbling up from his unexhausted brain. In the title-page of the original edition of the. Saratoga and Baden-Baden, come bubbling up from his. jets d'eau, hot springs and cold, Saratoga and Baden-Baden, come bubbling up from his unexhausted brain.</p>
+								<h3>Roberto Patron</h3>
+								<p>CEO, Infotech.inc</p>
+							</div>
+						</div>
+						<!-- /.col-md-6 -->
+						<div class="col-md-6">
+							<div class="testimonials-item">
+								<span class="quotes">“</span>
+								<p>Saratoga and Baden-Baden, come bubbling up from his unexhausted brain. In the title-page of the original edition of the. Saratoga and Baden-Baden, come bubbling up from his. jets d'eau, hot springs and cold, Saratoga and Baden-Baden, come bubbling up from his unexhausted brain. In the vignettes and other embellishments of some ancient books you will at times meet with very curious touches at the whale, where all manner of spouts, jets d'eau, hot springs and cold.</p>
+								<h3>Roberto Patron</h3>
+								<p>CEO, Infotech.inc</p>
+							</div>
+						</div>
+						<!-- /.col-md-6 -->
+						<!-- BLOCK -->
+						<div class="col-md-6">
+							<div class="testimonials-item">
+								<span class="quotes">“</span>
+								<p>In the vignettes and other embellishments of some ancient books you will at times meet with very curious touches at the whale, where all manner of spouts, jets d'eau, hot springs and cold, Saratoga and Baden-Baden, come bubbling up from his unexhausted brain. In the title-page of the original edition of the. Saratoga and Baden-Baden, come bubbling up from his. jets d'eau, hot springs and cold, Saratoga and Baden-Baden, come bubbling up from his unexhausted brain.</p>
+								<h3>Roberto Patron</h3>
+								<p>CEO, Infotech.inc</p>
+							</div>
+						</div>
+						<!-- /.col-md-6 -->
+						<div class="col-md-6">
+							<div class="testimonials-item">
+								<span class="quotes">“</span>
+								<p>Saratoga and Baden-Baden, come bubbling up from his unexhausted brain. In the title-page of the original edition of the. Saratoga and Baden-Baden, come bubbling up from his. jets d'eau, hot springs and cold, Saratoga and Baden-Baden, come bubbling up from his unexhausted brain. In the vignettes and other embellishments of some ancient books you will at times meet with very curious touches at the whale, where all manner of spouts, jets d'eau, hot springs and cold.</p>
+								<h3>Roberto Patron</h3>
+								<p>CEO, Infotech.inc</p>
+							</div>
+						</div>
+
+						
+
+						<!-- /.col-md-6 -->
+						<!-- BLOCK -->
+					</div>
+					<!-- /.testimonials-slider -->
+				</div>
+				<!-- /.row -->
+			</div>
+			<!-- /.container -->
+		</div>
+		<!-- /.directions-wrap -->
+	</section>
+	<!-- Testimonials -->
+
+	<!-- Subscribe -->
+	<a class="anchor" id="subscribe"></a>
+	<section class="subscribe">
+		<div class="subscribe-wrap os-animation" data-os-animation="fadeIn">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-12">
+						<div class="subscribe-title">
+							<h2>Subscribe</h2>
+							<p>In the vignettes and other embellishments of
+								<br class="disable" />some ancient books you will at times meet.</p>
+						</div>
+						<!-- /.subscribe-title -->
+					</div>
+					<!-- /.col-md-12 -->
+					<div class="col-md-6 col-md-offset-3">
+						<div class="subscribe-form text-center">
+							<form action="" method="post" role="form">
+								<div class="subscribe-form-input">
+									<input type="email" tabindex="1" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Subject'" required placeholder="Enter your email">
+								</div>
+								<!-- btn -->
+								<div class="subscribe-form-button main-button">
+									<button role="button" name="submit" type="submit" data-submit="...Sending" class="btn btn-default btn-block">
+										Subscribe
+									</button>
+								</div>
+								<!-- btn -->
+							</form>
+						</div>
+					</div>
+				</div>
+				<!-- /.row -->
+			</div>
+			<!-- /.container -->
+		</div>
+		<!-- /.directions-wrap -->
+	</section>
+	<!-- Subscribe -->
+
+	<!-- Map -->
+	<a class="anchor" id="map"></a>
+	<div class="map">
+		<div id="map-canvas"></div>
+		<div class="map-wrap">
+			<div class="map-wrap-bg"></div>
+			<div class="container">
+				<div class="row">
+					<div class="col-md-4 col-sm-7 col-xs-12">
+						<div class="map-wrap-item">
+							<svg xmlns="http://www.w3.org/2000/svg"  class="map-wrap-item-icon" viewBox="0 0 24 24">
+								<g stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" fill="none"><path d="M19.5 8c0 4.144-7.5 15.5-7.5 15.5s-7.5-11.356-7.5-15.5c0-4.142 3.357-7.5 7.5-7.5 4.142 0 7.5 3.358 7.5 7.5z"/><circle cx="12" cy="8" r="3"/></g>
+							</svg>
+							<h3>Address</h3>
+							<p>30-13 Broadway, Queens, NY</p>
+						</div>
+						<div class="map-wrap-item">
+							<svg xmlns="http://www.w3.org/2000/svg"  class="map-wrap-item-icon" viewBox="0 0 24 24">
+								<g stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" fill="none"><path d="M19.5 21.5c0 1.104-.896 2-2 2h-11c-1.104 0-2-.896-2-2v-19c0-1.104.896-2 2-2h11c1.104 0 2 .896 2 2v19zM19.5 4.5h-15M19.5 19.5h-15M9.5 2.5h5"/><circle cx="12" cy="21.5" r=".5"/></g>
+							</svg>
+							<h3>Phone</h3>
+							<p>+131 1564 6454</p>
+						</div>
+						<div class="map-wrap-item">
+							<svg xmlns="http://www.w3.org/2000/svg"  class="map-wrap-item-icon" viewBox="0 0 24 24">
+								<g stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" fill="none"><path d="M15 4.5h-7l-2.5-4h11.5zM13 23.5h-3l-6-12.5 4-6.5h7l4 6.5zM11.5 12.5v11"/><circle cx="11.5" cy="10.5" r="2"/></g>
+							</svg>
+							<h3>Email</h3>
+							<p>raj.anju@gmail.com</p>
+						</div>
+					</div>
+					<!-- /.col-md-4 -->
+				</div>
+				<!-- /.row -->
+			</div>
+			<!-- /.container -->
+		</div>
+		<!-- /.map-wrap -->
+	</div>
+	<!-- Map -->
+
+	<!-- Contact -->
+	<a class="anchor" id="contact"></a>
+	<section class="contact">
+		<div class="contact-wrap">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-12">
+						<div class="contact-title">
+							<h2>Contact us</h2>
+							<p>In the vignettes and other embellishments of
+								<br class="disable" />some ancient books you will at times meet.</p>
+						</div>
+						<!-- /.contact-title -->
+					</div>
+					<!-- /.col-md-12 -->
+					<div class="col-md-10 col-md-offset-1">
+						<div class="contact-form text-center">
+							<form action="" method="post" role="form">
+								<div class="row">
+									<div class="col-md-6">
+										<div class="contact-form-input">
+											<input type="name" tabindex="1" required onfocus="this.placeholder = ''" onblur="this.placeholder = 'Your name'" placeholder="Your name">
+										</div>
+									</div>
+									<!-- /.col-md-6 -->
+									<div class="col-md-6">
+										<div class="contact-form-input">
+											<input type="email" tabindex="2" required onfocus="this.placeholder = ''" onblur="this.placeholder = 'Your email'" placeholder="Your email">
+										</div>
+									</div>
+									<!-- /.col-md-6 -->
+								</div>
+								<!-- /.row -->
+								<div class="row">
+									<div class="col-md-6">
+										<div class="contact-form-input">
+											<input type="phone" tabindex="3" required onfocus="this.placeholder = ''" onblur="this.placeholder = 'Your phone'" placeholder="Your phone">
+										</div>
+									</div>
+									<!-- /.col-md-6 -->
+									<div class="col-md-6">
+										<div class="contact-form-input">
+											<input type="subject" tabindex="4" required onfocus="this.placeholder = ''" onblur="this.placeholder = 'Subject'" placeholder="Subject">
+										</div>
+									</div>
+									<!-- /.col-md-6 -->
+								</div>
+								<!-- /.row -->
+								<div class="row">
+									<div class="col-md-12">
+										<div class="contact-form-input">
+											<textarea rows="6"  onfocus="this.placeholder = ''" onblur="this.placeholder = 'Your message'" placeholder="Your message"></textarea>
+										</div>
+									</div>
+									<!-- /.col-md-12 -->
+								</div>
+								<!-- /.row -->
+								<!-- btn -->
+								<div class="contact-form-button main-button">
+									<button role="button" name="submit" type="submit" data-submit="...Sending" class="btn btn-default btn-block">
+										Send message
+									</button>
+								</div>
+								<!-- btn -->
+							</form>
+							<!-- /.contact-form -->
+						</div>
+						<!-- /.contact-form -->
+					</div>
+					<!-- /.col-md-10 -->
+				</div>
+				<!-- /.row -->
+			</div>
+			<!-- /.container -->
+		</div>
+		<!-- /.directions-wrap -->
+	</section>
+	<!-- Contact -->
+</div>
+<!-- Site content -->
+
+<!-- Footer -->
+<a class="anchor" id="footer"></a>
+<footer class="footer" style="background-image: url(img/footer-bg.jpg); background-position:center; background-size: cover; background-repeat:no-repeat;">
+	<div class="footer-wrap">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="footer-title">
+						<h2>intercloudzone.com</h2>
+						<ul class="footer-icons">
+							<li><a href="#"><i class="fa fa-behance" aria-hidden="true"></i></a></li>
+							<li><a href="#"><i class="fa fa-linkedin" aria-hidden="true"></i></a></li>
+							<li><a href="#"><i class="fa fa-facebook" aria-hidden="true"></i></a></li>
+						</ul>
+						<p>InterCloudZone</p>
+					</div>
+					<!-- /.footer-title -->
+				</div>
+				<!-- /.col-md-12 -->
+			</div>
+			<!-- /.row -->
+		</div>
+		<!-- /.container -->
+	</div>
+	<!-- /.directions-wrap -->
+</footer>
+<!-- Footer -->
+
+<!-- links -->
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?key=AIzaSyDDuC8pr6YqiBr9wqfhNIJ56AqwzWKhiQo"></script>
+<!-- build:js -->
+<script src="js/libs/jquery.min.js"></script>
+<script type="text/javascript" src="js/libs/bootstrap.min.js"></script>
+<script type="text/javascript" src="js/libs/waypoints.min.js"></script>
+<script type="text/javascript" src="js/libs/slick.min.js"></script>
+<script type="text/javascript" src="js/libs/magnific-popup.min.js"></script>
+
+<script type="text/javascript" src="js/common.js"></script>
+<!-- endbuild -->
+<!-- links -->
+</body>
+</html>

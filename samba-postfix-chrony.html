@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head> <script data-ad-client="ca-pub-2393111531899119" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script> 
+	<meta charset="utf-8">
+	<title>intercloudzone</title>
+	<meta name="description" content="">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<meta property="og:image" content="path/to/image.jpg">
+<!-- favicon -->
+<link rel="shortcut icon" href="img/favicon/favicon.ico" type="image/x-icon">
+<link rel="apple-touch-icon" href="img/favicon/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="72x72" href="img/favicon/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="114x114" href="img/favicon/apple-touch-icon-114x114.png">
+<!-- favicon -->
+<!-- build:css -->
+<link rel="stylesheet" href="css/libs/bootstrap.min.css">
+<link rel="stylesheet" href="css/libs/font-awesome.min.css">
+<link rel="stylesheet" href="css/libs/animate.min.css">
+<link rel="stylesheet" href="css/libs/slick.css">
+<link rel="stylesheet" href="css/libs/magnific-popup.css">
+
+<link rel="stylesheet" href="css/main.css">
+<link rel="stylesheet" href="css/media.css">
+<!-- endbuild -->
+	<!-- Chrome, Firefox OS and Opera -->
+	<meta name="theme-color" content="#000">
+	<!-- Windows Phone -->
+	<meta name="msapplication-navbutton-color" content="#000">
+	<!-- iOS Safari -->
+	<meta name="apple-mobile-web-app-status-bar-style" content="#000">
+	<!-- <style>body { opacity:s 0; overflow-x: hidden; } html { background-color: #fff; }</style> -->
+</head>
+<body data-spy="scroll" data-target=".navbar" data-offset="50" class="loaded" link="blue">
+<!-- Preloader -->
+<div class="preloader">
+	<div class="cssload-spinner">
+		<div class="cssload-ball cssload-ball-1"></div>
+		<div class="cssload-ball cssload-ball-2"></div>
+		<div class="cssload-ball cssload-ball-3"></div>
+		<div class="cssload-ball cssload-ball-4"></div>
+	</div>
+</div>
+<!-- Preloader -->
+<div class="site-content">
+	<!-- Naviigation -->
+	<div class="navbar-wrap">
+		<div class="navbar">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-12">
+						<nav class="navbar-menu">
+							<div class="navbar-header">
+								<button class="collapsed navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-example-js-navbar-scrollspy">
+									<span class="icon-bar"></span>
+									<span class="icon-bar"></span>
+									<span class="icon-bar"></span>
+								</button>
+							</div>
+							 
+							<div class="navbar-full">
+								<div class="collapse bs-example-js-navbar-scrollspy">
+									<ul class="nav navbar-nav">
+										<li style="display: none;"><a></a></li>
+										<li><a href="http://www.linkedin.com/in/baburajkallarakkal">About Me</a></li>
+										<li><a href="http://padmavyuha.blogspot.com/">Blog</a></li>
+										<li><a href="https://sourceforge.net/projects/oraclerman/">Projects</a></li>
+										<li><a href="https://hub.docker.com/u/baburaj/">Docker</a></li>
+										<li><a href="mailto:raj.anju@gmail.com">Contact Me</a></li>
+										<li>
+										</li>
+									</ul>
+									<!-- btn -->
+									<div class="nav-button main-button">
+										<a href="#" class="btn btn-nav btn-block" role="button">
+											Site is in Beta!
+										</a>
+									</div>
+									<!-- btn -->
+								</div>
+							</div>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Naviigation -->
+	
+
+<!-- Header -->
+	<div class="menu-sticky"></div>
+
+	 
+
+	<!-- Screen-one -->
+	<div class="screen-one">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="screen-one-title">
+						<h2>RHCE: Samba, Postfix, Chrony and NTP</h2>
+					</div>
+				</div>
+			</div>
+		</div>
+	 
+		<div class="container">
+					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0s">
+						<span>01.</span>
+						<div class="screen-one-item-container">
+							<h3>Samba</h3>
+							<p> Configurations/SELinux settings for Samba (RHCE) </p>
+							<p> </p>
+<pre>
+
+#SELinux fcontext for Samba files.
+samba_share_t  
+
+#SELinux fcontext for Samba and any other network service like FTP, NFS etc.
+public_content_t type allow them to be read by FTP, Apache, Samba and rsync. 
+Files labeled with the public_content_rw_t type require booleans to be set before 
+services can write to files labeled with the public_content_rw_t type.
+
+For Samba it's - smbd_anon_write.
+
+Another important boolean is samba_share_nfs. By default, SELinux prevents Samba daemons from reading and writing NFS shares.
+# setsebool -P samba_share_nfs=1
+
+#Debug levels goes with d0 - d9
+[root@rhce3 ~]# smbclient -k //rhce2/smbsdata -U user7 -d9
+
+#NT_STATUS_LOGON_FAILURE error, a typical reason for this is failure to use the FQDN.
+
+[root@rhce3 samba]# smbclient -L //rhce2 -U user11
+Enter SAMBA\user11's password:
+session setup failed: NT_STATUS_LOGON_FAILURE
+
+[root@rhce3 samba]# smbclient -L //rhce2.intercloudzone.com -U user11
+Enter SAMBA\user11's password:
+Domain=[RHCE2] OS=[Windows 6.1] Server=[Samba 4.6.2]
+
+#Samba multiuser option with elevated privlege.
+mount -o username=dev2 -o rw,multiuser,sec=ntlmssp //rhce1.intercloudzone.com/smbdevops /mnt/smbmulti/
+
+[root@rhce5 ~]# mount -o username=kuttu,multiuser,sec=ntlmssp //kerberos.intercloudzone.com/smbshare /sambamount
+Password for kuttu@//kerberos.intercloudzone.com/smbshare:  *****
+
+[kuttu@rhce5 sambamount]$ ls -al
+ls: reading directory .: Permission denied
+total 0
+
+[root@rhce5 ~]# touch /sambamount/cfile
+touch: cannot touch ‘/sambamount/cfile’: Permission denied
+
+[kuttu@rhce5 sambamount]$ id
+uid=1000(kuttu) gid=1000(kuttu) groups=1000(kuttu) context=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023
+[kuttu@rhce5 sambamount]$ cifscreds add kerberos.intercloudzone.com
+Password:
+
+[kuttu@rhce5 sambamount]$ ls -ltr
+total 0
+-rw-r--r--. 1 root root 0 May 11 16:35 afile
+-rw-r--r--. 1 root root 0 May 11 16:35 bfile
+
+#Create a group share for mounting with Samba.
+semanage fcontext -a -t samba_share_t "/groupshare(/.*)?"
+restorecon -v /groupshare/
+
+chown root:group1 /groupshare/
+chmod 2770 /groupshare/
+
+groupadd -g 2000 group1
+useradd -u 3000 -G group1 user1
+useradd -u 3000 -G group1 user2
+
+smbpasswd -x user1
+smbpasswd -x user2
+
+[groupshare]
+       comment = Group Share
+       path = /groupshare
+  valid users = @group1
+  writable = yes
+  create mask = 0660
+  force create mode = 0660
+
+#Testparm.
+testparm - Will test the syntax of configuration file.
+
+On Client:
+mount //kerberos.intercloudzone.com/groupshare /groupmount/ -o username=user1
+mount //kerberos.intercloudzone.com/groupshare /groupmount/ -o username=user2
+
+#Samba 
+[root@rhce4 samba]# lsof -i :445
+COMMAND  PID USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
+smbd    2870 root   34u  IPv6  42902      0t0  TCP *:microsoft-ds (LISTEN)
+smbd    2870 root   36u  IPv4  42904      0t0  TCP *:microsoft-ds (LISTEN)
+ 
+[root@rhce4 samba]# smbclient  //kerberos.intercloudzone.com/smbshare -U kuttu
+Enter SAMBA\kuttu's password:
+tree connect failed: NT_STATUS_BAD_NETWORK_NAME
+
+File Permissions, DNS definition and SELINUX booleans are 3 things to triple check here.
+
+</pre>
+						</div>
+				</div>
+
+				   <div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.1s">
+						<span>02.</span>
+						<div class="screen-one-item-container">
+							<h3> Postfix </h3>
+							<p> Practice notes on postfix configuration/null client.
+							</p>
+							<p> </p>
+
+<pre>
+
+#Postix null client configuration
+
+myhostname = srv1.rhce.local
+mydomain = rhce.local
+myorigin = $mydomain
+relayhost = [10.8.8.70] # Disable MX lookups by using SQuare brackets.
+inet_interfaces = loopback-only #    Do not accept mail from the network.
+mydestination =           "Disable local mail delivery. All mail goes to the mail server s specified in relayhost"
+mynetworks = 127.0.0.0/8 [::]/128 #Only messages that originate from the 127.0.0.0/8 network and the [::1]/128 network are forwarded to the relay host by the null client.
+local_transport = error: local delivery disable # prevent the local null client from sorting any mail into mailboxes
+
+#Postfix/Sendmail.
+Only one service should be running, check via alternativies --list ( shutoff one) to avoid errors.
+
+#A user with /sbin/nologin can check mail due to the fact that the saslauth is configured..
+
+[root@rhce4 ~]# cat /etc/sasl2/smtpd.conf
+pwcheck_method: saslauthd
+mech_list: plain login
+
+#Configure Postfix to enable user authentication on the physical host system. Do not make any additional changes to the local system.
+Make sure e-mails can be sent from user to user locally. Forward e-mails directed to the local root account to a regular account on the local system.
+
+inet_interfaces = loopback-only
+inet_protocols = all
+myhostname = rhce5.intercloudzone.com
+myorigin = $mydomain
+mydestination = $myhostname, localhost.$mydomain, localhost
+
+[root@rhce4 README_FILES]# grep ^root /etc/aliases
+root:		devopsuser1
+
+[root@rhce4 README_FILES]# newaliases
+
+[root@rhce5 postfix]# telnet localhost 25
+Trying ::1...
+Connected to localhost.
+Escape character is '^]'.
+220 rhce5.intercloudzone.com ESMTP Postfix
+EHLO localhost
+
+[root@rhce5 postfix]# date | mail -s "Root mail" root@localhost
+You have mail in /var/spool/mail/root
+[root@rhce5 postfix]# mail -u devopsuser1
+Heirloom Mail version 12.5 7/5/10.  Type ? for help.
+"/var/mail/devopsuser1": 3 messages 1 new
+    1 root                  Wed May 16 17:20  19/678   "Test"
+    2 root                  Wed May 16 17:20  19/678   "Test"
+>N  3 root                  Wed May 16 18:46  18/651   "Root mail"
+&
+
+[root@rhce5 postfix]# firewall-cmd --add-rich-rule='rule family=ipv4 source address=192.168.0.0/16 service name=smtp accept'
+success
+
+1. Forward local mail, reject incoming mail
+
+my_destination = localhost
+inet_interfaces = loopback-only # No interfaces listening in on 25 to accept mail
+
+relay_host = mailserver.com #Forward any mails
+
+2. Receive local network mail and forward all mail to central mail server.
+
+inet_interfaces = all
+mydestination = $myhostname, localhost.$mydomain, localhost, $mydomain.
+mynetworks = 192.168.122.0/24
+disable_dns_lookups = yes
+
+relay host = server.intercloudzone.com
+
+#Delete all
+postsuper -d ALL deferred
+
+#Delete all emails for a specific user.
+echo 'd *' | mail -N -u username
+
+#For Postfix settings
+man 5 postconf
+
+#Relayhost settings
+ 
+myhostname = rhce1.intercloudzone.com
+myorigin = $mydomain
+mydestination = $myhostname, localhost.$mydomain, localhost, $mydomain
+mynetworks = 192.168.122.0/24, 192.168.110.0/24, 127.0.0.0/8
+smtp_host_lookup = native
+disable_dns_lookups = yes # Deprecated from 2.11 onwards 
+aliases is in /etc and should be updated with newaliases instead of postmap
+smtp_dns_support_level = disabled # This parameter overrides all parameters and ensure DNS Looksps are disabled 
+reject all incoming email : inet_interfaces = loopback-only ( all means receive mails)
+
+The relayhost prevents mail from getting stuck on the null client if it is turned off while some remote destination is unreachable.
+
+The loopback-only tells to not accept mail from the network. Only messages that originate from the
+127.0.0.0/8 network and the [::1]/128 network are forwarded to the relay host by the null client.
+
+We prevent the local null client from sorting any mail into mailboxes by putting a local_transport parameter. 
+We also disable local mail delivery by not specifying mydestination. All mail goes to the mail server as specified in relayhost.
+ Note that we can also use a DNS name for the relayhost, as well as turn off MX lookups by putting a record in square brackets.
+
+Note: Check the man page and ensure the smptd_client_restrictions are added to main.cf
+
+       /etc/postfix/main.cf:
+           smtpd_client_restrictions =
+               check_client_access hash:/etc/postfix/access
+
+       /etc/postfix/access:
+           1.2.3   REJECT
+           1.2.3.4 OK
+
+#Time out on DNS lookups
+Apr 18 18:53:28 rhce4 postfix/smtp[2882]: B1A97651073: to=, orig_to=, relay=none, delay=60, delays=0.11/0.02/60/0, dsn=4.4.1, status=deferred (connect to mx.intercloudzone.com[66.96.140.122]:25: Connection timed out)
+
+[root@rhce4 ~]# postconf -d | grep dns
+disable_dns_lookups = no
+
+#Check queues
+mailq
+
+#Requeue
+[root@rhce4 postfix]# postsuper -r DE48A60CCBE
+postsuper: DE48A60CCBE: requeued
+
+-Mail queues
+mailq , postfix 
+
+#Resending email.
+postfix -f
+
+#Postfix 
+postfix -vv or postfix check ( Syntax checking)
+
+#Aliases: Command = newaliases ( Local -> Local/Remote)
+
+[root@rhce4 postfix]# tail -1 /etc/aliases
+mike: barry,raj.anju@gmail.com
+
+[root@rhce4 postfix]# echo "Testing mail to mike" | mail -s "Test subject - send to mike" mike
+
+[root@rhce4 postfix]# echo | mail -u barry
+Heirloom Mail version 12.5 7/5/10.  Type ? for help.
+"/var/mail/barry": 1 message
+>   1 root                  Thu Jun  7 09:23  19/672   "Test subject - send to mike"
+Message  1:
+
+--Delivery log
+Jun  7 09:23:26 rhce4 postfix/pickup[1420]: 768906043DF: uid=0 from=<root>
+Jun  7 09:23:26 rhce4 postfix/cleanup[5116]: 768906043DF: message-id=<20180607142326.768906043DF@rhce4.intercloudzone.com>
+Jun  7 09:23:26 rhce4 postfix/qmgr[1421]: 768906043DF: from=<root@rhce4.intercloudzone.com>, size=503, nrcpt=1 (queue active)
+Jun  7 09:23:26 rhce4 postfix/local[5118]: 768906043DF: to=<barry@rhce4.intercloudzone.com>, orig_to=<mike>,
+  relay=local, delay=0.13, delays=0.09/0.02/0/0.03, dsn=2.0.0, status=sent (delivered to mailbox)
+Jun  7 09:23:26 rhce4 postfix/qmgr[1421]: 768906043DF: removed
+
+#Canonical: Establish mapping between local and non-local mail addresses
+
+[root@rhce4 postfix]# tail -2 canonical
+@intercloudzone.com @localhost.localdomain
+anju@intercloudzone.com anju@localhost.localdomain
+
+[root@rhce4 postfix]# echo "Testing mail to anju" | mail -s "Test subject " anju@intercloudzone.com
+
+[root@rhce4 postfix]# mail -u anju
+Heirloom Mail version 12.5 7/5/10.  Type ? for help.
+"/var/mail/anju": 1 message 1 new
+>N  1 root                  Thu Jun  7 10:49  18/654   "Test subject"
+& quit
+
+#Virtual: Mostly for redirects. Mail intended for one user to one more other email addresses.
+[root@rhce4 postfix]# tail -2 virtual
+@example.com  anju
+radha kuttu,kannan
+
+[root@rhce4 postfix]# tail -2 main.cf
+virtual_alias_domains = example.com
+virtual_alias_maps = hash:/etc/postfix/virtual
+
+[root@rhce4 postfix]# echo "Mail testing " | mail -s "testing" kuttu@example.com
+
+[root@rhce4 postfix]# mail -u anju
+Heirloom Mail version 12.5 7/5/10.  Type ? for help.
+"/var/mail/anju": 1 message 1 new
+>N  1 root                  Thu Jun  7 11:49  18/635   "testing"
+& quit
+
+[root@rhce4 postfix]# echo "Mail to radha" | mail -s "mail to radha -fwd to k & k" radha
+
+[root@rhce4 postfix]# echo | mail -u kuttu
+Heirloom Mail version 12.5 7/5/10.  Type ? for help.
+"/var/mail/kuttu": 1 message 1 new
+>N  1 root                  Thu Jun  7 11:52  18/657   "mail to radha -fwd to k & k"
+Message  1:
+From root@rhce4.intercloudzone.com  Thu Jun  7 11:52:01 2018
+Return-Path: <root@rhce4.intercloudzone.com>
+X-Original-To: radha
+Delivered-To: kuttu@rhce4.intercloudzone.com
+Date: Thu, 07 Jun 2018 11:52:01 -0500
+To: radha@rhce4.intercloudzone.com
+Subject: mail to radha -fwd to k & k
+User-Agent: Heirloom mailx 12.5 7/5/10
+Content-Type: text/plain; charset=us-ascii
+From: root@rhce4.intercloudzone.com (root)
+Status: R
+
+#Postfix Configurations in high-level.
+
+inet_interfaces  Controls which network intefaces Postfix listens on for incoming and outgoing
+                 messages. If set to loopback-only, postfix listens only on 127.0.0.1 and ::1.
+
+myorigin         Rewrite locally posted email to appear to come from this domain. This helps ensure
+                 responses return to the correct domain the mail server is responsible for.
+
+mydestination    Configure which domains the mail server is an endpoint for. Email addressed to 
+                 these domails are delivered into local mailboxes.
+
+local_transport  Determine how email addressed to $mydestination should be delivered. By default, set to
+                 local:$myhostname , which use 'local' mail delivery agent to deliver incoming mail to the local 
+                 message store in /var/spool/mail.
+
+                 Set this to error: error messsage, eg. local_transport = error: local delivery disabled, to disable
+                 local delivery completely.
+
+mynetworks       Allow relay through this mail servers listed to anywhere without auth. If mynetworks is not explicity set it will be filled
+                 automatically using setting for mynetworks_style. The default for mynetworks_style is subnet, meaning
+                 all subnets in which the server has an IP address will be added to mynetworks. THis is often not a desired
+                 situation, especially in situations where the server has an external IP address. It is recommended that
+                 a mynetworks setting get's added manually or mynetworks_style is set to host.
+
+                 For null client, mynetworks = 127.0.0.0/8 [::1]/128, so that only mesages from these networks are forwarded to relay host.
+
+
+#Virtual reference example
+
+Let's say there are 3 domains, one main and two virtual
+
+example.com (this is also the domain I’ve used for naming the server)
+example.org
+example.net
+
+--- main.cf --
+myhostname = server.example.com
+mydomain = example.com
+myorigin = $mydomain
+mydestination = $myhostname, localhost.$mydomain, localhost, $mydomain
+virtual_alias_domains = example.org example.net
+virtual_alias_maps = hash:/etc/postfix/virtual
+
+info@example.com                    user1
+info@example.org                    user2
+info@example.net                    user3
+
+Relocated: If user moved from example.com domain to example.org
+user1@example.com user1@example.net
+
+Transport: Maps users mail address and a host (next hop)
+user1@example.com smtp:host1.example.com
+
+</pre>
+						</div>
+					</div>
+
+					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
+						<span>03.</span>
+						<div class="screen-one-item-container">
+							<h3> Chrony/NTP </h3>
+							<p> Chrony and NTP configuration. <br>
+
+							  <br>
+						</p>
+						<p> </p>
+
+<pre>
+
+#NTP
+
+General info
+Sync hardware clock to systemclock (if NTP isn't present)
+hwclock --hctosys
+
+#Reverse..
+hwclock --systohc
+
+Before NTP configuation ensure the timezones are set correctly.
+
+#Setup an NTP peer, make sure to remove 'nopeer' from below on client
+and add peer server 
+
+The "ntp server" command points to a server (meaning you are the client), and no matter what your clock says, 
+you will jump to the server's clock setting because it has presumed authority of knowing what time it is.
+
+The "ntp peer" command is set between two devices.  And the assumption is that  neither one has authority (equal, peering)
+ to know what time it is, but the two will work on getting in sync.  Both sides will actually shift their clock 
+ (maximum jump of two minutes at a time, so if clocks are way different then it'll take a while to sync!) towards each other.
+
+restrict default nomodify notrap noquery
+peer 192.168.122.50
+
+Broadcast client listens only within the subnet
+Multicast client can span the local subnet (similar to Broadcasti)
+
+#Broadcast server configuration.
+"restrict" is only inbound 
+
+[root@rhce1 ~]# cat /etc/ntp.conf |grep -v ^# |grep -v ^$
+driftfile /var/lib/ntp/drift
+restrict default nomodify notrap nopeer noquery
+restrict 127.0.0.1
+restrict ::1
+server 0.rhel.pool.ntp.org iburst
+server 1.rhel.pool.ntp.org iburst
+server 2.rhel.pool.ntp.org iburst
+server 3.rhel.pool.ntp.org iburst
+broadcast 192.168.122.255 iburst
+disable auth
+includefile /etc/ntp/crypto/pw
+keys /etc/ntp/keys
+disable monitor
+
+[root@rhce1 ~]# ntpq -p; ntpstat
+     remote           refid      st t when poll reach   delay   offset  jitter
+==============================================================================
+*up2.com         195.219.14.21    2 u   43   64    1   53.916   -7.959   2.288
+ orchid.sidereal 200.98.196.212   2 u   42   64    1   51.787  -10.519   5.668
+ static-96-244-9 192.168.10.254   2 u   41   64    1   60.231   -0.570   3.590
+ ns1.rx-name.net 193.190.147.153  3 u   40   64    1  172.425    1.124   2.824
+ 192.168.122.255 .BCST.          16 u    -   64    0    0.000    0.000   0.000
+synchronised to NTP server (216.6.2.70) at stratum 3
+   time correct to within 1043 ms
+   polling server every 64 s
+
+#Broadcast client should have the subnet restrict clause so it can use the broadcast server subnet.
+
+[root@rhce2 ~]# cat /etc/ntp.conf |grep -v ^# |grep -v ^$
+driftfile /var/lib/ntp/drift
+restrict default nomodify notrap nopeer noquery
+restrict 127.0.0.1
+restrict ::1
+restrict 192.168.122.0 mask 255.255.255.0 nomodify notrap
+broadcastclient
+disable auth
+includefile /etc/ntp/crypto/pw
+keys /etc/ntp/keys
+disable monitor
+
+[root@rhce2 ~]# ntpq -p ; ntpstat
+     remote           refid      st t when poll reach   delay   offset  jitter
+==============================================================================
+*rhce1           96.244.96.19     3 u   20   64    1    0.357  -28.578   0.061
+synchronised to NTP server (192.168.122.10) at stratum 4
+   time correct to within 1040 ms
+   polling server every 64 s
+
+* => Current source of sync
+- => Indicates system not considered for sync.
+Blank => Indicates server rejected or high stratum level or failed sanity checks.
+
+3rd Column Stratum; Anything > 15 is invalid.
+
+reach = 377 All probes were answered.
+
+#Display in seconds.
+ntpdc -p 
+
+timedatectl set-ntp 0
+
+#Chrony commands examples
+chroncy sources -v, chrony burst 2/4 
+
+</pre>
+ 
+						</div>
+					</div>
+
+<!-- Contact -->
+<a class="anchor" id="contact"></a>
+
+<section class="contact">
+		<div class="contact-wrap">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-12 __web-inspector-hide-shortcut__">
+						<div class="contact-title">
+							<h2></h2>
+							<p> 
+								<br class="disable"></p>
+						</div>
+						<!-- /.contact-title -->
+					</div>
+					<!-- /.col-md-12 -->
+					
+					<!-- /.col-md-10 -->
+				</div>
+				<!-- /.row -->
+			</div>
+			<!-- /.container -->
+		</div>
+		<!-- /.directions-wrap -->
+	</section>
+
+</div>
+<!-- Site content -->
+
+<!-- Footer -->
+<a class="anchor" id="footer"></a>
+<footer class="footer" style="background-image: url(img/footer-bg.jpg); background-position:center; background-size: cover; background-repeat:no-repeat;">
+	<div class="footer-wrap">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="footer-title">
+						<h2>www.intercloudzone.com</h2>
+						<ul class="footer-icons">
+						<script src="//platform.linkedin.com/in.js" type="text/javascript"> lang: en_US</script>
+						<script type="IN/Share" data-url="http://www.intercloudzone.com/samba-postfix-chrony.html"></script>
+						</ul>
+						<p> </p>
+					</div>
+					<!-- /.footer-title -->
+				</div>
+				<!-- /.col-md-12 -->
+			</div>
+			<!-- /.row -->
+		</div>
+		<!-- /.container -->
+	</div>
+	<!-- /.directions-wrap -->
+</footer>
+<!-- Footer -->
+
+
+
+<!-- links -->
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?key=AIzaSyDDuC8pr6YqiBr9wqfhNIJ56AqwzWKhiQo"></script>
+<!-- build:js -->
+
+ 
+
+<script src="js/libs/jquery.min.js"></script>
+<script type="text/javascript" src="js/libs/bootstrap.min.js"></script>
+<script type="text/javascript" src="js/libs/waypoints.min.js"></script>
+<script type="text/javascript" src="js/libs/slick.min.js"></script>
+<script type="text/javascript" src="js/libs/magnific-popup.min.js"></script>
+
+<script type="text/javascript" src="js/common.js"></script>
+<!-- endbuild -->
+<!-- links -->
+</body>
+</html>

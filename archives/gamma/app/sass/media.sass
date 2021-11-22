@@ -1,0 +1,368 @@
+@import "vars"
+
+/* Medium Devices, Desktops */
+@media only screen and (max-width : 1200px)
+	// Navigation
+	.navbar-nav
+		li
+			margin-right: 20px
+	// Navigation
+	// Check
+	.check
+		&-title
+			img
+				width: 100%
+	// Check
+
+	// Services
+	.services
+		&-wrap
+			padding-top: 20px
+			padding-bottom: 90px
+		&-image
+			margin-top: 80px
+			img
+	// Services
+
+	// App
+	.app
+		&-image
+			top: -60px
+			&-second
+				top: 93px
+	// App
+
+
+/* Medium Devices, Desktops */
+@media only screen and (max-width : 992px)
+	/**/
+	// Main styles
+	.disable
+		display: none
+	// Main styles
+
+	// Naviigation
+	.collapse
+		display: none
+	.menu-sticky
+		display: none !important
+	.navbar-wrap
+		position: fixed
+		padding-top: 0
+		background-color: $main-white
+		box-shadow: 0px 3px 15px 0px rgba(0, 0, 0, 0.23)
+	.navbar-wrap-overlay.active
+		height: 100%
+		transition: all 0.2s ease
+	.navbar
+		position: relative
+		padding: 0
+	.navbar-menu
+		position: relative
+		display: inline-block
+		padding-top: 20px
+		width: 100%
+		text-align: center
+		z-index: 2
+		// menu
+		.navbar-nav
+			position: relative
+			float: none
+			li
+				margin: 12px 0
+				float: none
+				a
+					width: 100%
+					text-align: center
+		.nav-button
+			margin-bottom: 40px
+		.navbar-full
+			width: 100%
+
+	// Icon
+	.navbar-header
+		float: right
+	.icon-bar:last-child
+		margin-bottom: 0 !important
+	.navbar-toggle
+		position: relative
+		display: block
+		background-image: none
+		padding: 0
+		margin: 0 0 0 0 !important
+	.navbar-toggle .icon-bar
+		margin-top: 9px
+		margin-bottom: 5px
+		display: block
+		width: 27px
+		height: 3px
+		transition: 0.3s ease
+	// Navigation
+
+	// Screen-one
+	.screen-one
+		&-title
+			padding-top: 0
+			padding-bottom: 60px
+		&-image
+			position: relative
+			width: 100%
+			height: 500px
+			margin-bottom: 40px
+	.screen-one-button
+		margin-bottom: 0
+	// Screen-one
+
+	// Services
+	.services
+		&-wrap
+			padding-top: 60px
+		&-item
+			&:first-child
+				padding-top: 0
+			&-title
+				float: left
+				h3
+					float: right
+				&-icon
+					margin-left: 0
+					margin-right: 15px
+			p
+				text-align: left
+		&-image
+			margin-top: 40px
+			img
+				width: auto
+	// Services
+
+	// Directions
+	.directions-container
+		&:before
+			display: none
+	.directions-item
+		padding: 0
+	.directions-box
+		margin: 0
+		margin-bottom: 20px
+		position: relative
+		&:after
+			top: -16px
+			left: 12px
+			transform: rotate(90deg)
+	// Directions
+
+	// Screen-two
+	.screen-two
+		margin-bottom: 100px
+		&-item
+			&:first-child
+				margin-top: 60px
+		&-image
+			position: relative
+			height: 500px
+			width: 100%
+	// Screen-two
+
+	// App
+	.app
+		margin: 0
+		&-image
+			img
+				position: relative
+			&-first
+				left: 0%
+				z-index: 1
+			&-second
+				position: absolute !important
+				left: 150px !important
+				top: 123px
+				z-index: 2
+		h2
+			padding-top: 72px
+	// App
+
+	// Team
+	.team
+		&-wrap
+			margin-top: 94px
+			margin-bottom: 63px
+	// Team
+
+	// Questions
+	.questions
+		margin-bottom: 0
+		&-container
+			&-image
+				img
+					position: relative
+				&-first
+					left: 0%
+					z-index: 2
+				&-second
+					position: absolute !important
+					left: 245px !important
+					z-index: 1
+	// Questions
+
+	// Testimonials
+	.testimonials
+		margin-top: 100px
+		&-wrap
+			margin-bottom: 60px
+
+	// Testimonials
+
+	// Subscribe
+	.subscribe
+		&-wrap
+			margin-bottom: 100px
+		&-title
+			width: 100%
+			margin-bottom: 54px
+			h2
+				text-align: center
+			p
+				padding-top: 19px
+				text-align: center
+	// Subscribe
+
+
+/* Extra Small Devices, Phones */
+@media only screen and (max-width : 641px)
+	// Map
+	#map-canvas
+		position: relative
+		height: 400px
+	.map-wrap
+		margin: 0
+		&-bg
+			width: 100%
+		&-item
+			&:after
+				display: none
+			&:last-child
+				padding-bottom: 0
+	// Map
+
+
+/* Extra Small Devices, Phones */
+@media only screen and (max-width : 480px)
+	// Header
+	.header
+		&-button
+			margin-right: 20px
+	.header-image-container
+		display: none
+	.main-button
+		.btn-default
+			min-width: 140px
+	// Header
+
+		// Screen-one
+	.screen-one
+		&-image
+			height: 250px
+	// Screen-one
+
+	// Services
+	.services
+		&-image
+			img
+				width: 100%
+	// Services
+
+	// App
+	.app
+		&-image
+			img
+				width: 60%
+			&-second
+				left: 140px !important
+	// App
+
+	// Screen-two
+	.screen-two
+		&-image
+			height: 250px
+	// Screen-two
+
+	// Questions
+	.questions
+		&-container
+			&-image
+				img
+					width: 55%
+				&-first
+					left: 0%
+				&-second
+					position: absolute !important
+					left: 170px !important
+	// Questions
+
+
+/* Custom, iPhone Retina */
+@media only screen and (max-width : 360px)
+	// Navigation
+	.logo-navbar
+		padding-top: 5px
+		a img
+			width: 70%
+	// Navigation
+
+	// Header
+	.main-button
+		.btn-default
+			padding: 0 20px
+			height: 45px
+			line-height: 45px
+			min-width: 100px
+	// Header
+
+	// About
+	.about
+		&-item
+			&-icon
+				float: none
+				margin-bottom: 20px
+	// About
+
+	// Screen-one
+	.screen-one
+		&-image
+			height: 250px
+		&-item
+			span
+				width: 60px
+				height: 60px
+				line-height: 60px
+			&-container
+				padding-left: 0
+				padding-top: 40px
+	// Screen-one
+
+	// Services
+	.services
+		&-item
+			&-title
+				&-icon
+					display: block
+					margin-bottom: 20px
+	// Services
+
+	// App
+	.app
+		&-image
+			&-second
+				top: 80px
+				left: 100px !important
+	// App
+
+	// Questions
+	.questions
+		&-container
+			&-image
+				&-first
+					left: 0%
+				&-second
+					left: 115px !important
+	// Questions

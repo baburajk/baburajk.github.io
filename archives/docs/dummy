@@ -1,0 +1,124 @@
+Section 1
+First he given the redhat Server without Password here Exam Start........ 
+
+->Change the root password
+-> ping to the server1.example.com system
+->Create 100MB partition and mount that partition permanently
+->LVM
+• SELinux must be running in the Enforcing mode.
+• Create the following users, groups, and group memberships:
+– A group named sysusers
+– A user andrew who belongs to sysusers as a secondary group
+– A user susan who also belongs to sysusers as a secondary group
+– A user brad who does not have access to an interactive shell on the system, and who is not a member of sysusers
+– andrew, susan, and brad should all have the password of password
+• Create a collaborative directory /shared/sysusers with the following characteristics:
+– Group ownership of /shared/sysusers is sysusers
+– The directory should be readable, writable, and accessible to members of sysusers, but not to
+any other user. (It is understood that root has access to all files and directories on the system.)
+– Files created in /shared/sysusers automatically have group ownership set to the sysusers
+group
+• Install the appropriate kernel update from ftp://server1.example.com/pub/updates. The following
+criteria must also be met:
+– The updated kernel is the default kernel when the system is rebooted
+– The original kernel remains available and bootable on the system
+• Enable IP forwarding on your machine.
+• Set up the default local print queue to forward jobs to the IPP (CUPS) print queue stationx on server1.example.com, where x is your station number. Configure this printer as a “Generic – text- only” print queue.
+Note: The queue stationx on server1 dumps print jobs into the file http://server1/printers/stationx.
+This file can be examined to confirm that you have configured the print queue correctly.
+• The user andrew must configure a cron job that runs daily at 15:25 local time and executes
+– /bin/echo hello
+• Bind to the NIS domain RHCE provided by 172.24.254.254 for user authentication. Note the following:
+– nisuserx should be able to log into your system, where x is your station number, but will not have a home directory until you have completed the autofs requirement below
+– All NIS users have a password of password
+
+• Copy the file /etc/fstab to /var/tmp. Configure the permissions of /var/tmp/fstab so that:
+– the file /var/tmp/fstab is owned by the root user.
+– the file /var/tmp/fstab belongs to the group root.
+– the file /var/tmp/fstab should not be executable by anyone.
+– the user andrew is able to read and write /var/tmp/fstab.
+– the user susan can neither write nor read /var/tmp/fstab.
+– all other users (current or future) have the ability to read /var/tmp/fstab.
+
+Section 2
+• Configure your system so that it is an NTP client of server1.example.com.
+RHCE (Network Services and Security) Requirements Perform all of the following steps. 
+
+. Configure the quotas to neo user soft limit is 50MB hard limit is 70MB
+
+.Extend the LVM to 290 to 320
+
+• Configure autofs to automount the home directories of NIS users. Note the following:
+– server1.example.com (172.24.254.254)NFS-exports /rhome/stationx to your system, where x is your station number
+– nisuserx’s home directory is server1.example.com:/rhome/stationx/nisuserx
+– nisuserx’s home directory should be automounted locally beneath /rhome as /rhome/nisuserx
+– home directories must be writable by their users
+– While you are able to log in as any of the users nisuser1 through nisuser20, the only home directory that is accessible from your system is nisuserx.
+
+Example: station100 would configure the automounter such that nisuser100’s home directory
+/rhome/nisuser100 gets mounted automatically upon login. The NFS share would be
+server1.example.com:/rhome/station100/nisuser100.
+
+• Configure SSH access as follows:
+– susan has remote SSH access to your machine from within example.com
+– Clients within my133t.org should NOT have access to ssh on your system
+
+• Configure POP3 email on your system according to these criteria:
+– brad must be able to retrieve email from your machine using POP3 from within example.com
+– Clients within the my133t.org domain should not have access to your POP3 service
+
+• Configure FTP access on your system:
+– Clients within the example.com domain should have anonymous FTP access to your machine
+– Clients outside example.com should NOT have access to your FTP service
+
+• Share the /shared directory via SMB:
+– Your SMB server must be a member of the SMBGROUP workgroup
+– The share’s name must be shared
+– The shared share must be available to example.com domain clients only
+– The shared share must be browseable
+– susan must have read access to the share, authenticating with the same password password, if
+necessary
+
+• Implement a web server for the site http://stationX.example.com, then perform the following steps:
+– Download ftp://server1.example.com/pub/rhce/station.html
+– Rename the downloaded file to index.html
+– Copy this index.html to the DocumentRoot of your web server
+– Do NOT make any modifications to the content of index.html
+
+• Export your /shared directory via NFS to the example.com domain only.
+Note: because you will not have root access, you will not be able to directly mount your exported
+/shared directory using your guest account on the system provided for testing. However, the auto-
+mounter on the system has been configured such that it will automount your /shared directory under
+/home/guestx/nfs/stationx, where x is your station number. Consequently, successful execution of
+ls /home/guestx/nfs/stationx indicates that the automounter was able to automount your NFS
+share.
+
+• Configure SMTP mail service according to the following requirements:
+– Your mail server should accept mail from remote hosts and localhost
+– susan must be able to receive mail from remote hosts
+– Mail delivered to susan should spool into the default mail spool for susan, /var/spool/mail/susan.
+Additional RHCE Requirements
+Perform any two of the following steps.
+Completion of more than two will not result in extra credit.
+If time allows, you may wish to complete more than the minimum just in case one of your tasks does not meet our specifications. Please note that these additional items are part of your RHCE-specific score.
+
+• Provide SSL-encapsulated IMAP access (IMAPS):
+– IMAPS must be available to brad from example.com
+– IMAPS must NOT be available to other networks or domains.
+– The SSL certificate for the IMAPS server must be created as follows:
+∗ Use the defaults for Country, State, Locality, and Organization Name
+∗ Set Organizational Unit to GLS
+∗ Set Common Name to stationx.example.com
+∗ Set Email Address to root@stationx.example.com
+
+• Implement a web proxy server bound to port 8080.
+– Clients within example.com should have access to your proxy server
+– Clients outside of example.com should NOT have access to your proxy server
+
+• Extend your web server to include a virtual host for the site http://wwwx.example.com/, where x is your station number, then perform the following steps:
+– Set the DocumentRoot to /var/www/virtual
+– Download ftp://server1.example.com/pub/rhce/www.html
+– Rename the downloaded file to index.html
+– Place this index.html in the DocumentRoot of the virtual host
+– Do NOT make any modifications to the content of index.html
+– Ensure that susan is able to create content in /var/www/virtual

@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="Generator" content="EditPlus®">
+  <meta name="Author" content="">
+  <meta name="Keywords" content="">
+  <meta name="Description" content="">
+  <title>Notes</title>
+ <link rel="stylesheet" href="css/stylesheet1.css">
+ <link rel="stylesheet" href="css/stylesheet2.css">
+ <link rel="stylesheet" href="css/w3.css">
+
+ <style type="text/css" >
+	  
+ </style>
+<script Language="Javascript">
+function toggle() {
+    var x = document.getElementById('contents');
+    if (x.style.display === 'none') {
+		document.getElementById("togglelink").text = "hide"
+        x.style.display = 'block';
+    } else {
+        x.style.display = 'none';
+		document.getElementById("togglelink").text = "show"
+    }
+}
+</script>
+
+
+ </head>
+	<body> 
+		<div id="nav">
+			<div id="jumplinks"> Quick notes </div>
+		</div>
+    
+		<div id="body">
+			<div id="content" class="mw-body" role="main">
+ 				<div id="toc" class="toc"><div id="toctitle"><h2>Contents</h2><span class="toctoggle">&nbsp;[<a href="javascript:toggle()" id="togglelink">hide</a>]&nbsp;</span></div>
+					<div id="contents">
+						<ul>
+							<li> <a href="#iscsi">	 <span class="tocnumber">	1 </span> <span class="toctext"> ISCSI	</span></a> </li> 
+							<li> <a href="#NTP">	 <span class="tocnumber">	2 </span> <span class="toctext"> NTP	</span></a> </li> 
+							<li> <a href="#firewalld">	 <span class="tocnumber">	3 </span> <span class="toctext"> Firewalld 	</span></a> </li> 
+							<li> <a href="#IPv6">	 <span class="tocnumber">	2 </span> <span class="toctext"> IPv6 	</span></a> </li> 
+						</ul>
+					</div>
+				</div>
+
+				<style>
+					html,body,h1,h2,h3,h4,h5,h6 { font-family: "Comic Sans MS", cursive, sans-serif; }
+				</style>
+ 
+
+
+<div class="w3-container">
+	<h1><span class="mw-headline" id="Bonding_Teaming"> Bonding/Teaming </h1>	
+<p>
+
+</p>
+
+<pre> 
+ 
+docker pull registry.access.redhat.com/rhel7
+
+openssl genrsa -out id_rsa_aws.pem 2048
+openssl rsa -in id_rsa_aws -pubout > id_rsa_aws.pub
+
+echo $(cat id_rsa_aws.pub) | tr -d ' '
+
+
+baburaj@Aurora-2:~/AURORA/CLOUD/AWS\> aws ec2 import-key-pair --key-name id_rsa_aws --public-key-material MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuha51LsgwbZsQa40PlldQK5jJdBBggevQJU5AyTWIfrjV+5rMjUkehnwprrp18kMrwg+f92TN3mrEyQTlIysN+co/ALLUACJmf/TbGgTyPWhQDOD2JVAT3eQ4hdf+J36RJ2XZALvqQ2UfxFRIUWaLorsNeOAbEFRghslSXdDbIh4lxuBdPfFYoLTbVqEYn77PHI9tUxto1OiBhBxNo72xUY/kUX5XNF9Mxm+Q38TQ6omFUuoYNASzIpzBnCULkYmzqqPvxdMfX6Hxykao3cJC3w/cRAJrEvTYYtLq3bwDC8Z4mmWbQP6BH+lfAwKZWZ9k30g9JQyn881YVZ5YNwPOwIDAQAB
+{
+    "KeyFingerprint": "29:09:2a:c8:2e:f4:c2:a6:6d:e1:c2:ce:ee:54:e6:f3",
+    "KeyName": "id_rsa_aws"
+}
+
+
+ aws ec2 describe-regions --output table
+
+ aws ec2 describe-regions  | jq  -c '.Regions[] | { region: .RegionName } '
+
+ aws --profile useast2 ec2 get-launch-template-data --instance-id i-0e58f51ea581b5244 --query 'LaunchTemplateData' > useast2.json
+
+aws ec2 describe-images --owners 309956199498 --query 'Images[*].[CreationDate,Name,ImageId]' --filters "Name=name,Values=RHEL-7.?*GA*" --region us-east-1
+
+
+</pre>
+
+</div> 
+ 
+	
+</body>
+</html>

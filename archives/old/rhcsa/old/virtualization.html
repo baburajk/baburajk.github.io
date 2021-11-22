@@ -1,0 +1,1116 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="Generator" content="EditPlus®">
+  <meta name="Author" content="">
+  <meta name="Keywords" content="">
+  <meta name="Description" content="">
+  <title>Notes</title>
+ <link rel="stylesheet" href="css/stylesheet1.css">
+ <link rel="stylesheet" href="css/stylesheet2.css">
+ <link rel="stylesheet" href="css/w3.css">
+
+ <style type="text/css" >
+	  
+ </style>
+<script Language="Javascript">
+function toggle() {
+    var x = document.getElementById('contents');
+    if (x.style.display === 'none') {
+		document.getElementById("togglelink").text = "hide"
+        x.style.display = 'block';
+    } else {
+        x.style.display = 'none';
+		document.getElementById("togglelink").text = "show"
+    }
+}
+</script>
+
+
+ </head>
+	<body> 
+		<div id="nav">
+			<div id="jumplinks"> Reference Notes/Hints </div>
+		</div>
+    
+		<div id="body">
+			<div id="content" class="mw-body" role="main">
+ 				<div id="toc" class="toc"><div id="toctitle"><h2>Contents</h2><span class="toctoggle">&nbsp;[<a href="javascript:toggle()" id="togglelink">hide</a>]&nbsp;</span></div>
+					<div id="contents">
+						<ul>
+							<li> <a href="#kickstart">	 <span class="tocnumber">	1 </span> <span class="toctext"> Kickstart 	</span></a> </li>
+							<li> <a href="#dhcp">  <span class="tocnumber">	2 </span> <span class="toctext"> DHCP 	</span></a> </li>
+							<li> <a href="#interfaces"> <span class="tocnumber">	3 </span> <span class="toctext"> Interfaces 	</span></a> </li>
+							<li> <a href="#bonding-teaming"> 	 <span class="tocnumber">	4 </span> <span class="toctext"> Bonding/Teaming  	</span></a> </li>
+							<li> <a href="#storage"> 	 <span class="tocnumber">	5 </span> <span class="toctext"> Storage 	</span></a> </li>
+							<li> <a href="#networking"> 	 <span class="tocnumber">	6 </span> <span class="toctext"> Networking 	</span></a> </li>
+						</ul>
+					</div>
+				</div>
+
+				<style>
+					html,body,h1,h2,h3,h4,h5,h6 { font-family: "Comic Sans MS", cursive, sans-serif; }
+				</style>
+ 
+
+
+<div class="w3-container">
+	<h1><span class="mw-headline" id="kickstart"> Kickstart </h1>	
+<p>
+
+</p>
+
+<pre> 
+
+virt-install -n rhce1 --memory 1024 --vcpus 1 --os-variant rhel7 --disk vol=virspd01/rhce1.img --network network=default --location ftp://192.168.2.20/pub/rhel74 --extra-args ks=ftp://192.168.2.20/pub/ksconfig/rhce1.cfg
+
+
+
+root@mayura:/var/ftp/pub/ksconfig\> cat rhce1.cfg | grep -v ^# |grep -v ^$
+auth --enableshadow --passalgo=sha512
+url --url="ftp://192.168.2.21/pub/rhel74"
+firstboot --enable
+ignoredisk --only-use=vda
+keyboard --vckeymap=us --xlayouts='us'
+lang en_US.UTF-8
+reboot
+network  --bootproto=static --device=eth0 --gateway=192.168.122.1 --ip=192.168.122.10 --netmask=255.255.255.0 --ipv6=auto --activate
+network  --hostname=rhce1.intercloudzone.com
+services --enabled="chronyd"
+rootpw --plaintext oracle
+timezone America/Chicago --isUtc
+bootloader --location=mbr --boot-drive=vda --append=" console=ttyS0,115200,tty0"
+clearpart --all --initlabel --drives=vda
+part /boot --fstype="xfs" --ondisk=vda --size=500
+part pv.1 --fstype="lvmpv" --ondisk=vda --size=8000
+volgroup vgos --pesize=4096 pv.1
+logvol /home  --fstype="xfs" --size=1000 --name=home --vgname=vgos
+logvol /  --fstype="xfs" --size=4000 --name=root --vgname=vgos
+logvol swap  --fstype="swap" --size=500 --name=swap --vgname=vgos
+%packages
+@^minimal
+@core
+chrony
+kexec-tools
+%end
+%addon com_redhat_kdump --enable --reserve-mb='auto'
+%end
+%anaconda
+pwpolicy root --minlen=6 --minquality=1 --notstrict --nochanges --notempty
+pwpolicy user --minlen=6 --minquality=1 --notstrict --nochanges --emptyok
+pwpolicy luks --minlen=6 --minquality=1 --notstrict --nochanges --notempty
+%end
+
+
+root@mayura:/var/ftp/pub/ksconfig\> diff rhce1.cfg rhce2.cfg
+18,19c18,19
+< network  --bootproto=static --device=eth0 --gateway=192.168.122.1 --ip=192.168.122.10 --netmask=255.255.255.0 --ipv6=auto --activate
+< network  --hostname=rhce1.intercloudzone.com
+---
+> network  --bootproto=static --device=eth0 --gateway=192.168.122.1 --ip=192.168.122.20 --netmask=255.255.255.0 --ipv6=auto --activate
+> network  --hostname=rhce2.intercloudzone.com
+
+
+
+--Two interfaces with console
+virt-install --name "server1" --memory=1024 --disk vol=virspd00/server1.img --vcpus=1 --os-variant=rhel7 --os-type=linux --location=ftp://192.168.2.20/pub/rhel7 --network bridge=virbr1 --network bridge=virbr1 -x "ks=ftp://192.168.2.20/pub/ksconfig/server1.cfg console=ttyS0,115200,tty0"
+
+--How to configure 4 interfaces, all on DHCP. Note that there is NO 'network' specific configuration in the ks.cfg.All the IP's were configured as eth0, eth1, eth2, eth3 - with dynamic IP's
+
+virsh # vol-create-as virpool0 server10.img 8G
+Vol server10.img created
+
+virt-install --name=server10 --ram=1024 --vcpus=1 --autostart --os-type=linux --os-variant=rhel7 --location=ftp://192.168.2.11/pub/rhel7 --network bridge=br_fe --network bridge=virbr0 --network bridge=virbr1 --network bridge=virbr2 --disk vol=virpool0/server10.img --extra-args ks=ftp://192.168.2.11/pub/rhel7/ks.cfg
+
+--Configure STATIC ip address for the bridges configured via libvirt and br_fe bridge on the physical net is connected to the netgear router on the 192.168.2.0/24 subnet which is always dhcp.
+
+root@panchajanya:/var/ftp/pub/rhel7\> grep network ks.cfg
+# Use network installation
+network --device=eth0 --bootproto=dhcp --ipv6=auto --activate
+network --device=eth1 --bootproto=dhcp --ipv6=auto --activate
+network --device=eth2 --bootproto=static --ip=192.168.125.10 --netmask=255.255.255.0 --ipv6=auto --activate
+network --device=eth3 --bootproto=static --ip=192.168.130.10 --netmask=255.255.255.0 --ipv6=auto --activate
+network  --hostname=server10
+ 
+
+
+</pre>
+
+</div>
+
+ 	
+	
+<div class="w3-container">
+	<h1><span class="mw-headline" id="dhcp"> DHCP </h1>	
+<p>
+DHCP addresses can be converted to static ones by editing the net files 	
+</p>
+
+<pre> 
+root@panchajanya:/etc/libvirt/qemu\> virsh dumpxml server3  | grep -A1 mac
+&lt;partition&gt;/machine&lt;/partition&gt;
+&lt;/resource&gt;
+--
+    &lt;type arch='x86_64' machine='pc-i440fx-rhel7.0.0'&gt;hvm&lt;/type&gt;
+    &lt;boot dev='hd'/&gt;
+--
+      &lt;mac address='52:54:00:66:0f:5c'/&gt;
+      &lt;source bridge='br_fe'/&gt;
+--
+      &lt;mac address='52:54:00:92:75:f2'/&gt;
+      &lt;source network='default' bridge='virbr0'/&gt;
+--
+      &lt;mac address='52:54:00:d4:23:62'/&gt;
+      &lt;source network='mvirnet0' bridge='mvirbr0'/&gt;
+
+&lt;network&gt;
+  &lt;name&gt;default&lt;/name&gt;
+  &lt;uuid&gt;b4b845ef-b92c-411e-9b62-e4bec3160a21&lt;/uuid&gt;
+  &lt;forward mode='nat'/&gt;
+  &lt;bridge name='virbr0' stp='on' delay='0'/&gt;
+  &lt;mac address='52:54:00:5c:45:35'/&gt;
+  &lt;ip address='192.168.122.1' netmask='255.255.255.0'&gt;
+    &lt;dhcp&gt;
+      &lt;range start='192.168.122.2' end='192.168.122.254'/&gt;
+      &lt;host mac='52:54:00:66:ab:13' name='server2' ip='192.168.122.3'/&gt;
+      &lt;host mac='52:54:00:92:75:f2' name='server3' ip='192.168.122.4'/&gt;
+    &lt;/dhcp&gt;
+  &lt;/ip&gt;
+&lt;/network&gt;
+
+
+
+root@panchajanya:/etc/libvirt/qemu\> virsh net-destroy mvirnet0
+Network mvirnet0 destroyed
+
+root@panchajanya:/etc/libvirt/qemu\> virsh net-destroy default
+Network default destroyed
+
+root@panchajanya:/etc/libvirt/qemu\> virsh shutdown server3
+Domain server3 is being shutdown
+
+root@panchajanya:/etc/libvirt/qemu\> virsh net-start default
+Network default started
+
+root@panchajanya:/etc/libvirt/qemu\> virsh net-start mvirnet0
+Network mvirnet0 started
+
+        
+&lt;network&gt;
+  &lt;name&gt;mvirnet0&lt;/name&gt;
+  &lt;uuid&gt;f8d83856-2c18-4688-a128-679bbf9937ce&lt;/uuid&gt;
+  &lt;forward mode='nat'&gt;
+    &lt;nat&gt;
+      &lt;port start='1024' end='65535'/&gt;
+    &lt;/nat&gt;
+  &lt;/forward&gt;
+  &lt;bridge name='mvirbr0' stp='on' delay='0'/&gt;
+  &lt;mac address='52:54:00:fd:63:7f'/&gt;
+  &lt;ip address='192.168.123.1' netmask='255.255.255.0'&gt;
+    &lt;dhcp&gt;
+      &lt;range start='192.168.123.2' end='192.168.123.254'/&gt;
+      &lt;host mac='52:54:00:d4:23:62' name='server3' ip='192.168.123.4'/&gt;
+    &lt;/dhcp&gt;
+  &lt;/ip&gt;
+&lt;/network&gt;
+
+=> Create two VM's with two different networks.
+
+virsh # vol-create-as vspd2 lab125a.img 13G
+virsh # vol-create-as vspd2 lab130a.img 13G
+
+
+
+virt-install --name lab125a --memory 1024 --vcpus=1 --disk vol=vspd2/lab125a.img --os-type=linux --os-variant=rhel7 --location=ftp://192.168.2.11/pub/rhel7 --network bridge=br_fe --network network=virnet1 --extra-args ks=ftp://192.168.2.11/pub/ksconfig/lab125a.cfg
+
+virt-install --name lab130a --memory 1024 --vcpus=1 --disk vol=vspd2/lab130a.img --os-type=linux --os-variant=rhel7 --location=ftp://192.168.2.11/pub/rhel7 --network bridge=br_fe --network network=virnet2 --extra-args ks=ftp://192.168.2.11/pub/ksconfig/lab130a.cfg
+
+</pre>
+
+</div>
+	
+	
+<div class="w3-container">
+	<h1><span class="mw-headline" id="interfaces"> Interfaces </h1>
+	
+<p>
+
+</p>
+
+	
+<pre> 
+[root@server ~]# nmcli d show eth3
+GENERAL.DEVICE:                         eth3
+GENERAL.TYPE:                           ethernet
+GENERAL.HWADDR:                         52:54:00:82:2F:44			==> MAC we are interested in..
+....
+
+virsh # domiflist server
+Interface  Type       Source     Model       MAC
+-------------------------------------------------------
+vnet0      bridge     br_fe      virtio      52:54:00:2c:19:87
+vnet1      network    vnetnat    virtio      52:54:00:4b:a2:98
+vnet2      network    vnetrou    virtio      52:54:00:f1:15:ef
+vnet3      network    vnetiso    virtio      52:54:00:82:2f:44
+
+=> From server
+
+13: vbriso: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP qlen 1000
+    link/ether 52:54:00:ec:60:6e brd ff:ff:ff:ff:ff:ff
+    inet 192.168.132.1/24 brd 192.168.132.255 scope global vbriso
+       valid_lft forever preferred_lft forever
+
+14: vbriso-nic: <BROADCAST,MULTICAST> mtu 1500 qdisc pfifo_fast master vbriso state DOWN qlen 1000
+    link/ether 52:54:00:ec:60:6e brd ff:ff:ff:ff:ff:ff
+
+
+[root@server network-scripts]# cat ifcfg-eth3
+# Generated by parse-kickstart
+UUID=a9dac657-c4ff-4296-a570-65bf15e54da8
+IPV6_AUTOCONF=yes
+BOOTPROTO=none
+DEVICE=eth3
+ONBOOT=yes
+IPV6INIT=yes
+TYPE=Ethernet
+IPADDR=192.168.132.50
+PREFIX=24
+DEFROUTE=yes
+IPV4_FAILURE_FATAL=no
+IPV6_DEFROUTE=yes
+IPV6_PEERDNS=yes
+IPV6_PEERROUTES=yes
+IPV6_FAILURE_FATAL=no
+NAME="System eth3"
+
+=> Detach and attach interfaces
+
+virsh # detach-interface --domain server --type network --mac 52:54:00:82:2f:44 --persistent
+Interface detached successfully
+
+root@panchajanya:~\> virsh dumpxml server | egrep 'source network'
+      <source network='vnetnat' bridge='vbrnat'/>
+      <source network='vnetrou' bridge='vbrrou'/>
+
+virsh # attach-interface --domain server --type network --source vnetiso --model virtio --mac 52:54:00:82:2f:44 --persistent --live
+Interface attached successfully
+
+
+root@panchajanya:~\> virsh dumpxml server | egrep 'source network'
+      <source network='vnetnat' bridge='vbrnat'/>
+      <source network='vnetrou' bridge='vbrrou'/>
+      <source network='vnetiso' bridge='vbriso'/>
+
+
+#Remove file ifcfg-eth3, once interface is added it will show up and running on the server 
+
+# Recreate the file via nmcli
+
+[root@server network-scripts]# nmcli con add type ethernet con-name eth3 ifname eth3
+Connection 'eth3' (116655f8-71c3-4063-9a11-1fbafef00296) successfully added.
+
+
+[root@server network-scripts]# ls -l ifcfg-eth3
+-rw-r--r--. 1 root root 274 Aug  7 16:53 ifcfg-eth3
+
+[root@server network-scripts]# nmcli con delete eth3
+Connection 'eth3' (f816ae72-a947-4eb2-be7f-f434a121f18f) successfully deleted.
+
+
+[root@server network-scripts]# nmcli con add type ethernet con-name eth3 ifname eth3 ip4 192.168.132.50/24
+Connection 'eth3' (ce3bf3c8-f3b2-42d0-ab94-7c8771d335bd) successfully added.
+
+[root@server network-scripts]# cat ifcfg-eth3
+TYPE=Ethernet
+BOOTPROTO=none
+IPADDR=192.168.132.50
+PREFIX=24
+DEFROUTE=yes
+IPV4_FAILURE_FATAL=no
+IPV6INIT=yes
+IPV6_AUTOCONF=yes
+IPV6_DEFROUTE=yes
+IPV6_PEERDNS=yes
+IPV6_PEERROUTES=yes
+IPV6_FAILURE_FATAL=no
+NAME=eth3
+UUID=ce3bf3c8-f3b2-42d0-ab94-7c8771d335bd
+DEVICE=eth3
+ONBOOT=yes
+
+
+[root@server network-scripts]# nmcli con add type ethernet con-name eth3 ifname eth3
+Connection 'eth3' (f816ae72-a947-4eb2-be7f-f434a121f18f) successfully added.
+
+[root@server network-scripts]# nmcli con load $(pwd)/ifcfg-eth3
+ 
+[root@server network-scripts]# nmcli general logging
+LEVEL  DOMAINS INFO   PLATFORM,RFKILL,ETHER,WIFI,BT,MB,DHCP4,DHCP6,PPP,IP4,IP6,AUTOIP4,DNS,VPN,SHARING,
+SUPPLICANT,AGENTS, SETTINGS,SUSPEND,CORE,DEVICE,OLPC,WIMAX,INFINIBAND,FIREWALL,ADSL,
+BOND,VLAN,BRIDGE,TEAM,CONCHECK,DCB,DISPATCH
+
+
+[root@server network-scripts]# nmcli con delete a9dac657-c4ff-4296-a570-65bf15e54da8
+Connection 'System eth3' (a9dac657-c4ff-4296-a570-65bf15e54da8) successfully deleted.
+
+[root@server network-scripts]# nmcli dev
+DEVICE  TYPE      STATE         CONNECTION
+eth0    ethernet  connected     System eth0
+eth1    ethernet  connected     System eth1
+eth2    ethernet  connected     System eth2
+eth3    ethernet  disconnected  --
+
+
+
+# Delete the interface..
+[root@server network-scripts]# nmcli con down a9dac657-c4ff-4296-a570-65bf15e54da8
+ 
+[root@server network-scripts]# nmcli con delete a9dac657-c4ff-4296-a570-65bf15e54da8
+
+
+# Re-added the interface as eth4 instead of eth3, hence removing it again.
+
+virsh # attach-interface --domain server --type network --source vnetnat --model virtio --mac 52:54:00:82:2f:44 --persistent --live
+Interface attached successfully
+
+7: eth3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 52:54:00:82:2f:44 brd ff:ff:ff:ff:ff:ff
+8: eth4: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 52:54:00:82:2f:44 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.134.188/24 brd 192.168.134.255 scope global dynamic eth4
+       valid_lft 3471sec preferred_lft 3471sec
+    inet6 fe80::5054:ff:fe82:2f44/64 scope link
+       valid_lft forever preferred_lft forever
+
+
+virsh # detach-interface --domain server --type network --mac 52:54:00:82:2f:44 --persistent
+error: Domain has multiple interfaces matching MAC address 52:54:00:82:2f:44. You must use detach-device and specify the device pci address to remove it.
+
+#if two devices are mapped with same mac, to remove 
+
+
+    <interface type='network'>
+      <mac address='52:54:00:82:2f:44'/>
+      <source network='vnetnat' bridge='vbrnat'/>
+      <target dev='eth4'/>
+      <model type='virtio'/>
+      <alias name='net6'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x13' function='0x0'/>
+    </interface>
+
+
+root@panchajanya:~\> virsh dumpxml server | egrep -A7  "interface type"
+
+
+
+virsh # attach-interface --domain server --type network --source vnetnat --model virtio --mac 52:54:00:82:2f:44 --persistent --live eth3
+Interface attached successfully
+
+virsh # attach-interface --domain server --type network --source vnetnat --model virtio --mac 52:54:00:82:2f:44 --persistent --live eth4
+Interface attached successfully
+
+
+virsh dumpxml server | egrep -A7  "interface type"
+
+
+Note: Always do persistent
+
+root@panchajanya:~\> virsh detach-device server remove.xml --persistent
+Device detached successfully
+
+root@panchajanya:~\> cat remove.xml
+<interface type='network'>
+      <mac address='52:54:00:82:2f:44'/>
+      <source network='vnetnat' bridge='vbrnat'/>
+      <target dev='eth4'/>
+      <model type='virtio'/>
+      <alias name='net6'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x13' function='0x0'/>
+    </interface>
+
+
+#Change it to a different network 
+virsh # attach-interface --domain server --type network --source vnetnat --model virtio --mac 52:54:00:82:2f:44 --persistent --live eth3
+Interface attached successfully
+
+
+[root@server network-scripts]# nmcli con show
+NAME                UUID                                  TYPE            DEVICE
+System eth1         dbfe8c4c-abc6-4a98-b953-d8475dd2217d  802-3-ethernet  eth1
+System eth2         260c99eb-2a00-44b5-a3d6-e731d936a3b4  802-3-ethernet  eth2
+Wired connection 1  2463dcd8-dca0-478e-9843-81c23a2de560  802-3-ethernet  eth3
+System eth0         b6870dc4-b183-4bdd-b310-6d789c3e9ce0  802-3-ethernet  eth0
+
+
+
+[root@server network-scripts]# nmcli dev connect eth3
+Device 'eth3' successfully activated with '2463dcd8-dca0-478e-9843-81c23a2de560'.
+
+
+=> vnet3 is usinv vnetiso , for bonding experiment switch it to vnetnat prior
+
+
+virsh # detach-interface --persistent server --mac 52:54:00:82:2f:44 --type network
+
+virsh # attach-interface server --source vnetnat  --type network --target vnet3 --mac 52:54:00:82:2f:44 --model virtio --persistent --live
+Interface attached successfully
+
+
+
+=> Change the IP address to static : 192.168.134.51
+
+3: eth1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 52:54:00:4b:a2:98 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.134.50/24 brd 192.168.134.255 scope global eth1
+       valid_lft forever preferred_lft forever
+
+
+7: eth3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 52:54:00:82:2f:44 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.134.188/24 brd 192.168.134.255 scope global dynamic eth3
+
+
+=> Option-1
+	root@panchajanya:~\> virsh net-edit vnetnat, append below line
+		<host mac='52:54:00:82:2f:44' ip='192.168.134.51' />
+
+	Network vnetnat XML configuration not changed.
+
+=> Option-2
+
+root@panchajanya:~\> virsh net-update vnetnat add ip-dhcp-host '<host mac="52:54:00:82:2f:44" ip="192.168.134.51" />' --live --config
+Updated network vnetnat persistent config and live state
+
+
+root@panchajanya:~\> virsh net-dumpxml vnetnat
+<network>
+  <name>vnetnat</name>
+  <uuid>f1ab3ba4-18a7-412f-8904-daa4e1d65526</uuid>
+  <forward mode='nat'>
+    <nat>
+      <port start='1024' end='65535'/>
+    </nat>
+  </forward>
+  <bridge name='vbrnat' stp='on' delay='0'/>
+  <mac address='52:54:00:a0:e1:86'/>
+  <ip address='192.168.134.1' netmask='255.255.255.0'>
+    <dhcp>
+      <range start='192.168.134.2' end='192.168.134.254'/>
+      <host mac='52:54:00:82:2f:44' ip='192.168.134.51'/>
+    </dhcp>
+  </ip>
+</network>
+
+
+#Ways to find the IP address of hte VM running
+
+
+virsh # domiflist lab11
+Interface  Type       Source     Model       MAC
+-------------------------------------------------------
+vnet4      bridge     br_fe      virtio      52:54:00:86:73:f2
+vnet5      network    vnetnat    virtio      52:54:00:57:e4:ff
+vnet6      network    vnetrou    virtio      52:54:00:a0:8e:2e
+vnet7      network    vnetiso    virtio      52:54:00:ba:e7:ce
+
+
+domifaddr lab11 - isn't returning anything (BUG ) - so going for fallback option
+
+# Try to get access to console 
+virsh console lab11 
+
+#Doesn't work until the console access is enabled. Enable via kpartx
+
+
+root@panchajanya:~\> virsh domblklist lab11
+Target     Source
+------------------------------------------------
+vda        /data/sdd01/vspd1/lab11.img
+
+root@panchajanya:~\> kpartx -av /data/sdd01/vspd1/lab11.img
+add map loop0p1 (253:14): 0 1048576 linear /dev/loop0 2048
+add map loop0p2 (253:15): 0 20971520 linear /dev/loop0 1050624
+add map loop0p3 (253:16): 0 1048576 linear /dev/loop0 22022144
+
+
+root@panchajanya:~\> mount /dev/mapper/loop0p1 /mnt/
+root@panchajanya:~\> cd /mnt/
+root@panchajanya:/mnt\> ls
+config-3.10.0-327.el7.x86_64                             initrd-plymouth.img
+grub                                                     symvers-3.10.0-327.el7.x86_64.gz
+grub2                                                    System.map-3.10.0-327.el7.x86_64
+initramfs-0-rescue-d88dc0e9818b405383649087000b224a.img  vmlinuz-0-rescue-d88dc0e9818b405383649087000b224a
+initramfs-3.10.0-327.el7.x86_64.img                      vmlinuz-3.10.0-327.el7.x86_64
+initramfs-3.10.0-327.el7.x86_64kdump.img
+
+root@panchajanya:/mnt\> vi grub2/grub.cfg
+
+root@panchajanya:/mnt\> grep console grub2/grub.cfg
+terminal_output console
+	linux16 /vmlinuz-3.10.0-327.el7.x86_64 root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet LANG=en_US.UTF-8 console=ttyS0
+
+umount /dev/mapper/loop0p1
+kpartx -dv /data/sdd01/vspd1/lab11.img
+
+
+
+#Option 2, once logged into the server
+
+--Example-1: Update all kernels with same arguments
+grubby --update-kernel=ALL --args=console=ttyS0,115200
+
+--Example-2: Remove args,add args - update kernel
+grubby --remove-args="rhgb quiet" --args=console=ttyS0,115200 --update-kernel /boot/vmlinuz-4.2.0-1.fc23.x86_64
+
+
+[root@lab11 ~]# grubby --help |grep kernel |grep update
+                                      new arguments for kernel being updated
+                                      kernel being updated
+  --update-kernel=kernel-path         updated information for the specified
+
+
+[root@lab11 ~]# grubby --default-kernel
+/boot/vmlinuz-3.10.0-327.el7.x86_64
+[root@lab11 ~]# grubby --default-index
+0
+[root@lab11 ~]# grubby --info=ALL
+index=0
+kernel=/boot/vmlinuz-3.10.0-327.el7.x86_64
+args="ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet LANG=en_US.UTF-8 console=ttyS0"
+root=/dev/mapper/vgos-lvroot
+initrd=/boot/initramfs-3.10.0-327.el7.x86_64.img
+title=CentOS Linux (3.10.0-327.el7.x86_64) 7 (Core)
+index=1
+kernel=/boot/vmlinuz-0-rescue-d88dc0e9818b405383649087000b224a
+args="ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet"
+root=/dev/mapper/vgos-lvroot
+initrd=/boot/initramfs-0-rescue-d88dc0e9818b405383649087000b224a.img
+title=CentOS Linux (0-rescue-d88dc0e9818b405383649087000b224a) 7 (Core)
+index=2
+non linux entry
+
+
+[root@lab11 ~]# grep linux16 /etc/grub2.cfg
+	linux16 /vmlinuz-3.10.0-327.el7.x86_64 root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet LANG=en_US.UTF-8 console=ttyS0
+	linux16 /vmlinuz-0-rescue-d88dc0e9818b405383649087000b224a root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet
+
+[root@lab11 ~]# grubby --remove-args="console=ttys0" --update-kernel=/boot/vmlinuz-3.10.0-327.el7.x86_64
+[root@lab11 ~]# grep linux16 /etc/grub2.cfg
+	linux16 /vmlinuz-3.10.0-327.el7.x86_64 root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet LANG=en_US.UTF-8
+	linux16 /vmlinuz-0-rescue-d88dc0e9818b405383649087000b224a root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet
+
+[root@lab11 ~]# grubby --update-kernel=/boot/vmlinuz-3.10.0-327.el7.x86_64 --args="console=ttyS0 console=tty0 console=ttyS0,115200"
+[root@lab11 ~]# grep linux16 /boot/grub2/grub.cfg
+	linux16 /vmlinuz-3.10.0-327.el7.x86_64 root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet LANG=en_US.UTF-8 console=ttyS0 console=tty0 console=ttyS0,115200
+	linux16 /vmlinuz-0-rescue-d88dc0e9818b405383649087000b224a root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet
+
+#Option-3
+
+[root@lab11 default]# grep CMD grub
+GRUB_CMDLINE_LINUX="crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet console=ttyS0 console=tty0 console=ttyS0,115200 "
+
+[root@lab11 default]# grep linux16 /boot/grub2/grub.cfg
+	linux16 /vmlinuz-3.10.0-327.el7.x86_64 root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet
+	linux16 /vmlinuz-0-rescue-d88dc0e9818b405383649087000b224a root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet
+
+[root@lab11 default]# grub2-mkconfig -o /boot/grub2/grub.cfg
+Generating grub configuration file ...
+Found linux image: /boot/vmlinuz-3.10.0-327.el7.x86_64
+Found initrd image: /boot/initramfs-3.10.0-327.el7.x86_64.img
+Found linux image: /boot/vmlinuz-0-rescue-d88dc0e9818b405383649087000b224a
+Found initrd image: /boot/initramfs-0-rescue-d88dc0e9818b405383649087000b224a.img
+done
+
+[root@lab11 default]# grep linux16 /boot/grub2/grub.cfg
+	linux16 /vmlinuz-3.10.0-327.el7.x86_64 root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet console=ttyS0 console=tty0 console=ttyS0,115200
+	linux16 /vmlinuz-0-rescue-d88dc0e9818b405383649087000b224a root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet console=ttyS0 console=tty0 console=ttyS0,115200	
+
+</pre>
+
+</div>
+	
+	
+
+
+<div class="w3-container">
+	<h1><span class="mw-headline" id="Storage"> Storage </h1>	
+<p>
+
+</p>
+
+<pre> 
+
+
+--Create Directory Pool 
+root@mayura:/var/ftp/pub/ksconfig\> virsh pool-define-as --name="vpoolsdd02" --type=dir --target=/data/sdd02
+Pool vpoolsdd02 defined
+
+root@mayura:/var/ftp/pub/ksconfig\> virsh pool-start vpoolsdd02
+Pool vpoolsdd02 started
+
+root@mayura:/var/ftp/pub/ksconfig\> virsh pool-list --all
+ Name                 State      Autostart
+-------------------------------------------
+ default              active     yes
+ u01                  inactive   yes
+ virpool0             active     yes
+ virpool1             active     yes
+ vpoolsdd02           active     no
+
+root@mayura:/var/ftp/pub/ksconfig\> virsh pool-autostart vpoolsdd02
+Pool vpoolsdd02 marked as autostarted
+                                                                            
+root@mayura:/var/ftp/pub/ksconfig\> virsh vol-create-as vpoolsdd02 rhce_hdd0.img 10G
+Vol rhce_hdd0.img created
+                                                                                                             
+
+root@mayura:/var/ftp/pub/ksconfig\> virsh vol-create-as vpoolsdd02 rhce_hdd0.img 10G
+Vol rhce_hdd0.img created
+
+root@mayura:/var/ftp/pub/ksconfig\> virt-install --name=rhce --ram=1024 --vcpus=1 --autostart --os-type=linux --os-variant=rhel7 --location=ftp://192.168.2.21/pub/rhel7 --network bridge=br_fe --network bridge=virbr0 --network bridge=virbr1 --network bridge=virbr2 --disk vol=vpoolsdd02/rhce_hdd0.img --extra-args ks=ftp://192.168.2.21/pub/ksconfig/rhce.cfg
+WARNING  Graphics requested but DISPLAY is not set. Not running virt-viewer.
+WARNING  No console to launch for the guest, defaulting to --wait -1
+
+
+                  
+virsh # pool-define-as --name="virpool0" --type=dir --target=/data/sdd00/
+Pool virpool0 defined
+
+virsh # pool-start virpool0
+Pool virpool0 started
+
+virsh # pool-dumpxml virpool0
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;pool type=&quot;dir&quot;&gt;
+   &lt;name&gt;virpool0&lt;/name&gt;
+   &lt;uuid&gt;7da5a3d1-1b95-4ec2-9585-ebcfa22deaac&lt;/uuid&gt;
+   &lt;capacity unit=&quot;bytes&quot;&gt;52710309888&lt;/capacity&gt;
+   &lt;allocation unit=&quot;bytes&quot;&gt;54550528&lt;/allocation&gt;
+   &lt;available unit=&quot;bytes&quot;&gt;52655759360&lt;/available&gt;
+   &lt;source /&gt;
+   &lt;target&gt;
+      &lt;path&gt;/data/sdd00&lt;/path&gt;
+      &lt;permissions&gt;
+         &lt;mode&gt;0755&lt;/mode&gt;
+         &lt;owner&gt;0&lt;/owner&gt;
+         &lt;group&gt;0&lt;/group&gt;
+         &lt;label&gt;system_u:object_r:unlabeled_t:s0&lt;/label&gt;
+      &lt;/permissions&gt;
+   &lt;/target&gt;
+&lt;/pool&gt;
+
+--Create Volume Group pool
+
+virsh # pool-define-as --name virpool50 --type logical --target /dev/vgdatae --source-name vgdatae --source-format lvm2
+Pool virpool50 defined
+
+virsh # pool-start virpool50
+Pool virpool50 started
+
+virsh # vol-create-as --pool virpool50 --name lvdatae00 --capacity 25G --allocation 10G
+Vol lvdatae00 created
+
+root@panchajanya:/etc/libvirt/storage\> cat virpool50.xml
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;pool type=&quot;dir&quot;&gt;
+   &lt;name&gt;virpool0&lt;/name&gt;
+   &lt;uuid&gt;7da5a3d1-1b95-4ec2-9585-ebcfa22deaac&lt;/uuid&gt;
+   &lt;capacity unit=&quot;bytes&quot;&gt;52710309888&lt;/capacity&gt;
+   &lt;allocation unit=&quot;bytes&quot;&gt;54550528&lt;/allocation&gt;
+   &lt;available unit=&quot;bytes&quot;&gt;52655759360&lt;/available&gt;
+   &lt;source /&gt;
+   &lt;target&gt;
+      &lt;path&gt;/data/sdd00&lt;/path&gt;
+      &lt;permissions&gt;
+         &lt;mode&gt;0755&lt;/mode&gt;
+         &lt;owner&gt;0&lt;/owner&gt;
+         &lt;group&gt;0&lt;/group&gt;
+         &lt;label&gt;system_u:object_r:unlabeled_t:s0&lt;/label&gt;
+      &lt;/permissions&gt;
+   &lt;/target&gt;
+&lt;/pool&gt;
+
+
+virsh # vol-create-as --pool mdatad03 --name lvdatad04 --capacity 9G --allocation 1G
+Vol lvdatad04 created
+
+root@panchajanya:/etc/libvirt/storage\> lvs
+LV        VG      Attr       LSize  Pool Origin              Data%  Meta%  Move Log Cpy%Sync Convert
+..
+lvdatad02 vgdatad -wi-ao---- 50.00g
+lvdatad03 vgdatad -wi-ao---- 50.00g
+lvdatae00 vgdatae swi-a-s--- 10.00g      [lvdatae00_vorigin] 0.00
+
+virsh # vol-dumpxml --pool virpool50 lvdatae00
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;pool type=&quot;dir&quot;&gt;
+   &lt;name&gt;virpool0&lt;/name&gt;
+   &lt;uuid&gt;7da5a3d1-1b95-4ec2-9585-ebcfa22deaac&lt;/uuid&gt;
+   &lt;capacity unit=&quot;bytes&quot;&gt;52710309888&lt;/capacity&gt;
+   &lt;allocation unit=&quot;bytes&quot;&gt;54550528&lt;/allocation&gt;
+   &lt;available unit=&quot;bytes&quot;&gt;52655759360&lt;/available&gt;
+   &lt;source /&gt;
+   &lt;target&gt;
+      &lt;path&gt;/data/sdd00&lt;/path&gt;
+      &lt;permissions&gt;
+         &lt;mode&gt;0755&lt;/mode&gt;
+         &lt;owner&gt;0&lt;/owner&gt;
+         &lt;group&gt;0&lt;/group&gt;
+         &lt;label&gt;system_u:object_r:unlabeled_t:s0&lt;/label&gt;
+      &lt;/permissions&gt;
+   &lt;/target&gt;
+&lt;/pool&gt;
+
+
+--
+root@mayura:/data/sdd00\> virsh attach-disk server10 --source /data/sdd00/server10-sdb.img --target vdb --persistent --live
+Disk attached successfully
+
+
+
+</pre>
+
+</div>
+<div class="w3-container">
+	<h1><span class="mw-headline" id="networking"> Networking </h1>
+<p>
+
+	   
+</p>
+
+
+<pre> 
+
+--Add a virtual network interface
+
+virsh # net-define /data/sdc01/rhsa/stage/virnet1.xml
+Network virnet1 defined from /data/sdc01/rhsa/stage/virnet1.xml
+
+virsh # net-list --all
+Name                 State      Autostart     Persistent
+----------------------------------------------------------
+default              active     yes           yes
+virnet1              inactive   no            yes
+
+virsh # net-start virnet1
+Network virnet1 started
+
+virsh # net-define /data/sdc01/rhsa/stage/virnet2.xml
+Network virnet2 defined from /data/sdc01/rhsa/stage/virnet2.xml
+
+virsh # net-start virnet2
+Network virnet2 started
+
+virsh # net-list --all
+Name                 State      Autostart     Persistent
+----------------------------------------------------------
+default              active     yes           yes
+virnet1              active     no            yes
+virnet2              active     no            yes
+
+
+root@panchajanya:/data/sdc01/rhsa/stage\> cat virnet1.xml
+&lt;network&gt;
+	&lt;name&gt;virnet1&lt;/name&gt;
+	&lt;forward mode=&apos;nat&apos;&gt;
+		&lt;nat&gt;&lt;port start=&apos;1024&apos; end=&apos;65535&apos;/&gt;&lt;/nat&gt;
+	&lt;/forward&gt;
+	&lt;bridge name=&apos;virbr1&apos; stp=&apos;on&apos; delay=&apos;0&apos;/&gt;
+	&lt;ip address=&apos;192.168.125.1&apos; netmask=&apos;255.255.255.0&apos;&gt;
+		&lt;dhcp&gt; &lt;range start=&apos;192.168.125.2&apos; end=&apos;192.168.125.254&apos;/&gt;&lt;/dhcp&gt;
+	&lt;/ip&gt;
+&lt;/network&gt;
+
+root@panchajanya:/data/sdc01/rhsa/stage\> cat virnet2.xml
+&lt;network&gt;
+	&lt;name&gt;virnet2&lt;/name&gt;
+	&lt;forward mode=&apos;nat&apos;&gt;
+		&lt;nat&gt;&lt;port start=&apos;1024&apos; end=&apos;65535&apos;/&gt;&lt;/nat&gt;
+	&lt;/forward&gt;
+	&lt;bridge name=&apos;virbr2&apos; stp=&apos;on&apos; delay=&apos;0&apos;/&gt;
+	&lt;ip address=&apos;192.168.130.1&apos; netmask=&apos;255.255.255.0&apos;&gt;
+		&lt;dhcp&gt; &lt;range start=&apos;192.168.130.2&apos; end=&apos;192.168.130.254&apos;/&gt;&lt;/dhcp&gt;
+	&lt;/ip&gt;
+&lt;/network&gt;
+
+root@panchajanya:/data/sdc01/rhsa/stage\> brctl show
+bridge name	bridge id		STP enabled	interfaces
+br_fe		8000.001fbc020167	no		enp8s0
+virbr0		8000.5254005c4535	yes		virbr0-nic
+virbr1		8000.525400d1bdd6	yes		virbr1-nic
+virbr2		8000.525400b5c764	yes		virbr2-nic
+
+--Update network (live)
+
+https://wiki.libvirt.org/page/Networking#NAT_forwarding_.28aka_.22virtual_networks.22.29
+net-update live
+
+
+#Before
+
+&lt;network&gt;
+  &lt;name&gt;virnet2&lt;/name&gt;
+  &lt;uuid&gt;3faf7664-46f9-49fa-938c-654d257dfe44&lt;/uuid&gt;
+  &lt;forward mode=&apos;nat&apos;&gt;
+    &lt;nat&gt;
+      &lt;port start=&apos;1024&apos; end=&apos;65535&apos;/&gt;
+    &lt;/nat&gt;
+  &lt;/forward&gt;
+  &lt;bridge name=&apos;virbr2&apos; stp=&apos;on&apos; delay=&apos;0&apos;/&gt;
+  &lt;mac address=&apos;52:54:00:10:66:8e&apos;/&gt;
+  &lt;ip address=&apos;192.168.230.1&apos; netmask=&apos;255.255.255.0&apos;&gt;
+    &lt;dhcp&gt;
+      &lt;range start=&apos;192.168.230.2&apos; end=&apos;192.168.230.254&apos;/&gt;
+    &lt;/dhcp&gt;
+  &lt;/ip&gt;
+&lt;/network&gt;
+
+
+
+#Update live
+virsh net-update virnet2 add ip-dhcp-host "<host mac='52:54:00:5c:dc:c3' name='server10' ip='192.168.230.11' />" --live --config
+
+#After
+&lt;network&gt;
+  &lt;name&gt;virnet2&lt;/name&gt;
+  &lt;uuid&gt;3faf7664-46f9-49fa-938c-654d257dfe44&lt;/uuid&gt;
+  &lt;forward mode=&apos;nat&apos;&gt;
+    &lt;nat&gt;
+      &lt;port start=&apos;1024&apos; end=&apos;65535&apos;/&gt;
+    &lt;/nat&gt;
+  &lt;/forward&gt;
+  &lt;bridge name=&apos;virbr2&apos; stp=&apos;on&apos; delay=&apos;0&apos;/&gt;
+  &lt;mac address=&apos;52:54:00:10:66:8e&apos;/&gt;
+  &lt;ip address=&apos;192.168.230.1&apos; netmask=&apos;255.255.255.0&apos;&gt;
+    &lt;dhcp&gt;
+      &lt;range start=&apos;192.168.230.2&apos; end=&apos;192.168.230.254&apos;/&gt;
+      &lt;host mac=&apos;52:54:00:5c:dc:c3&apos; name=&apos;server10&apos; ip=&apos;192.168.230.11&apos;/&gt;
+    &lt;/dhcp&gt;
+  &lt;/ip&gt;
+&lt;/network&gt;
+
+
+root@mayura:~\> virsh net-update virnet2 delete ip-dhcp-host "<host mac='52:54:00:5c:dc:c3' name='server10' ip='192.168.230.11' />" --live --config
+Updated network virnet2 persistent config and live state
+
+
+virsh # attach-interface --domain lab125a --type network --source vnetrou --model virtio --persistent --live
+Interface attached successfully
+
+
+
+[root@lab125a network-scripts]# nmcli con add type ethernet con-name eth2 ifname eth2 ip4 192.168.133.10/24
+Connection 'eth2' (95fc4e46-552b-44da-941a-74b6f9c6b33b) successfully added.
+
+
+
+[root@lab125a network-scripts]# ls -ltr ifcfg-eth2
+-rw-r--r--. 1 root root 279 Aug 21 10:05 ifcfg-eth2
+[root@lab125a network-scripts]# cat ifcfg-eth2
+TYPE=Ethernet
+BOOTPROTO=none
+IPADDR=192.168.133.10
+PREFIX=24
+DEFROUTE=yes
+IPV4_FAILURE_FATAL=no
+IPV6INIT=yes
+IPV6_AUTOCONF=yes
+IPV6_DEFROUTE=yes
+IPV6_PEERDNS=yes
+IPV6_PEERROUTES=yes
+IPV6_FAILURE_FATAL=no
+NAME=eth2
+UUID=95fc4e46-552b-44da-941a-74b6f9c6b33b
+DEVICE=eth2
+ONBOOT=yes
+
+
+[root@lab125a network-scripts]# ip addr show eth2
+4: eth2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 52:54:00:35:b1:cd brd ff:ff:ff:ff:ff:ff
+    inet 192.168.133.227/24 brd 192.168.133.255 scope global dynamic eth2
+
+    [root@lab125a network-scripts]# nmcli con show
+NAME                UUID                                  TYPE            DEVICE
+Wired connection 1  9ca6cb23-dcf5-44b6-a93d-70040727aa6c  802-3-ethernet  eth2
+System eth0         8ee556e1-20f7-4637-8e2e-1eeb03010504  802-3-ethernet  eth0
+System eth1         f204d5f4-a485-4b9e-822d-d596ce99940d  802-3-ethernet  eth1
+eth2                95fc4e46-552b-44da-941a-74b6f9c6b33b  802-3-ethernet  --
+
+
+virsh net-update vnetrou add ip-dhcp-host "<host mac='52:54:00:35:b1:cd' name='lab125a' ip='192.168.133.10' /> " --live --config
+
+
+--Exammple (Decoding/Escaping XML for display)
+root@mayura:/data/sdd02\> perl -p -e 'BEGIN { use CGI qw(escapeHTML); } $_ = escapeHTML($_); ' virnet3.xml
+&lt;network&gt;
+&lt;name&gt;virnet3&lt;/name&gt;
+&lt;bridge name=&quot;virbr3&quot;&gt;&lt;/bridge&gt;
+&lt;forward mode=&quot;nat&quot;&gt;&lt;/forward&gt;
+&lt;ip address=&quot;192.168.125.1&quot; netmask=&quot;255.255.255.0&quot;&gt;
+  &lt;dhcp&gt;
+    &lt;range start=&quot;192.168.125.10&quot; end=&quot;192.168.125.254&quot;&gt;&lt;/range&gt;
+  &lt;/dhcp&gt;
+&lt;/ip&gt;
+&lt;/network&gt;
+
+
+
+--Example: attacing network interface
+
+virsh # attach-interface --domain lab130a --type network --source vnetrou --model virtio --persistent --config
+Interface attached successfully
+
+[root@lab130a network-scripts]# ip addr show eth2
+4: eth2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 52:54:00:40:5d:67 brd ff:ff:ff:ff:ff:ff
+		
+root@panchajanya:~\> virsh dumpxml lab130a | xpath "//interface[2]"
+Found 1 nodes:
+-- NODE --
+<interface type="network">
+      <mac address="52:54:00:77:03:6f" />
+      <source network="virnet2" bridge="virbr2" />
+      <target dev="vnet4" />
+      <model type="virtio" />
+      <alias name="net1" />
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x04" function="0x0" />
+    </interface>
+
+virsh # net-update vnetrou add ip-dhcp-host "<host name='lab130a' mac='52:54:00:77:03:6f' ip='192.168.133.11' />"  --live --config
+Updated network vnetrou persistent config and live state
+
+virsh # net-dumpxml vnetrou
+<network>
+  <name>vnetrou</name>
+  <uuid>c51060e5-77cc-4756-8d5c-01a041b5c52c</uuid>
+  <forward mode='route'/>
+  <bridge name='vbrrou' stp='on' delay='0'/>
+  <mac address='52:54:00:47:0a:a3'/>
+  <ip address='192.168.133.1' netmask='255.255.255.0'>
+    <dhcp>
+      <range start='192.168.133.2' end='192.168.133.254'/>
+      <host mac='52:54:00:35:b1:cd' name='lab125a' ip='192.168.133.10'/>
+      <host mac='52:54:00:77:03:6f' name='lab130a' ip='192.168.133.11'/>
+    </dhcp>
+  </ip>
+</network>
+
+
+
+
+[root@lab130a network-scripts]# nmcli con down b1ecc890-55bd-4b21-b920-7c5a0bb73c0e
+Connection 'Wired connection 1' successfully deactivated (D-Bus active path: /org/freedesktop/NetworkManager/ActiveConnection/2)
+
+ [root@lab130a network-scripts]# nmcli con add con-name eth2 ifname eth2 type ethernet ip4 192.168.133.11
+Connection 'eth2' (9dcc9258-3c3a-4ff0-81dd-eaf4a9aa0315) successfully added.
+[root@lab130a network-scripts]# cat ifcfg-eth2
+TYPE=Ethernet
+BOOTPROTO=none
+IPADDR=192.168.133.11
+PREFIX=32
+DEFROUTE=yes
+IPV4_FAILURE_FATAL=no
+IPV6INIT=yes
+IPV6_AUTOCONF=yes
+IPV6_DEFROUTE=yes
+IPV6_PEERDNS=yes
+IPV6_PEERROUTES=yes
+IPV6_FAILURE_FATAL=no
+NAME=eth2
+UUID=9dcc9258-3c3a-4ff0-81dd-eaf4a9aa0315
+DEVICE=eth2
+ONBOOT=yes
+
+
+
+
+</pre>  
+
+
+
+
+</pre>
+
+</div>
+
+
+	
+<div class="w3-container">
+	<h1><span class="mw-headline" id="attach-interface"> Attach Network Interface </h1>
+		
+<p>
+
+</p>
+
+	
+
+<pre> 
+
+--Find the network interfaces
+
+virsh # net-list --all
+ Name                 State      Autostart     Persistent
+----------------------------------------------------------
+ default              active     yes           yes
+ virnet1              active     yes           yes
+ virnet2              active     yes           yes
+ vnetiso              active     yes           yes
+ vnetnat              active     yes           yes
+ vnetrou              active     yes           yes
+
+
+--Find the interface list on the VM itself
+
+virsh # domiflist lab19
+Interface  Type       Source     Model       MAC
+-------------------------------------------------------
+vnet3      bridge     br_fe      virtio      52:54:00:45:56:5e
+vnet4      network    vnetnat    virtio      52:54:00:e2:a5:a7
+vnet5      network    vnetrou    virtio      52:54:00:4b:23:3e
+vnet6      network    vnetiso    virtio      52:54:00:01:bd:9f
+
+--Attach the interface 
+
+virsh # attach-interface lab19 network vnetnat --model virtio --persistent --config --live
+Interface attached successfully
+
+--Verify the config file to ensure it's added (persistent)
+root@panchajanya:~\> virsh dumpxml lab19 | xpath "//interface"
+Found 5 nodes:
+-- NODE --
+
+--Print the one that just got added
+
+root@panchajanya:~\> virsh dumpxml lab19 | xpath "//interface[5]"
+Found 1 nodes:
+-- NODE --
+<interface type="network">
+      <mac address="52:54:00:0b:26:70" />
+      <source network="vnetnat" bridge="vbrnat" />
+      <target dev="vnet7" />
+      <model type="virtio" />
+      <alias name="net4" />
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x0c" function="0x0" />
+ </interface>
+	
+--Create the interface configuration file.
+
+[root@lab19 network-scripts]# nmcli con del a1204c59-b274-4e1f-9fd5-f4082a04d6d2
+Connection 'Wired connection 1' (a1204c59-b274-4e1f-9fd5-f4082a04d6d2) successfully deleted.
+
+
+nmcli con add type ethernet con-name eth4  ifname eth4 autoconnect yes save yes ip4 192.168.134.54 gw4 192.168.2.1
+Connection 'eth4' (0f9192f1-b16d-4aaa-85be-07b8ebd2c6a8) successfully added
+
+systemctl reboot
+
+
+
+</pre>
+
+</div>
+	
+</body>
+</html>

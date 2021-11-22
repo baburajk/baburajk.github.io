@@ -1,0 +1,288 @@
+ <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>InterCloudZone</title>
+<meta name="keywords" content="" />
+<meta name="description" content="" />
+<link href="style.css" rel="stylesheet" type="text/css" media="screen" />
+<link href="google-code-prettify/sunburst.css" type="text/css" rel="stylesheet" />
+
+<!--[if IE]>
+<style type="text/css">
+#sidebar #calendar {
+	background-position: 0px 20px;
+}
+</style>
+<![endif]-->
+
+<script src="http://www.google.com/jsapi" type="text/javascript"></script>
+<script type="text/javascript">google.load("jquery", "1.3.2");</script>
+<script type="text/javascript" src="/google-code-prettify/prettify.js?autoload=true&;lang=css;skin=sunburst""></script>
+<script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js?autoload=true&amp;lang=css&amp;skin=sunburst"></script>
+</head>
+<body>
+<div id="logo">
+	<h1> InterCloudZone.com </h1>
+</div>
+<div id="menu">
+	<ul>
+		<li class="first"><a href="http://www.intercloudzone.com" accesskey="1" title="">Home</a></li>
+		<li><a href="http://sourceforge.net/projects/oraclerman/" accesskey="2" title="">OpenSource</a></li>
+		<li><a href="http://padmavyuha.blogspot.com/" accesskey="3" title="">Blogs</a></li>
+		<li><a href="http://www.linkedin.com/in/baburajkallarakkal" accesskey="4" title="">Profile</a></li>
+	</ul>
+	 
+</div>
+<hr />
+<!-- div id="banner"><img src="images/img09.jpg" alt="" width="960" height="147" / ></div -->
+<!-- start page -->
+
+<div id="swift-page" class="default-page" >
+	<!-- start content -->
+	<h2 class="title"> List of quick reference commands compiled from several sources and consolidated for reference purpose  </h2>
+
+<p> 
+-- To list file with line number
+</p> 
+<pre>
+nl <filename>
+</pre>				 
+				
+<p> 
+-- Saves man pages to text
+</p> 
+<pre>
+man cat | col -b > less.txt  
+</pre>				 
+
+<p> 
+-- Mounting as a loop device
+</p> 
+<pre>
+mount -o loop -t iso9660 /FC2-i386-DVD.iso  /iso 
+</pre>				 
+
+<p> 
+-- To split a large file into multiple files
+</p> 
+<pre>
+split --bytes 1m bigfile 1_ 
+</pre>				 
+
+<p> 
+-- List of open files opened by raj under /dev/hda1
+</p> 
+<pre>
+lsof -u raj -a /dev/hda1  
+</pre>				 
+
+<p> 
+-- Find process who owns the port number
+</p> 
+<pre>
+fuser -v -n tcp 992345   
+</pre>				 
+
+<p> 
+-- List of users accessing the /mnt file, -k option to kill all using the FS
+</p> 
+<pre>
+fuser -v /mnt/*    
+</pre>				 
+
+<p> 
+-- Trace System calls
+</p> 
+<pre>
+strace -aef cat afile
+</pre>				 
+
+<p> 
+-- Run Top in batch file 
+</p> 
+<pre>
+top -b -d 5 -n 3 >> top.out  
+b=batch, d=delay in seconds , n=number of iterations
+</pre>				 
+
+<p> 
+-- To read headers of binary files (ELF)
+</p> 
+<pre>
+readelf --file-header /bin/ls    
+</pre>				 
+
+<p> 
+-- List all network services running
+</p> 
+<pre>
+netstat -tanup    
+</pre>				 
+
+<p> 
+-- List listening interfaces
+</p> 
+<pre>
+netstat -l     
+</pre>				 
+
+<p> 
+-- Shread and remove a file
+</p> 
+<pre>
+shred -n 50 -zuv afile
+n=shred the file "n" times, -z will zero out the file in the last pass (extra protection), u=truncate it every time, v=verbose.
+</pre>				 
+
+<p> 
+-- Command line calculator
+</p> 
+<pre>
+echo "10/2*10" | bc -l   
+</pre>				 
+
+<p> 
+-- Search man pages for string
+</p> 
+<pre>
+man -k string   
+</pre>				 
+
+<p> 
+-- Merge pdf files into one 
+</p> 
+<pre>
+gs -dNOPAUSE -sDEVICE=pdfwrite -sOUTPUTFILE=Merged.pdf -dBATCH img*.pdf
+</pre>				 
+
+<p> 
+-- Create pdf file from man page
+ </p> 
+<pre>
+man -t cat | ps2pdf - > cat.pdf
+</pre>				 
+
+<p> 
+-- Colors the string while grepping
+</p> 
+<pre>
+grep --color string filename   
+</pre>				 
+<p> 
+-- Copy files between Servers using netcat (Alternate option to consider if ftp is disabled ). On the server listening port 3333 is created and dummy.dat is tar'd. 
+   When netcat is executed with no default options, it basically connects to the server/port specified.
+</p> 
+<pre>
+On Server (in my case host graphics) run
+   tar -cvjf - dummy.dat | netcat -l -p 3333
+On the Client ( in my case it was silicon) run
+   netcat graphics 3333 | pv -b | tar -xjvf 
+</pre>				 
+<p> 
+-- Rsync files between servers
+</p> 
+<pre>
+silicon~> rsync -avrz . --include "init*.ora" --rsh='ssh' graphics:/usr/oracle/admin
+Above syncs all init.ora files from silicon to graphics a=archive,v=verbose,r=recursive,z=compress 
+</pre>				 
+<p> 
+-- Test FTP Speed. Use dd to create a large file, but instead of sending it to the disk send it to null device. Here 
+</p> 
+<pre>
+/dev/zero is the input and output of the dd is /dev/null. 
+put "|dd if=/dev/zero bs=1024 count=1000000" /dev/null
+</pre>				 
+<p> 
+-- Find all files with group owner is "oracle" and change it to "dba" group.	
+</p> 
+<pre>
+find . -group oracle -exec chgrp dba '{}' \ ;
+</pre>				 
+<p> 
+-- Show files greater than a specific size 
+</p> 
+<pre>
+find ./ -size +10M -type f -print0 | xargs -0 ls -Ssh1 --color
+</pre>				 
+<p> 
+-- Send e-mail attachments with mutt
+</p> 
+<pre>
+mutt -a file.txt -s "A Text File" raj.anju@gmail.com < /tmp/junk
+</pre>				 
+<p> 
+-- Kill multiple processes in one shot
+</p> 
+<pre>
+ps -ef|grep dbconsole | awk ' { print $2} ' | xargs kill -9 
+pkill -f dbconsole
+</pre>				 
+<p> 
+-- Improve ftp speed with jumbo frames.
+Note: Read more on the Jumbo frames, as its applicable only on certain situations. On a 10/100 data the max mtu can only be upto 1500, but for a GigaBit Ethernet connection it can go upto 9000. The best throughput I got while doing an XO (Cross-Over) connection between two systems is when the mtu was 6000.
+</p> 
+<pre>
+
+ifconfig eth0 mtu 6000
+
+For a permanent change you have to edit the below file to include MTU 6000
+/etc/sysconfig/network-script/ifcfg-eth0
+
+</pre>		
+
+<p> 
+ -- Measure disk preformance using dd
+</p> 
+<pre>
+
+
+Determine the total RAM size (<memTotal>):
+
+[root@rbnetapp ~]# grep MemTotal /proc/meminfo
+MemTotal:        1534352 kB
+
+
+Determine the value of "count": = "memTotal" / 1024  + 1
+
+[root@rbnetapp ~]# echo "`cat /proc/meminfo | grep MemTotal | awk '{print $2}' ` / 1024 + 1 " | bc -l
+1499.39062500000000000000
+
+count = 1498
+
+Issue the dd command, with the calculated value of "count":
+
+dd if=/dev/zero of=/u01/disperf.dat bs=1M count=1498 conv=fdatasync; 
+dd if=/u01/disperf.dat of=/dev/null bs=1M count=1498; 
+
+-- Write Speed
+[root@rbnetapp ~]# dd if=/dev/zero of=/u01/disperf.dat bs=1M count=1498 conv=fdatasync;
+1498+0 records in
+1498+0 records out
+1570766848 bytes (1.6 GB) copied, 3.73213 s, 421 MB/s
+
+-- Read Speed
+[root@rbnetapp ~]# dd if=/u01/disperf.dat of=/dev/null bs=1M count=1498;
+1498+0 records in
+1498+0 records out
+1570766848 bytes (1.6 GB) copied, 1.86999 s, 840 MB/s
+
+</pre>	
+
+
+<script>$( "pre" ).addClass( "prettyprint" );</script>	
+	
+	<div id="content">
+	<!-- end content -->
+	</div>
+<!-- end page -->
+<div id="footer">
+	<p class="legal">Copyright (c) 2015 InterCloudZone.com. All rights reserved.</p>
+</div>
+
+
+
+</body>
+
+</html>

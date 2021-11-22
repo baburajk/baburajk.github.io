@@ -1,0 +1,1094 @@
+RMAN
+====
+Created Monday 15 June 2015
+./pasted_image001.png
+select name, log_mode,db_unique_name from v$database
+
+[oracle@edblr62p2 ~]$ rman target "'/ as sysbackup'"
+
+Recovery Manager: Release 12.1.0.2.0 - Production on Mon Jun 15 08:05:04 2015
+
+Copyright (c) 1982, 2014, Oracle and/or its affiliates.  All rights reserved.
+
+connected to target database: ORCL (DBID=1410018189)
+
+RMAN> select name,dbid, log_mode from v$database;
+
+using target database control file instead of recovery catalog
+NAME            DBID LOG_MODE
+--------- ---------- ------------
+ORCL      1410018189 NOARCHIVELOG
+
+RMAN>
+
+
+RMAN> select user from dual;
+
+USER
+------------------------------
+SYSBACKUP
+
+RMAN> backup database ;
+
+
+
+# — TableSpace Lost and not in backupset (Database fails to mount ) - NO ARCHIVE LOG MODE
+
+alter database datafile '/u01/backup/orcl/bar22tbs01.dbf' offline for drop;
+alter database open;
+drop tablespace bar22tbs including contents and datafiles;
+drop user bar22 cascade;
+
+
+SQL> col file_name format a44
+SQL> col tablespace_name format a10
+SQL> select file_name, tablespace_name from dba_data_files;
+
+FILE_NAME                                    TABLESPACE
+-------------------------------------------- ----------
+/u01/app/oracle/oradata/orcl/system01.dbf    SYSTEM
+/u01/app/oracle/oradata/orcl/sysaux01.dbf    SYSAUX
+/u01/app/oracle/oradata/orcl/example01.dbf   EXAMPLE
+/u01/app/oracle/oradata/orcl/users01.dbf     USERS
+/u01/app/oracle/oradata/orcl/undotbs01.dbf   UNDOTBS1
+
+
+# Add these lines for RMAN to pickup Timestamp
+
+export NLS_LANG=american_america.al32utf8
+export NLS_DATE_FORMAT="yyyy-mm-dd:hh24:mi:ss"
+
+
+# Spool RMAN output 
+
+spool log to /tmp/rman_spool.log
+spool log off
+
+#Control File autobackup
+
+show controlfile autobackup;
+configure controlfile autobackup on;
+
+# Delete obsolete backup and backup one single tablespace
+delete obsolete;
+report schema;
+backup tablespace users;
+
+
+#Create a Recovery Catalog Owner
+
+select tablespace_name from dba_tablespaces;
+create tablespace rcatbs datafile '/u01/app/oracle/oradata/rcat/rcat01.dbf' size 15M reuse;
+create user rcatowner identified by "oracle_4U" DEFAULT TABLESPACE rcatbs QUOTA unlimited on rcatbs;
+grant recovery_catalog_owner to rcatowner;
+ rman catalog rcatowner@rcat
+create catalog;
+
+#Register database in recovery catalog;
+
+rman target "'/ as sysbackup'" catalog rcatowner@rcat
+register database;
+report schema;
+
+
+#Configuring Recovery Catalog for recovery ( Changing Redundancy )
+
+rman target sys@rcat
+show retention policy
+configure retention policy to redundancy 2;
+
+— Backup recovery catalog database as an image copy and a base for incremental backups.
+rman target sys@rcat
+backup as copy incremental level 0 database;
+
+
+Schedule a Nightly Backup Incremental.
+
+backup incremental level 1 device type disk tag '%TAG' database;
+backup device type disk tag '%TAG' archivelog all not backed up delete all input;
+run {
+allocate channel oem_backup_disk1 type disk  maxpiecesize 1000 G;
+backup tag '%TAG' current controlfile;
+release channel oem_backup_disk1;
+}
+allocate channel for maintenance type disk;
+delete noprompt obsolete device type disk;
+release channel;
+
+Configure Block Change Tracking
+
+
+
+show parameter db_create_file_dest;
+alter system set db_create_file_dest = '/u01/app/oracle/oradata/orcl';
+show parameter db_create_file_dest;
+alter database enable block change tracking;
+
+Use Incremental Backup 6-2
+
+./lab_06_02_01.sh
+rman target "'/ as sysbackup'"
+
+— perform a base level 0 backup.
+
+run
+{
+allocate channel ch2 device type disk format "/u01/backup/orcl/%U";
+backup as copy tag 'BASE01' INCREMENTAL LEVEL 0 DATABASE;
+}
+
+./lab_06_02_03.sh
+
+— perform an incremental backup
+
+run 
+{
+allocate channel "ch1" device type disk format "/u01/backup/orcl/%U";
+backup tag 'incr_update' incremental level 1 database;
+}
+
+
+— apply incremental backups to existing level 0 backup.
+
+run{
+allocate channel "ch1" device type disk format "/u01/backup/orcl/%U";
+recover copy of database with TAG 'BASE01';
+}
+
+— to delete temporary backup
+delete NOPROMPT backup of tablespace INVENTORY;
+
+— Delete obsolete backups
+
+delete obsolete ;
+crosscheck datafilecopy all;
+
+
+Backing up important files that aren't part of backupset
+
+alter database backup controlfile to '/u01/backup/orcl/control.ctl';
+alter database backup controlfile to trace as '/u01/backup/orcl/control.sql';
+
+
+SQL> select name from v$datafile;
+
+NAME
+--------------------------------------------------------------------------------
+/u01/app/oracle/oradata/orcl/system01.dbf
+/u01/app/oracle/oradata/orcl/sysaux01.dbf
+/u01/app/oracle/oradata/orcl/undotbs01.dbf
+/u01/app/oracle/oradata/orcl/example01.dbf
+/u01/app/oracle/oradata/orcl/users01.dbf
+
+SQL> select member from v$logfile;
+
+MEMBER
+--------------------------------------------------------------------------------
+/u01/app/oracle/oradata/orcl/redo03.log
+/u01/app/oracle/oradata/orcl/redo02.log
+/u01/app/oracle/oradata/orcl/redo01.log
+/u01/app/oracle/oradata/orcl/redo01b.log
+/u01/app/oracle/oradata/orcl/redo02b.log
+/u01/app/oracle/oradata/orcl/redo03b.log
+
+# rman_output view in RCAT
+
+
+Backup the archive log files of ORCL datbase , delete all archive logs
+
+rman target "'/ as sysbackup'" catalog rcatowner/oracle_4U@rcat
+
+run{
+allocate channel "ch1" device type disk format '/u01/backup/orcl/%U';
+backup archivelog all delete all input;
+}
+
+List the backup archivelog files that could be used to recover to a point in time 1 hour ago ( Page 100 )
+
+list backup of archivelog until time 'sysdate-1/24'
+
+list backup of archivelog until time 'sysdate-05/60/24'
+
+
+
+# CREATE AN ARCHIVAL BACKUP;
+
+A backup that is not under normal retention policies and is not in FRA.
+KEEP FOREVER could be used for recovery.
+
+
+rman target "'/ as sysbackup'" catalog rcatowner/oracle_4U@rcat
+shutdown immediate;
+startup mount;
+
+RMAN> backup as copy database keep forever;
+	RMAN-03002: failure of backup command at 06/15/2015 13:28:31
+	ORA-19811: cannot have files in DB_RECOVERY_FILE_DEST with keep attributes
+
+
+#QUES : WHY copy not mentioned?
+backup database format '/u01/backup/%U' TAG keep_db_tag keep forever RESTORE POINT KEEPDB;
+
+# INCASE DB IS HOSED TO RECOVER FROM THE RESTOREPOINT
+rman target "'/ as sysbackup'" catalog rcatowner/oracle_4U@rcat
+list restore point all;
+restore database until restore point 'keepdb';
+recover database until restore point 'keepdb';
+
+alter databse open resetlogs;
+select dbid from v$database;
+
+backup database plus archivelog delete input;
+
+
+#BACKUP TABLESPACE USING ENCRYPTION
+
+set encryption on for all tablespaces algorithm 'AES128' identified by '%PASSWORD' only;
+backup device type disk tag '%TAG' tablespace 'ENCTBS' ;
+backup device type disk tag '%TAG' archivelog all not backed up;
+
+
+#8-3 RESTORING AN ENCRYPTED BACKUP
+
+shutdown abort;
+startup mount;
+rm -f /u01/backup/orcl/enctbs01.dbf
+
+— Perform a decrypted recovery with DB mounted.
+set decryption identified by '%PASSWORD';
+run {
+restore tablespace 'ENCTBS';
+recover tablespace 'ENCTBS';
+}
+
+alter database open;
+
+— On an online database (DB OPEN) the recovery commands would be
+
+set decryption identified by '%PASSWORD';
+run {
+sql 'alter tablespace "ENCTS" offline immediate';
+restore tablespace 'ENCTBS';
+recover tablespace 'ENCTBS';
+sql ' alter tablespace "ENCTBS" online';
+}
+
+
+# Diagnosing and repairing database failure; Pg-121
+
+remove datafile while DB is onlline.
+list failure;
+advise failure;
+
+repair failure;
+	contents of repair script:
+	   # restore and recover datafile
+	   restore ( datafile 2 );
+	   recover datafile 2;
+	   sql 'alter database datafile 2 online';
+
+
+adrci
+set editor vi
+show alert
+
+REPAIR BLOCK CORRUPTION
+
+
+rman target "'/ as sysbackup'"
+list failure;
+advise failure;
+repair failure;
+
+	contents of repair script:
+	   # block media recovery for multiple blocks
+	   recover datafile 7 block 129 to 130;
+	
+
+#PRACTICE 10-1 ( One more earlier to this - PRactice it ) - NB- SIMULATE
+
+
+# VARIOUS RECOVERY SCENARIOS
+
+1. RECOVERING FROM MEDIA FAILRUE (LOSS OF A DATA FILE )
+	Loss of USERS data file, Data Recovery Advisor cannot be used.
+
+	Issue full backup first.
+	rman target "'/ as sysbackup'" catalog rcatowner/oracle_4U@rcat
+	backup database plus archivelog delete input;
+	
+	list failure;
+	advise failure;
+	repair failure preview;
+
+# RECOVERING FROM MEDIA FAILURE - INCOMPLETE RECOVERY. ( Both datafile and archivelogs missing)
+
+ORA-01157: cannot identify/lock data file 7 - see DBWR trace file
+ORA-01110: data file 7: '/u01/backup/orcl/bartbs.dbf'
+	Attempt below which will fail...
+	restore datafile 7;
+	recover datafile 7;
+	
+	RMAN-06053: unable to perform media recovery because of missing log
+	RMAN-06025: no backup of archived log for thread 1 with sequence 43 and starting SCN of 2841842 found to restore
+	
+	
+	SQL> archive log list;
+	Database log mode              Archive Mode
+	Automatic archival             Enabled
+	Archive destination            USE_DB_RECOVERY_FILE_DEST
+	Oldest online log sequence     45
+	Next log sequence to archive   46
+	Current log sequence           47
+	
+	So data contained in logs from 43-47 will be lost.
+	
+	SQL> select name, dbid, current_scn, log_mode, open_mode from v$database;
+	
+	NAME            DBID CURRENT_SCN LOG_MODE     OPEN_MODE
+	--------- ---------- ----------- ------------ --------------------
+	ORCL      1410018189           0 ARCHIVELOG   MOUNTED
+	
+	
+	Determine the starting SCN and start time of the missin glog (log 43 ),
+	Not the values for FIRST_CHANGE# and FIRST_TIME 
+	
+SQL> select sequence#, first_change#, first_time, status from v$archived_log where sequence#=43;
+
+ SEQUENCE# FIRST_CHANGE# FIRST_TIME          S
+---------- ------------- ------------------- -
+        43       2841842 2015-06-15:15:36:30 A
+
+
+Recommended to restore control file first for incomplete recovery so that potential
+changes in the data structures are known to RMAN.
+
+QUES: Why aren't we connecting to catalog?
+
+
+On RMAN
+rman target "'/ as sysbackup'"
+shutdown immediate;
+startup nomount;
+restore controlfile from autobackup;
+alter database mount;
+restore database until sequence 43;
+recover database until sequence 43;
+ alter database open resetlogs;
+
+RMAN> select name, dbid, current_scn, log_mode, open_mode from v$database;
+
+NAME            DBID CURRENT_SCN LOG_MODE     OPEN_MODE
+--------- ---------- ----------- ------------ --------------------
+ORCL      1410018189     2842778 ARCHIVELOG   READ WRITE
+
+list failure;
+
+
+EXIT OUT OF RMAN and connect to CATALOG.
+rman target "'/ as sysbackup'" catalog rcatowner/oracle_4U@rcat
+crosscheck archivelog all;
+delete noprompt obsolete;
+
+backup database plus archivelog delete input;
+
+#PERFORMING LOSS OF A PARAMETER FILE.
+
+rman target "'/ as sysbackup'"
+startup
+— database was started with a dummy parameter file so the spfile can eb restored.
+
+restore spfile from autobackup recovery area '/u01/app/oracle/fast_recovery_area' db_name 'orcl';
+
+What if spfile is not in autobackup location??
+
+shutdown;
+startup;
+
+CONTROL FILE RECOVERY- ONLY ONE CONTROL FILE
+
+What if control02.ctl is lost?
+
+select * from v$controlfile_record_section 
+startup
+ORA-00202: control file: '/u01/app/oracle/fast_recovery_area/orcl/control02.ctl'
+ORA-27037: unable to obtain file status
+Linux-x86_64 Error: 2: No such file or directory
+Additional information: 3
+ORA-205 signalled during: ALTER DATABASE   MOUNT...
+
+
+RESYNC CATALOG vs CROSSCHECK 
+
+RMAN> list failure;
+
+using target database control file instead of recovery catalog
+List of Database Failures
+=========================
+
+Failure ID Priority Status    Time Detected       Summary
+---------- -------- --------- ------------------- -------
+1828       CRITICAL OPEN      2015-06-16:08:00:10 Control file /u01/app/oracle/fast_recovery_area/orcl/control02.ctl is missing
+
+
+
+advise failure;
+	RMAN> repair failure preview;
+	
+	Strategy: The repair includes complete media recovery with no data loss
+	Repair script: /u01/app/oracle/diag/rdbms/orcl/orcl/hm/reco_914572451.hm
+	
+	contents of repair script:
+	   # restore control file using multiplexed copy
+	   restore controlfile from '/u01/app/oracle/oradata/orcl/control01.ctl';
+	   sql 'alter database mount';
+	
+CONTROL FILE RECOVERY- ALL CONTROL FILES ARE LOST
+
+startup
+
+Redo Buffers                5459968 bytes
+ORA-00205: error in identifying control file, check alert log for more info
+
+RMAN> list failure;
+
+using target database control file instead of recovery catalog
+List of Database Failures
+=========================
+
+Failure ID Priority Status    Time Detected       Summary
+---------- -------- --------- ------------------- -------
+2074       CRITICAL OPEN      2015-06-16:09:43:32 Control file /u01/app/oracle/fast_recovery_area/orcl/control02.ctl is missing
+2071       CRITICAL OPEN      2015-06-16:09:43:32 Control file /u01/app/oracle/oradata/orcl/control01.ctl is missing
+
+restore controlfile from autobackup;
+ sql 'alter database mount';
+
+
+12-7 - If no recovery catalog you need to know the DBID
+
+
+
+RMAN> alter database open;
+
+RMAN-00571: ===========================================================
+RMAN-00569: =============== ERROR MESSAGE STACK FOLLOWS ===============
+RMAN-00571: ===========================================================
+RMAN-03002: failure of sql statement command at 06/16/2015 09:46:43
+ORA-01589: must use RESETLOGS or NORESETLOGS option for database open
+
+
+RESETLOGS is required because the SCN in CONTROL FILES DOESN"T MATCH WITH ONE IN DATA FILES.
+
+RMAN> alter database open resetlogs;
+
+RMAN-00571: ===========================================================
+RMAN-00569: =============== ERROR MESSAGE STACK FOLLOWS ===============
+RMAN-00571: ===========================================================
+RMAN-03002: failure of sql statement command at 06/16/2015 09:47:37
+ORA-01194: file 1 needs more recovery to be consistent
+ORA-01110: data file 1: '/u01/app/oracle/oradata/orcl/system01.dbf'
+
+
+** The SCN in control file is older than the SCN in the data files and the data files
+have not been restored with the UNTIL clause. Database needs to be recovered so that the control file can be synchronized with the data files.
+
+recover database;
+
+
+RMAN> select name,dbid, current_scn, log_mode, open_mode from v$database;
+
+NAME            DBID CURRENT_SCN LOG_MODE     OPEN_MODE
+--------- ---------- ----------- ------------ --------------------
+ORCL      1410018189     3096899 ARCHIVELOG   READ WRITE
+
+
+#NB: rman checksyntax
+
+
+Restoring the Password File;
+
+database password is required for remote access.
+
+	oracle@edblr62p2 labs]$ sqlplus sys@orcl as sysdba
+	ERROR:
+	ORA-01017: invalid username/password; logon denied
+	orapwd FILE=$ORACLE_HOME/dbs/orapworcl ENTRIES=15
+
+RECOVERING TEMP FILE
+
+	DB automatically recovers the tempfile..
+	
+	Tue Jun 16 11:24:14 2015
+	Errors in file /u01/app/oracle/diag/rdbms/orcl/orcl/trace/orcl_dbw0_29581.trc:
+	ORA-01157: cannot identify/lock data file 201 - see DBWR trace file
+	ORA-01110: data file 201: '/u01/app/oracle/oradata/orcl/temp01.dbf'
+	ORA-27037: unable to obtain file status
+	Linux-x86_64 Error: 2: No such file or directory
+	Additional information: 3
+	Tue Jun 16 11:24:14 2015
+
+CREATING ENCRYPTED BACKUPS
+
+- Create directory for wallet.
+
+mkdir -pv /u01/app/oracle/admin/orcl/wallet
+
+— Add below to sqlnet.ora
+
+ENCRYPTION_WALLET_LOCATION=
+(SOURCE=
+  (METHOD=FILE
+	(METHOD_DATA=
+     (DIRECTORY = /u01/app/oracle/admin/orcl/wallet)
+    )
+   )
+ )
+
+- Create a password based key-store
+ADMINISTER KEY MANAGEMENT CREATE KEYSTORE '/u01/app/oracle/admin/orcl/wallet' IDENTIFIED BY secret;
+
+SQL> !ls -l /u01/app/oracle/admin/orcl/wallet
+total 4
+-rw-r--r-- 1 oracle oinstall 2408 Jun 16 11:52 ewallet.p12
+
+— Open the keystore
+ADMINISTER KEY MANAGEMENT SET KEYSTORE OPEN IDENTIFIED BY secret;
+
+— vIEW INFO ABOUT WALLET IN DICT
+SELECT WRL_PARAMETER, STATUS, WALLET_TYPE FROM V$ENCRYPTION_WALLET;
+
+SQL> SELECT WRL_PARAMETER, STATUS, WALLET_TYPE FROM V$ENCRYPTION_WALLET;
+
+WRL_PARAMETER
+--------------------------------------------------------------------------------
+STATUS                         WALLET_TYPE
+------------------------------ --------------------
+/u01/app/oracle/admin/orcl/wallet/
+OPEN_NO_MASTER_KEY             PASSWORD
+
+— GENERATE MASTER ENCRYPTION KEY
+
+ADMINISTER KEY MANAGEMENT SET KEY IDENTIFIED BY secret WITH BACKUP USING 'test'
+
+— KEYSTORE GOT AUTOMATICALLY BACKED UP PIROR TO MASTER KEY GENERATION.
+SQL> !ls -l /u01/app/oracle/admin/orcl/wallet
+total 8
+-rw-r--r-- 1 oracle oinstall 2408 Jun 16 11:55 ewallet_2015061611552135_test.p12
+-rw-r--r-- 1 oracle oinstall 3848 Jun 16 11:55 ewallet.p12
+
+— BACKUP THE KEYSTORE FINALLY.
+ADMINISTER KEY MANAGEMENT BACKUP KEYSTORE IDENTIFIED BY secret;
+
+—- CREATE A ENCRYPTED BACKUP
+
+[oracle@edblr62p2 labs]$ cat lab_12_06_02.rman
+	set encryption on for all tablespaces algorithm 'AES128';
+	run {
+	allocate channel enc_backup_disk1 type disk format '/u01/backup/orcl/%U';
+	backup as BACKUPSET tag 'TRANSPARENT' database;
+	backup as BACKUPSET tag 'TRANSPARENT' archivelog all not backed up;
+	release channel enc_backup_disk1;
+	}
+
+
+rman target "'/ as sysbackup'" @lab_12_06_02.rman
+
+/* display the backup pieces and the encryption status of each */
+/* Where the Tag is 'TRANSPARENT' */
+SET PAGES 99
+COL_BS_REC FORMAT 99999
+COL BP_REC FORMAT 99999
+COL ENCRYPTED FORMAT A7
+COL TAG    FORMAT A12
+COL MEDIA_HANDLE FORMAT a40
+
+SELECT s.recid as BS_REC, P.RECID as BP_REC, P.ENCRYPTED, P.TAG, p.HANDLE as MEDIA_HANDLE
+from v$BACKUP_PIECE P, V$BACKUP_SET S
+WHERE P.SET_STAMP=S.SET_STAMP
+and P.SET_COUNT = S.SET_COUNT
+and P.TAG='TRANSPARENT'
+/
+
+   BS_REC BP_REC ENCRYPT TAG          MEDIA_HANDLE
+---------- ------ ------- ------------ ----------------------------------------
+        66     66 YES     TRANSPARENT  /u01/backup/orcl/2uq9kojp_1_1
+        67     67 YES     TRANSPARENT  /u01/backup/orcl/2vq9kok9_1_1
+
+
+RECOVER USING AN ENCRYPTED BACKUP
+
+startup
+Database mounted.
+ORA-01157: cannot identify/lock data file 3 - see DBWR trace file
+ORA-01110: data file 3: '/u01/app/oracle/oradata/orcl/sysaux01.dbf'
+
+RMAN> list failure;
+
+using target database control file instead of recovery catalog
+Database Role: PRIMARY
+
+List of Database Failures
+=========================
+
+Failure ID Priority Status    Time Detected       Summary
+---------- -------- --------- ------------------- -------
+62         HIGH     OPEN      2015-06-16:12:09:31 One or more non-system datafiles are missing
+
+
+RMAN> repair failure preview;
+
+Strategy: The repair includes complete media recovery with no data loss
+Repair script: /u01/app/oracle/diag/rdbms/orcl/orcl/hm/reco_2495411788.hm
+
+contents of repair script:
+   # restore and recover datafile
+   restore ( datafile 3 );
+   recover datafile 3;
+   sql 'alter database datafile 3 online';
+
+repair failure; --will fail
+
+RMAN-03015: error occurred in stored script Repair Script
+ORA-19870: error while restoring backup piece /u01/backup/orcl/2uq9kojp_1_1
+ORA-19913: unable to decrypt backup
+ORA-28365: wallet is not open
+
+
+Because the db was restarted and encryption wallet is not configured to be an auto-login
+wallet, the encryption wallet must be opened before the recovery can begin.
+
+
+RMAN> SELECT WRL_PARAMETER, STATUS, WALLET_TYPE FROM V$ENCRYPTION_WALLET;
+
+
+WRL_PARAMETER
+--------------------------------------------------------------------------------
+STATUS                         WALLET_TYPE
+------------------------------ --------------------
+
+/u01/app/oracle/admin/orcl/wallet/                                                                  
+CLOSED                         UNKNOWN
+
+ADMINISTER KEY MANAGEMENT SET KEYSTORE OPEN IDENTIFIED BY secret;
+
+list failure;
+advise failure;
+repair failure;
+
+
+INSTALLING ORACLCE SECURE BACKUP
+/usr/local/oracle/backup/.bin.linux86_64/obtool --gui -u 'admin' mkssel --content '*' --dbname 'orcl' --host 'edblr62p2' -f 'RMAN-DEFAULT' --copynum '*' --encryption 'off' --restrict "" --waittime forever 'my_ssel'
+
+RMAN> configure channel device type 'SBT_TAPE' PARMS 'ENV=(OB_DEVICE=vdrive1)';
+
+backup device type SBT_TAPE tablespace users;
+LIST BACKUP DEVICE TYPE SBT_TAPE;
+
+[oracle@edblr62p2 labs]$ obtool
+ob> lsj -A
+Job ID           Sched time  Contents                       State
+---------------- ----------- ------------------------------ ---------------------------------------
+oracle/1         none        database orcl (dbid=1410018189) completed successfully at 2015/06/16.14:46
+oracle/1.1       none        datafile backup                completed successfully at 2015/06/16.14:46
+oracle/2         none        database orcl (dbid=1410018189) completed successfully at 2015/06/16.14:46
+oracle/2.1       none        controlfile autobackup         completed successfully at 2015/06/16.14:46
+
+
+PREPARING TO USE FLASHBACK TECHNOLOGIES;
+
+
+
+SQL> select tuned_undoretention from v$undostat where rownum = 1;
+TUNED_UNDORETENTION
+-------------------
+               1319
+
+The number of seconds the data is being retained in the database at any given time.
+
+
+14400seconds = 4 hours.
+
+SQL> alter system set undo_retention = 14400 scope=both;
+
+System altered.
+
+
+alter tablespace undotbs1 retention guarantee;
+
+https://oracle-base.com/articles/10g/space-object-transaction-management-10g
+
+
+SQL> select file_name, file_id from dba_data_files where tablespace_name ='UNDOTBS1';
+
+FILE_NAME
+--------------------------------------------------------------------------------
+   FILE_ID
+----------
+/u01/app/oracle/oradata/orcl/undotbs01.dbf
+         4
+
+Configure the tablespace to automatically extend if more space is needed to keep unexpired undo and active undo records. 
+
+
+alter database datafile 4 autoextend on maxsize unlimited;
+
+
+#RESTORE A DROPPED TABLE ( USER ACCIDENTALY DROPPED THE TABLE).
+
+--will show only tables in the current users
+show recyclebin 
+
+set pages 99
+set linesize 1000
+column original_name format a20
+column object_name format a30
+select original_name, object_name, droptime from dba_recyclebin where owner ='BAR';
+
+FLASHBACK TABLE BAR."BIN$GKUnMab/IiTgUykHlgp8pw==$0" TO BEFORE DROP RENAME TO BAR102A;
+
+
+#FLASHBACK TABLE DUE TO A ROUGE TRANSACTION
+
+RMAN> select sysdate from dual;
+
+SYSDATE
+-------------------
+2015-06-16:15:38:30
+
+=> Rouge transaction ..
+Tables involved: BAR.DEPT and BAR.BARCOPY with FK. Both tables need to be restored thus.
+
+
+alter table bar.bardept enable row movement;
+alter table bar.barcopy enable row movement;
+
+flashback table bar.bardept to timestamp to_timestamp('2015-06-16:15:38:30','YYYY-MM-DD:HH24:MI:SS');
+flashback table bar.barcopy to timestamp to_timestamp('2015-06-16:15:38:30','YYYY-MM-DD:HH24:MI:SS');
+
+
+FLASHBACK THE DATABASE;
+
+
+SQL> select flashback_on from v$database;
+
+FLASHBACK_ON
+------------------
+NO
+
+
+CREATE RESTORE POINT RP1 GUARANTEE FLASHBACK DATABASE;
+SQL> ALTER DATABASE FLASHBACK ON;
+
+Database altered.
+
+SQL> select flashback_on from v$database;
+
+FLASHBACK_ON
+------------------
+YES
+
+
+SQL> SELECT CURRENT_SCN FROM V$DATABASE;
+
+CURRENT_SCN
+-----------
+    3417738
+
+
+..row updates..
+
+SQL> commit;
+
+Commit complete.
+
+SQL> select current_scn from v$database;
+
+CURRENT_SCN
+-----------
+    3417782
+
+
+— FLASHBACK THE DATABASE TO ROLLBACK THE ROUGE TRANSACTION.
+
+--bacup the db first..
+
+RMAN> backup database plus archivelog delete input;
+
+
+Starting backup at 2015-06-16:15:42:14
+current log archived
+using target database control file instead of recovery catalog
+allocated channel: ORA_DISK_1
+channel ORA_DISK_1: SID=68 device type=DISK
+channel ORA_DISK_1: starting archived log backup set
+channel ORA_DISK_1: specifying archived log(s) in backup set
+input archived log thread=1 sequence=3 RECID=55 STAMP=882530654
+input archived log thread=1 sequence=4 RECID=56 STAMP=882532522
+input archived log thread=1 sequence=5 RECID=57 STAMP=882533001
+input archived log thread=1 sequence=6 RECID=58 STAMP=882535784
+input archived log thread=1 sequence=7 RECID=59 STAMP=882546134
+channel ORA_DISK_1: starting piece 1 at 2015-06-16:15:42:15
+channel ORA_DISK_1: finished piece 1 at 2015-06-16:15:42:16
+piece handle=/u01/app/oracle/fast_recovery_area/ORCL/backupset/2015_06_16/o1_mf_annnn_TAG20150616T154215_br0jyqhl_.bkp tag=TAG20150616T154215 comment=NONE
+channel ORA_DISK_1: backup set complete, elapsed time: 00:00:01
+
+
+
+shutdown immediate;
+startup mount;
+flashback database to scn=3417738;
+	RMAN> flashback database to scn=3417738;
+	
+	Starting flashback at 2015-06-16:15:49:50
+	allocated channel: ORA_DISK_1
+	channel ORA_DISK_1: SID=178 device type=DISK
+	allocated channel: ORA_SBT_TAPE_1
+	channel ORA_SBT_TAPE_1: SID=240 device type=SBT_TAPE
+	channel ORA_SBT_TAPE_1: Oracle Secure Backup
+	
+
+
+alter database open read only;
+RMAN> select current_scn from v$database;
+
+CURRENT_SCN
+-----------
+    3417738
+
+--verify data
+
+shutdown immediate;
+startup mount;
+alter database open resetlogs;
+
+# QUES: SBT_TAPE vs DISK (Configure default channel ).
+
+
+#TRANSPORTING A TABLESPACE
+
+SQL> select name, log_mode, open_mode, current_scn from v$database;
+
+NAME      LOG_MODE     OPEN_MODE            CURRENT_SCN
+--------- ------------ -------------------- -----------
+ORCL      ARCHIVELOG   READ WRITE               3419028
+
+
+find the exact platform to whichthe tablespace is being transported.
+
+col platform_name format a30
+select platform_id, platform_name, endian_format from v$transportable_platform
+where upper(platform_name) like '%LINUX%';
+
+SQL>   2
+PLATFORM_ID PLATFORM_NAME                  ENDIAN_FORMAT
+----------- ------------------------------ --------------
+         10 Linux IA (32-bit)              Little
+         11 Linux IA (64-bit)              Little
+          9 IBM zSeries Based Linux        Big
+         13 Linux x86 64-bit               Little
+         18 IBM Power Based Linux          Big
+
+
+alter tablespace bartbs read only;
+
+backup to platform 'Linux x86 64-bit' format '/u01/backup/test.bck' datapump format '/u01/backup/test.dmp' tablespace bartbs;
+
+RMAN> alter tablespace bartbs read write;
+
+
+.oraenv to ract ( Destination DB)
+
+[oracle@edblr62p2 labs]$ rman target /
+
+Recovery Manager: Release 12.1.0.2.0 - Production on Tue Jun 16 16:02:21 2015
+
+Copyright (c) 1982, 2014, Oracle and/or its affiliates.  All rights reserved.
+
+connected to target database: RCAT (DBID=654386230)
+
+— Ensure target db is openend in READ-WRITE MODE.
+
+RMAN> select name, log_mode, open_mode, current_scn from v$database;
+
+using target database control file instead of recovery catalog
+NAME      LOG_MODE     OPEN_MODE            CURRENT_SCN
+--------- ------------ -------------------- -----------
+RCAT      ARCHIVELOG   READ WRITE               2136003
+
+
+CREATE USER BAR IDENTIFIED BY oracle_4U;
+grant create session to bar;
+
+
+restore foreign tablespace bartbs format '/u01/backup/rcat/bartbs.dbf' from backupset '/u01/backup/test.bck' dump file from backupset '/u01/backup/test.dmp'
+
+
+#POINT IN TIME RECOVERY
+rman target "'/ as sysbackup'" | tee -a /home/oracle/rman_17.log
+
+
+show controlfile autobackup;
+backup incremental level 0 database plus archivelog;
+
+— create table bar.test_table
+
+	SQL> SELECT NAME, CURRENT_SCN FROM V$DATABASE;
+	
+	NAME      CURRENT_SCN
+	--------- -----------
+	ORCL          3422136
+	
+
+backup incremental level 1 database plus archivelog;
+
+
+RMAN> select name, current_scn from v$database;
+
+NAME      CURRENT_SCN
+--------- -----------
+ORCL          3422267
+
+SQL> drop table bar.test_table purge;
+
+Table dropped.
+
+— Assume test-table not in flashback logs..
+
+==PTR RECOVERY OF TABLE STEPS.
+	
+	Check for a auxiliary destination.
+	
+	RMAN> host "ls /u01/backup/test/*";
+	
+
+RECOVER TABLE BAR.TEST_TABLE UNTIL SCN 3422136  AUXILIARY DESTINATION '/u01/backup/test'
+
+
+SQL> select * from bar.test_table;
+
+#DUPLICATE AN ACTIVE DATABASE (ORCL TO DBTEST)
+
+[oracle@edblr62p2 labs]$ cd /u01/app/oracle/
+
+mkdir /u01/app/oracle/oradata directories
+add tnsentry
+orapwd file=$ORACLE_HOME/dbs/orapwdbtest entries=15
+
+— CLONING SESSION
+. oraenv = dbtest
+[oracle@edblr62p2 oradata]$ cat $ORACLE_HOME/dbs/initdbtest.ora
+db_name=dbtest
+remote_login_passwordfile=exclusive
+
+startup nomount pfile='/u01/app/oracle/product/12.1.0/dbhome_1/dbs/initdbtest.ora'
+
+.oraenv = orcl
+
+— Resize FRA
+ show parameters compatible
+ select name, log_mode, open_mode from v$database;
+ alter system set db_recovery_file_dest_size=10G scope=both;
+
+— In Cloning Session set $TNS_ADMIN because server process will try to resolve
+AUXILIARY service name using TNS_ADMIN/tnsnames.ora.
+
+export TNS_ADMIN=/u01/app/oracle/product/12.1.0/dbhome_1/network/admin
+
+ rman target sys/oracle_4U@orcl auxiliary sys/oracle_4U catalog rcatowner/oracle_4U@rcat
+
+		connected to target database: ORCL (DBID=1410018189)
+		connected to recovery catalog database
+		connected to auxiliary database: DBTEST (not mounted)
+
+
+DUPLICATE TARGET DATABASE TO dbtest FROM ACTIVE DATABASE SPFILE PARAMETER_VALUE_CONVERT '/u01/app/oracle/oradata/orcl','/u01/app/oracle/oradata/dbtest','/u01/app/oracle/fast_recovery_area','/u01/app/oracle/dbtest_fra','ORCL','DBTEST' SET DB_RECOVERY_FILE_dEST_SIZE='10G';
+
+
+RMAN> SELECT DBID, NAME, CREATED, OPEN_MODE FROM V$DATABASE;
+
+      DBID NAME      CREATED             OPEN_MODE
+---------- --------- ------------------- --------------------
+1410018189 ORCL      2015-06-13:01:57:33 READ WRITE
+
+#NOTE : NB — WORKSHOP SCENARIOS - IMPORTANT.
+
+
+
+REF
+TABLES ( RC AND V$ VIEWS )
+CHANGE COPY OF DATABASE CONTROLFILE NOKEEP
+
+ select group#, thread#, status, first_change#, next_change# from v$log;
+ alter system switch logfile;
+ alter system checkpoint;
+
+Pg 209
+catalog recovery area with noprompt;
+
+ASM BACKUP
+
+KEYSTORE AND KEYS TO ENCRYPT MULTIPLE TABLESPACES WITH MULTIPLE KEYS.
+
+
+RMAN> backup database plus archivelog ;
+
+
+Starting backup at 2015-06-17:16:54:08
+current log archived
+allocated channel: ORA_DISK_1
+channel ORA_DISK_1: SID=248 device type=DISK
+RMAN-00571: ===========================================================
+RMAN-00569: =============== ERROR MESSAGE STACK FOLLOWS ===============
+RMAN-00571: ===========================================================
+RMAN-03002: failure of backup plus archivelog command at 06/17/2015 16:54:09
+RMAN-06059: expected archived log not found, loss of archived log compromises recoverability
+ORA-19625: error identifying file /u01/app/oracle/fast_recovery_area/ORCL/archivelog/2015_06_15/o1_mf_1_45_bqxw86jc_.arc
+ORA-27037: unable to obtain file status
+Linux-x86_64 Error: 2: No such file or directory
+Additional information: 3
+
+crosscheck archivelog all;
+DELETE EXPIRED ARCHIVELOG ALL;
+
+
+#LOST REDO LOG FILES
+select group#, thread#, sequence#, status, first_change#, next_change# from v$log;
+SQL> ! rm /u01/app/oracle/oradata/orcl/redo02.log
+
+SQL> ! rm /u01/app/oracle/oradata/orcl/redo02b.log
+
+
+ORA-00312: online log 2 thread 1: '/u01/app/oracle/oradata/orcl/redo02b.log'
+ORA-27037: unable to obtain file status
+Linux-x86_64 Error: 2: No such file or directory
+Additional information: 3
+ORA-00312: online log 2 thread 1: '/u01/app/oracle/oradata/orcl/redo02.log'
+
+
+startup mount;
+
+Check if the missing log file is archived or not.
+select name, thread#, sequence#, first_change#, next_change#, archived, applied, status , END_OF_REDO_TYPE from v$archived_log;
+if 'ARC=YES'
+alter database clear logfile group 2;
+
+if 'ARC=NO'
+alter database clear unarchived logfile group 2;
+
+
+If archived
+	Clear the missing loggroup and recreate the missing log file.
+	
+alter database add logfile group 2 '/u01/app/oracle/oradata/orcl/redo02.log' size 50m;
+
+alter database add logfile member  ('/u01/app/oracle/oradata/orcl/redo02b.log') to group 2 size 50m;
+
+
+— REMOVE THE CURRENT LOGFILE
+!rm /u01/app/oracle/oradata/orcl/redo01.log
+
+alter database clear unarchived logfile group 1;
+
+
+#IMPORTANT CHAPTER 14, 17, 19.

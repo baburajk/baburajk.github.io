@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="Generator" content="EditPlus®">
+  <meta name="Author" content="">
+  <meta name="Keywords" content="">
+  <meta name="Description" content="">
+  <title>Notes</title>
+ <link rel="stylesheet" href="css/stylesheet1.css">
+ <link rel="stylesheet" href="css/stylesheet2.css">
+ <link rel="stylesheet" href="css/w3.css">
+
+ <style type="text/css" >
+	  
+ </style>
+<script Language="Javascript">
+function toggle() {
+    var x = document.getElementById('contents');
+    if (x.style.display === 'none') {
+		document.getElementById("togglelink").text = "hide"
+        x.style.display = 'block';
+    } else {
+        x.style.display = 'none';
+		document.getElementById("togglelink").text = "show"
+    }
+}
+</script>
+
+
+ </head>
+	<body> 
+		<div id="nav">
+			<div id="jumplinks"> Reference Notes/Hints </div>
+		</div>
+    
+		<div id="body">
+			<div id="content" class="mw-body" role="main">
+ 				<div id="toc" class="toc"><div id="toctitle"><h2>Contents</h2><span class="toctoggle">&nbsp;[<a href="javascript:toggle()" id="togglelink">hide</a>]&nbsp;</span></div>
+					<div id="contents">
+						<ul>
+							<li> <a href="#stress"> <span class="tocnumber">	1 </span> <span class="toctext"> Stress 	</span></a> </li>
+							<li> <a href="#stress-ng"> <span class="tocnumber">	2 </span> <span class="toctext"> Stress-ng 			</span></a> </li>
+ 						</ul>
+					</div>
+				</div>
+
+				<style>
+					html,body,h1,h2,h3,h4,h5,h6 { font-family: "Comic Sans MS", cursive, sans-serif; }
+				</style>
+ 
+
+
+<div class="w3-container">
+	<h1><span class="mw-headline" id="stress"> Stress</h1>
+		
+<p>
+
+
+Taking the discussion back to the machinery at hand, the load averages tell us by increasing duration whether our physical CPUs are over- or under-utilized. 
+The point of perfect utilization, meaning that the CPUs are always busy and, yet, no process ever waits for one, is the average matching the number of CPUs. 
+If there are four CPUs on a machine and the reported one-minute load average is 4.00, the machine has been utilizing its processors perfectly for the last 60 seconds. 
+This understanding can be extrapolated to the 5- and 15-minute averages. Load average narrowly focuses on what is actively demanding CPU time. This differs greatly from the CPU percentage. 
+The CPU percentage is the amount of a time interval (that is, the sampling interval) that the system's processes were found to be active on the CPU. If there are four CPUs on a machine and
+the reported one-minute load average is 4.00, the machine has been utilizing its processors perfectly for the last 60 seconds. This understanding can be extrapolated to the 5- and 15-minute averages.
+
+	<BR>
+Reference: 
+	<BR>
+http://www.linuxjournal.com/article/9001?page=0,0
+
+	
+</p>
+
+	
+<pre> 
+http://www.binarytides.com/linux-ss-command/
+
+yum install iproute2-doc
+
+
+--ss examples
+ss -t4 src 192.168.2.0/24 dst 192.168.1.0/24 '( sport = :ssh or dport \> :4000 )'
+
+
+--Find memory used by a single process
+ps aux --sort -rss
+
+https://stackoverflow.com/questions/7880784/what-is-rss-and-vsz-in-linux-memory-management
+https://techtalk.intersec.com/2013/07/memory-part-2-understanding-process-memory/
+
+
+
+--CPU Overloaded in last minute
+	 
+[root@lab125a yum.repos.d]# cat /proc/cpuinfo  |grep processor
+processor	: 0
+
+[root@lab125a yum.repos.d]# stress --cpu 2 --timeout 60
+stress: info: [3764] dispatching hogs: 2 cpu, 0 io, 0 vm, 0 hdd
+stress: info: [3764] successful run completed in 60s
+
+[root@lab125a yum.repos.d]# uptime
+14:19:58 up  4:21,  2 users,  load average: 1.24, 0.40, 0.17
+
+
+--Load CPU via stress 
+
+[root@lab125a yum.repos.d]# stress --cpu 1 --timeout 5
+stress: info: [3761] dispatching hogs: 1 cpu, 0 io, 0 vm, 0 hdd
+
+[root@lab125a ~]# dstat -cmdnt
+----total-cpu-usage---- ------memory-usage----- -dsk/total- -net/total- ----system----
+usr sys idl wai hiq siq| used  buff  cach  free| read  writ| recv  send|     time
+  0   0  99   0   0   0| 192M  952k  278M  522M|  11k 9864B|   0     0 |22-09 14:18:10
+  0   0 100   0   0   0| 192M  952k  278M  522M|   0     0 | 170B  102B|22-09 14:18:11
+  0   0 100   0   0   0| 192M  952k  278M  522M|   0     0 |  66B  166B|22-09 14:18:12
+  0   0 100   0   0   0| 192M  952k  278M  522M|   0     0 | 170B  118B|22-09 14:18:13
+  0   0 100   0   0   0| 192M  952k  278M  522M|   0     0 |  66B  118B|22-09 14:18:14
+ 32   0  68   0   0   0| 192M  952k  278M  522M|   0     0 | 170B  118B|22-09 14:18:15
+100   0   0   0   0   0| 192M  952k  278M  522M|   0     0 |  66B  118B|22-09 14:18:16
+100   0   0   0   0   0| 192M  952k  278M  522M|   0     0 | 170B  118B|22-09 14:18:17
+100   0   0   0   0   0| 192M  952k  278M  522M|   0     0 |  66B  118B|22-09 14:18:18
+100   0   0   0   0   0| 192M  952k  278M  522M|   0     0 | 170B  102B|22-09 14:18:19
+ 66   0  34   0   0   0| 192M  952k  278M  522M|   0     0 |  66B  102B|22-09 14:18:20
+  0   0 100   0   0   0| 192M  952k  278M  522M|   0     0 | 170B  118B|22-09 14:18:21
+  0   0 100   0   0   0| 192M  952k  278M  522M|   0     0 |  66B  134B|22-09 14:18:22^C
+
+
+--More granular
+
+dstat -cmdn ( c = cpu, m = memory, d= disk, n = network)
+dstat -gyprs ( g = paging, y = system stats, p = process stats, r = read/write stats, s = swap stats)
+
+
+-- Memory details (flag = htm )
+
+[root@lab125a yum.repos.d]# free -htm
+			  total        used        free      shared  buff/cache   available
+Mem:           993M         62M        852M        1.4M         78M        822M
+Swap:          511M         98M        413M
+Total:         1.5G        161M        1.2G
+
+[root@lab125a yum.repos.d]# cat /proc/sys/vm/drop_caches
+0
+
+[root@lab125a yum.repos.d]# echo 3 > /proc/sys/vm/drop_caches
+
+[root@lab125a yum.repos.d]# cat /proc/sys/vm/drop_caches
+3
+
+--Notice the buff/cache drop afer the flush!
+
+[root@lab125a yum.repos.d]# free -htm
+			  total        used        free      shared  buff/cache   available
+Mem:           993M         61M        876M        1.4M         55M        835M
+Swap:          511M         98M        413M
+Total:         1.5G        160M        1.3G
+
+
+[root@lab125a yum.repos.d]# swapoff -a
+
+[root@lab125a yum.repos.d]# free -htm
+			  total        used        free      shared  buff/cache   available
+Mem:           993M        127M        801M        7.2M         63M        762M
+Swap:            0B          0B          0B
+Total:         993M        127M        801M
+
+
+--To free pagecache:
+# echo 1 > /proc/sys/vm/drop_caches
+
+To free dentries and inodes:
+# echo 2 > /proc/sys/vm/drop_caches
+
+To free pagecache, dentries and inodes:
+# echo 3 > /proc/sys/vm/drop_caches
+	
+</pre>
+
+</div>
+
+ 	
+	
+<div class="w3-container">
+	<h1><span class="mw-headline" id="stress-ng"> Stress-ng </h1>
+		
+<p>
+
+</p>
+
+	
+<pre> 
+
+--Stress-ng example
+[root@lab125a ~]# stress-ng -c 2 --cpu-ops 10000 -t 10 --metrics
+stress-ng: info:  [2744] dispatching hogs: 2 cpu
+stress-ng: info:  [2744] successful run completed in 10.01s
+
+--To send keys to hung guests
+root@panchajanya:~\> virsh send-key lab125a KEY_LEFTALT KEY_SYSRQ KEY_H
+
+</pre>
+
+</div>
+	
+
+	 
+	
+	
+</body>
+</html>

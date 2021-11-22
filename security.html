@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head> <script data-ad-client="ca-pub-2393111531899119" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script> 
+	<meta charset="utf-8">
+	<title>intercloudzone</title>
+	<meta name="description" content="">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<meta property="og:image" content="path/to/image.jpg">
+<!-- favicon -->
+<link rel="shortcut icon" href="img/favicon/favicon.ico" type="image/x-icon">
+<link rel="apple-touch-icon" href="img/favicon/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="72x72" href="img/favicon/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="114x114" href="img/favicon/apple-touch-icon-114x114.png">
+<!-- favicon -->
+<!-- build:css -->
+<link rel="stylesheet" href="css/libs/bootstrap.min.css">
+<link rel="stylesheet" href="css/libs/font-awesome.min.css">
+<link rel="stylesheet" href="css/libs/animate.min.css">
+<link rel="stylesheet" href="css/libs/slick.css">
+<link rel="stylesheet" href="css/libs/magnific-popup.css">
+
+<link rel="stylesheet" href="css/main.css">
+<link rel="stylesheet" href="css/media.css">
+<!-- endbuild -->
+	<!-- Chrome, Firefox OS and Opera -->
+	<meta name="theme-color" content="#000">
+	<!-- Windows Phone -->
+	<meta name="msapplication-navbutton-color" content="#000">
+	<!-- iOS Safari -->
+	<meta name="apple-mobile-web-app-status-bar-style" content="#000">
+	<!-- <style>body { opacity:s 0; overflow-x: hidden; } html { background-color: #fff; }</style> -->
+</head>
+<body data-spy="scroll" data-target=".navbar" data-offset="50" class="loaded">
+<!-- Preloader -->
+<div class="preloader">
+	<div class="cssload-spinner">
+		<div class="cssload-ball cssload-ball-1"></div>
+		<div class="cssload-ball cssload-ball-2"></div>
+		<div class="cssload-ball cssload-ball-3"></div>
+		<div class="cssload-ball cssload-ball-4"></div>
+	</div>
+</div>
+<!-- Preloader -->
+<div class="site-content">
+	<!-- Naviigation -->
+	<div class="navbar-wrap">
+		<div class="navbar">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-12">
+						<nav class="navbar-menu">
+							<div class="navbar-header">
+								<button class="collapsed navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-example-js-navbar-scrollspy">
+									<span class="icon-bar"></span>
+									<span class="icon-bar"></span>
+									<span class="icon-bar"></span>
+								</button>
+							</div>
+							 
+							<div class="navbar-full">
+								<div class="collapse bs-example-js-navbar-scrollspy">
+									<ul class="nav navbar-nav">
+										<li style="display: none;"><a></a></li>
+										<li><a href="http://www.linkedin.com/in/baburajkallarakkal">About Me</a></li>
+										<li><a href="http://padmavyuha.blogspot.com/">Blog</a></li>
+										<li><a href="https://sourceforge.net/projects/oraclerman/">Projects</a></li>
+										<li><a href="https://hub.docker.com/u/baburaj/">Docker</a></li>
+										<!-- <li><a href="#subscribe">Subscribe</a></li> -->
+										<li><a href="mailto:raj.anju@gmail.com">Contact Me</a></li>
+										<li>
+										</li>
+									</ul>
+									<!-- btn -->
+									<div class="nav-button main-button">
+										<a href="#" class="btn btn-nav btn-block" role="button">
+											Site is in Beta!
+										</a>
+									</div>
+									<!-- btn -->
+								</div>
+							</div>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Naviigation -->
+	
+	<!-- Header -->
+	<div class="menu-sticky"></div>
+
+	 
+
+	<!-- Screen-one -->
+	<div class="screen-one">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="screen-one-title">
+						<h2>Different ways to restrict logins on the linux.</h2>
+					</div>
+				</div>
+			</div>
+		</div>
+	 
+		<div class="container">
+					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0s">
+						<span>01.</span>
+						<div class="screen-one-item-container">
+							<h3>tcp_wrappers</h3>
+							<p> TCP Wrappers can be used only for services that support the tcp libraries and can only be used for any 'new' connections, but not existing ones. </p>
+							<p> </p>	
+
+<pre>
+-Install
+[root@rhce1 ~]# yum install tcp_wrappers -y
+
+#Check if the service/daemon supports the tcp wrappers.
+
+[root@rhce1 ~]# ldd /usr/sbin/sshd | grep libwrap
+  libwrap.so.0 => /lib64/libwrap.so.0 (0x00007fb65a254000)
+
+[root@rhce1 ~]# strings -f /usr/sbin/* | grep hosts_access
+/usr/sbin/auditd: hosts_access
+/usr/sbin/sshd: hosts_access
+
+#Apply (Syntax: daemon_list : client_list [ : shell_command ])
+
+[root@rhce1 etc]# tail -2 /etc/hosts.allow
+sshd :  192.168.122.0/24
+
+[root@rhce1 etc]# tail -2 /etc/hosts.deny
+sshd : ALL
+sshd : dickens
+
+[root@rhce6 ~]# tail -1 /etc/hosts.deny
+ALL : ALL : spawn ( /bin/echo %a from %h attempted to access %d >> /var/log/connections.log)
+
+[root@rhce6 ~]# tail -1 /var/log/connections.log
+192.168.122.1 from 192.168.122.1 attempted to access sshd
+
+-Verify via tcpdmpatch
+[root@rhce1 exports.d]# grep rpc /etc/hosts.deny
+rpcbind,rpc.mountd :  192.168.122.20
+
+[root@rhce1 exports.d]# tcpdmatch rpcbind 192.168.122.20
+client:   address  192.168.122.20
+server:   process  rpcbind
+access:   denied
+[root@rhce1 exports.d]# tcpdmatch rpcbind 192.168.122.30
+client:   address  192.168.122.30
+server:   process  rpcbind
+access:   granted
+
+</pre>
+						</div>
+				</div>
+
+				   <div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.1s">
+						<span>02.</span>
+						<div class="screen-one-item-container">
+							<h3> firewalld </h3>
+							<p> Useful to restrict access to the entire service and can be scoped with subnets/networks. </p>
+							<p> </p>
+
+<pre>
+firewall-cmd --add-rich-rule='rule family="ipv4" source address="192.168.122.0/24" invert="True" service name="ssh" 
+log prefix="Reject net 192.168.122.0/24" level="info"  reject '
+
+</pre>
+
+
+						</div>
+					</div>
+
+					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
+						<span>03.</span>
+						<div class="screen-one-item-container">
+							<h3>PAM (Pluggable Access Module)</h3>
+							<p> This has no effect on root users ability to login, although the access can be restricted for individual users. </p>
+						<p> </p>
+
+<pre>
+Use /var/run/nologin or /etc/nologin.
+
+[root@rhce6 txts]# echo " Access to this system temporarily disabled " > /etc/nologin
+
+root@panchajanya:~\> ssh kannan@rhce6
+kannan@rhce6's password:
+ Access to this system temporarily disabled
+
+#Add below line to /etc/pam.d/sshd
+
+[root@rhce1 pam.d]# grep deny sshd
+auth  required  pam_listfile.so item=user sense=deny file=/etc/ssh.deny onerr=fail
+
+[root@rhce1 pam.d]# cat /etc/ssh.deny
+dickens
+
+</pre>
+ 
+  
+						</div>
+					</div>
+
+					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
+					<span>04.</span>
+					<div class="screen-one-item-container">
+						<h3> sshd_config </h3>
+						<p>  This configuration can be used to restrict only 'ssh' access against a group or a list of users. </p>
+
+						<p> </p>
+
+<pre>
+Deny via sshd_config ( Refer AllowGroups, DenyGroups as well)
+
+#Deny users
+[root@rhce1 etc]# tail -1 /etc/ssh/sshd_config
+DenyUsers dickens 
+
+#Additional Reference: Restricting password auth vs non password auth based on CIDR/User
+
+PasswordAuthentication no
+
+Match Address 192.168.0.0/16
+        PasswordAuthentication yes
+
+Match User kuttu
+        PasswordAuthentication yes
+
+
+</pre>
+					</div>
+
+				</div>
+
+
+					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
+					<span>05.</span>
+					<div class="screen-one-item-container">
+						<h3>  /sbin/nologin  and /etc/nologin </h3>
+						<p>   /etc/nologin can be used to restrict any new logins against any users. ssh access will be denied for any new connections coming in vs. the /sbin/nologin
+						can be used to restrict individual user logins. </p>
+
+						<p> </p>
+<pre>
+
+--Disable login for all users ..
+[root@rhce4 ~]# cat /etc/nologin
+LOgins temporarily disabled for maintanence
+
+[root@rhce1 etc]# chsh -s /bin/bash dickens
+Changing shell for dickens.
+Shell changed.
+
+</pre>
+					</div>
+				</div>
+
+
+
+					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
+					<span>06.</span>
+					<div class="screen-one-item-container">
+						<h3> /etc/securetty </h3>
+						<p> Prevent root login only via consoles (not remote ssh). A blank /etc/securetty file does not prevent the root user from logging in remotely using the OpenSSH suite of tools because the console is not opened until after authentication. </p>
+<pre>
+echo > /etc/securetty 
+
+</pre>
+					</div>
+				</div>
+					
+
+
+					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
+					<span>07.</span>
+					<div class="screen-one-item-container">
+						<h3> Kick off a logged in user/session </h3>
+						<p> Use write, kill and xargs to send message and kill the session. </p>
+<pre>
+
+#Identify the terminal via w or who
+
+--Commands to find the terminals
+
+[root@lab125a ~]# tty
+/dev/ttyS0
+
+--Run who -a
+[root@lab125a ~]# who -a
+           system boot  2017-09-22 09:58
+LOGIN      tty1         2017-09-22 09:58               637 id=tty1
+root     + ttyS0        2017-09-22 10:03   .           638
+           run-level 3  2017-09-22 09:58
+root     + pts/0        2017-09-22 10:00 00:01        2527 (192.168.125.1)
+
+--Sent message to terminal
+#console terminal
+[root@lab125a ~]# echo "test" > /dev/ttyS0   
+[root@lab125a ~]# echo "You will be kicked out soon " | write root pts/0
+
+#pts terminal
+[root@lab125a ~]# tty
+/dev/pts/0
+
+[root@lab125a ~]# echo "test" > /dev/pts/0
+test
+
+#Use killall or kill
+killall -u kuttu -HUP
+
+#Kill a specific session.
+kill <PID>
+
+</pre>
+					</div>
+				</div>
+					
+<!-- Contact -->
+<a class="anchor" id="contact"></a>
+
+<section class="contact">
+		<div class="contact-wrap">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-12 __web-inspector-hide-shortcut__">
+						<div class="contact-title">
+							<h2></h2>
+							<p> 
+								<br class="disable"></p>
+						</div>
+						<!-- /.contact-title -->
+					</div>
+					<!-- /.col-md-12 -->
+					
+					<!-- /.col-md-10 -->
+				</div>
+				<!-- /.row -->
+			</div>
+			<!-- /.container -->
+		</div>
+		<!-- /.directions-wrap -->
+	</section>
+
+</div>
+<!-- Site content -->
+
+<!-- Footer -->
+<a class="anchor" id="footer"></a>
+<footer class="footer" style="background-image: url(img/footer-bg.jpg); background-position:center; background-size: cover; background-repeat:no-repeat;">
+	<div class="footer-wrap">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="footer-title">
+						<h2>www.intercloudzone.com</h2>
+						<ul class="footer-icons">
+						<script src="//platform.linkedin.com/in.js" type="text/javascript"> lang: en_US</script>
+						<script type="IN/Share" data-url="http://www.intercloudzone.com/security.html"></script>
+						</ul>
+						<p> </p>
+					</div>
+					<!-- /.footer-title -->
+				</div>
+				<!-- /.col-md-12 -->
+			</div>
+			<!-- /.row -->
+		</div>
+		<!-- /.container -->
+	</div>
+	<!-- /.directions-wrap -->
+</footer>
+<!-- Footer -->
+
+
+
+<!-- links -->
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?key=AIzaSyDDuC8pr6YqiBr9wqfhNIJ56AqwzWKhiQo"></script>
+<!-- build:js -->
+
+ 
+
+<script src="js/libs/jquery.min.js"></script>
+<script type="text/javascript" src="js/libs/bootstrap.min.js"></script>
+<script type="text/javascript" src="js/libs/waypoints.min.js"></script>
+<script type="text/javascript" src="js/libs/slick.min.js"></script>
+<script type="text/javascript" src="js/libs/magnific-popup.min.js"></script>
+
+<script type="text/javascript" src="js/common.js"></script>
+<!-- endbuild -->
+<!-- links -->
+</body>
+</html>

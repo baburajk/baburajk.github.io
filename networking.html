@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head> <script data-ad-client="ca-pub-2393111531899119" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script> 
+	<meta charset="utf-8">
+	<title>intercloudzone</title>
+	<meta name="description" content="">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<meta property="og:image" content="path/to/image.jpg">
+<!-- favicon -->
+<link rel="shortcut icon" href="img/favicon/favicon.ico" type="image/x-icon">
+<link rel="apple-touch-icon" href="img/favicon/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="72x72" href="img/favicon/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="114x114" href="img/favicon/apple-touch-icon-114x114.png">
+<!-- favicon -->
+<!-- build:css -->
+<link rel="stylesheet" href="css/libs/bootstrap.min.css">
+<link rel="stylesheet" href="css/libs/font-awesome.min.css">
+<link rel="stylesheet" href="css/libs/animate.min.css">
+<link rel="stylesheet" href="css/libs/slick.css">
+<link rel="stylesheet" href="css/libs/magnific-popup.css">
+
+<link rel="stylesheet" href="css/main.css">
+<link rel="stylesheet" href="css/media.css">
+<!-- endbuild -->
+	<!-- Chrome, Firefox OS and Opera -->
+	<meta name="theme-color" content="#000">
+	<!-- Windows Phone -->
+	<meta name="msapplication-navbutton-color" content="#000">
+	<!-- iOS Safari -->
+	<meta name="apple-mobile-web-app-status-bar-style" content="#000">
+	<!-- <style>body { opacity:s 0; overflow-x: hidden; } html { background-color: #fff; }</style> -->
+</head>
+<body data-spy="scroll" data-target=".navbar" data-offset="50" class="loaded" link="blue">
+<!-- Preloader -->
+<div class="preloader">
+	<div class="cssload-spinner">
+		<div class="cssload-ball cssload-ball-1"></div>
+		<div class="cssload-ball cssload-ball-2"></div>
+		<div class="cssload-ball cssload-ball-3"></div>
+		<div class="cssload-ball cssload-ball-4"></div>
+	</div>
+</div>
+<!-- Preloader -->
+<div class="site-content">
+	<!-- Naviigation -->
+	<div class="navbar-wrap">
+		<div class="navbar">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-12">
+						<nav class="navbar-menu">
+							<div class="navbar-header">
+								<button class="collapsed navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-example-js-navbar-scrollspy">
+									<span class="icon-bar"></span>
+									<span class="icon-bar"></span>
+									<span class="icon-bar"></span>
+								</button>
+							</div>
+							 
+							<div class="navbar-full">
+								<div class="collapse bs-example-js-navbar-scrollspy">
+									<ul class="nav navbar-nav">
+										<li style="display: none;"><a></a></li>
+										<li><a href="http://www.linkedin.com/in/baburajkallarakkal">About Me</a></li>
+										<li><a href="http://padmavyuha.blogspot.com/">Blog</a></li>
+										<li><a href="https://sourceforge.net/projects/oraclerman/">Projects</a></li>
+										<li><a href="https://hub.docker.com/u/baburaj/">Docker</a></li>
+										<li><a href="mailto:raj.anju@gmail.com">Contact Me</a></li>
+										<li>
+										</li>
+									</ul>
+									<!-- btn -->
+									<div class="nav-button main-button">
+										<a href="#" class="btn btn-nav btn-block" role="button">
+											Site is in Beta!
+										</a>
+									</div>
+									<!-- btn -->
+								</div>
+							</div>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Naviigation -->
+	<!-- Header -->
+	<div class="menu-sticky"></div>
+
+	 
+
+	<!-- Screen-one -->
+	<div class="screen-one">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="screen-one-title">
+						<h2>Networking</h2>
+					</div>
+				</div>
+			</div>
+		</div>
+	 
+		<div class="container">
+					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0s">
+						<span>01.</span>
+						<div class="screen-one-item-container">
+							<h3> Null Routes/Black hole. </h3>
+							<p> Different ways to create black holes/null routes. </p>
+							<p> </p>
+<pre>
+ 
+#Option-1, using loop back.
+
+ip route add 172.217.12.68 via 127.0.0.1
+
+or
+
+[root@lab19 ~]# route add 172.217.12.68 gw 127.0.0.1 lo
+
+[root@lab19 ~]# ip route show
+default via 192.168.2.1 dev eth0  proto static  metric 100
+172.217.12.68 via 127.0.0.1 dev lo  scope link
+
+[root@lab19 ~]# ping 172.217.12.68 -c 1 -w 1
+PING 172.217.12.68 (172.217.12.68) 56(84) bytes of data.
+
+--- 172.217.12.68 ping statistics ---
+2 packets transmitted, 0 received, 100% packet loss, time 999ms
+
+#Option-2
+
+[root@lab19 ~]# route add -host 172.217.12.68 reject
+
+[root@lab19 ~]# ip route show
+default via 192.168.2.1 dev eth0  proto static  metric 100
+unreachable 172.217.12.68  scope host
+
+#Option-3
+
+[root@lab19 ~]# route add -net 17.217.12.0/24 gw 127.0.0.1 lo
+
+[root@lab19 ~]# ip route get 17.217.12.0/24
+17.217.12.0 dev lo  src 192.168.2.55
+    cache 
+
+[root@lab19 ~]# ip route show
+default via 192.168.2.1 dev eth0  proto static  metric 100
+17.217.12.0/24 via 127.0.0.1 dev lo  scope link
+
+#Option-4 
+
+ip route add unreachable 216.58.218.14
+
+[root@lab19 ~]# ip route add blackhole 172.217.12.68
+
+[root@lab19 ~]# ip route show
+default via 192.168.2.1 dev eth0  proto static  metric 100
+172.217.12.0/24 via 192.168.2.1 dev eth0
+blackhole 172.217.12.68
+192.168.2.0/24 dev eth0  proto kernel  scope link  src 192.168.2.55  metric 100
+
+[root@lab19 ~]# ip route get 172.217.12.68
+RTNETLINK answers: Network is unreachable
+
+[root@lab19 ~]# ping 172.217.12.68 -c 1 -w 1
+connect: Network is unreachable
+
+
+</pre>
+						</div>
+				</div>
+
+				   <div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.1s">
+						<span>02.</span>
+						<div class="screen-one-item-container">
+							<h3> Static Routes </h3>
+							<p> Using modprobe dummy add an interface with a different subnet and enable static routing to make it visible via Dom-0.
+							</p>
+							<p> </p>
+
+<pre>
+
+
+#Add dummy interface and enforce static route to make it visible from the server.
+
+[root@rhce1 ~]# modprobe dummy
+
+[root@rhce1 ~]# ip link show dummy0
+9: dummy0:  mtu 1500 qdisc noop state DOWN mode DEFAULT qlen 1000
+    link/ether 8e:db:6e:b9:3c:51 brd ff:ff:ff:ff:ff:ff
+[root@rhce1 ~]# ip link set name ethx dev dummy0
+
+[root@rhce1 ~]# ip address add 192.168.123.123/24 dev ethx
+
+[root@rhce1 ~]# ip link set dev ethx up
+
+[root@rhce1 ~]# ip addr show ethx
+9: ethx:  mtu 1500 qdisc noqueue state UNKNOWN qlen 1000
+    link/ether 8e:db:6e:b9:3c:51 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.123.123/24 scope global ethx
+       valid_lft forever preferred_lft forever
+    inet6 fe80::8cdb:6eff:feb9:3c51/64 scope link
+       valid_lft forever preferred_lft forever
+
+[root@rhce1 ~]# ping -c 1 192.168.123.123
+PING 192.168.123.123 (192.168.123.123) 56(84) bytes of data.
+64 bytes from 192.168.123.123: icmp_seq=1 ttl=64 time=0.049 ms
+
+--- 192.168.123.123 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 0.049/0.049/0.049/0.000 ms
+
+
+--Before adding the route
+root@mayura:/etc/sysconfig/network-scripts\> ping 192.168.123.123
+PING 192.168.123.123 (192.168.123.123) 56(84) bytes of data.
+^C
+--- 192.168.123.123 ping statistics ---
+4 packets transmitted, 0 received, 100% packet loss, time 2999ms
+
+--Add the route
+root@mayura:/etc/sysconfig/network-scripts\> ip route add 192.168.123.0/24 via 192.168.122.1 dev virbr0
+or 
+root@mayura:/etc/sysconfig/network-scripts\> ip route add 192.168.123.0/24 via 192.168.110.1 dev virbr1
+
+root@mayura:/etc/sysconfig/network-scripts\> ip route show
+default via 192.168.2.1 dev br_fe
+default via 192.168.2.1 dev enp7s0  proto static  metric 100
+192.168.2.0/24 dev br_fe  proto kernel  scope link  src 192.168.2.21
+192.168.2.0/24 dev enp7s0  proto kernel  scope link  src 192.168.2.20  metric 100
+192.168.110.0/24 dev virbr1  proto kernel  scope link  src 192.168.110.1
+192.168.120.0/24 dev virbr2  proto kernel  scope link  src 192.168.120.1
+192.168.122.0/24 dev virbr0  proto kernel  scope link  src 192.168.122.1
+192.168.130.0/24 dev virbr3  proto kernel  scope link  src 192.168.130.1
+192.168.123.0/24 via 192.168.122.1 dev virbr0
+
+root@mayura:/etc/sysconfig/network-scripts\> ping 192.168.123.123
+PING 192.168.123.123 (192.168.123.123) 56(84) bytes of data.
+64 bytes from 192.168.123.123: icmp_seq=1 ttl=64 time=0.185 ms
+
+
+ 
+</pre>
+						</div>
+					</div>
+
+
+					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
+						<span>03.</span>
+						<div class="screen-one-item-container">
+							<h3> Virtual Host IPs VIP's  </h3>
+							<p> How to add virtual host ips. <br> 
+							 <br>
+						</p>
+						<p> </p>
+
+<pre>
+
+#Example of adding virtual host
+
+[root@lab19 ~]# ip addr add 192.168.132.20/24 dev eth3 brd + scope global label eth3:1
+
+[root@lab19 ~]# ip addr show dev eth3
+5: eth3:  mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 52:54:00:01:bd:9f brd ff:ff:ff:ff:ff:ff
+    inet 192.168.132.19/24 brd 192.168.132.255 scope global eth3
+       valid_lft forever preferred_lft forever
+    inet 192.168.132.20/24 brd 192.168.132.255 scope global secondary eth3:1
+       valid_lft forever preferred_lft forever
+    inet6 fe80::5054:ff:fe01:bd9f/64 scope link
+       valid_lft forever preferred_lft forever
+	   
+#Example of flushing IP addresses on multiple interfaces
+ip addr flush label "eth*"
+
+#Static Route
+Static route configuration can be stored per-interface in a /etc/sysconfig/network-scripts/route-interface file. For example, static routes for the eth0 interface 
+would be stored in the /etc/sysconfig/network-scripts/route-eth0 
+
+[root@rhce5 network-scripts]# cat route-eth0
+ADDRESS0=192.168.125.0
+NETMASK0=255.255.255.0
+GATEWAY0=192.168.122.1
+
+</pre>
+						</div>
+					</div>
+
+
+					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
+						<span>04.</span>
+						<div class="screen-one-item-container">
+							<h3> DNS ACL/GENERATE Functionalities. </h3>
+							<p>  ACLs, named-checkzone/named-checkconf, GENERATE for PTR records  <br> 
+							 <br>
+						</p>
+						<p> </p>
+
+<pre>
+
+#ALlows DNS connectivity from remote hosts as well.
+listen-on port 53 { any ; };
+
+#ACL Examples
+acl black-hats {
+    10.0.2.0/24;
+    192.168.0.0/24;
+ };
+
+ acl red-hats {
+    10.0.1.0/24;
+ };
+
+acl "trusted" {
+  127.0.0.0/8;
+  192.168.122.0/24;
+};
+
+ options {
+    blackhole { black-hats; };
+    allow-query     { localhost; trusted ; };
+    allow-recursion { red-hats; };
+ }
+ 
+
+#GENERATE function can be used to generate multiple hosts.
+
+[root@rhce5 named]# cat 122.168.192.in-addr.arpa.db
+$TTL 1D
+$ORIGIN 122.168.192.in-addr.arpa.
+@ IN SOA  @ root.intercloudzone.com. (
+          0 ; serial
+          1D  ; refresh
+          1H  ; retry
+          1W  ; expire
+          3H )  ; minimum
+  NS  dns.intercloudzone.com.
+$GENERATE 4-5 @ NS  rhce$.intercloudzone.com.
+50  PTR   dns.intercloudzone.com.
+90  PTR   dummy.intercloudzone.com.
+$GENERATE 80-85 $ PTR dummy$.intercloudzone.com.
+
+[root@rhce5 named]# named-checkzone -D 122.168.192.in-addr.arpa 122.168.192.in-addr.arpa.db
+zone 122.168.192.in-addr.arpa/IN: loaded serial 0
+122.168.192.in-addr.arpa.         86400 IN SOA  122.168.192.in-addr.arpa. root.intercloudzone.com. 0 86400 3600 604800 10800
+122.168.192.in-addr.arpa.         86400 IN NS rhce4.intercloudzone.com.
+122.168.192.in-addr.arpa.         86400 IN NS rhce5.intercloudzone.com.
+122.168.192.in-addr.arpa.         86400 IN NS dns.intercloudzone.com.
+50.122.168.192.in-addr.arpa.          86400 IN PTR  dns.intercloudzone.com.
+80.122.168.192.in-addr.arpa.          86400 IN PTR  dummy80.intercloudzone.com.
+81.122.168.192.in-addr.arpa.          86400 IN PTR  dummy81.intercloudzone.com.
+82.122.168.192.in-addr.arpa.          86400 IN PTR  dummy82.intercloudzone.com.
+83.122.168.192.in-addr.arpa.          86400 IN PTR  dummy83.intercloudzone.com.
+84.122.168.192.in-addr.arpa.          86400 IN PTR  dummy84.intercloudzone.com.
+85.122.168.192.in-addr.arpa.          86400 IN PTR  dummy85.intercloudzone.com.
+90.122.168.192.in-addr.arpa.          86400 IN PTR  dummy.intercloudzone.com.
+OK
+
+
+[root@rhce5 named]# dig +short -x 192.168.122.90 @192.168.122.50
+dummy.intercloudzone.com.
+
+[root@rhce5 named]# dig +short -x 192.168.122.85 @192.168.122.50
+dummy85.intercloudzone.com.
+
+
+[root@rhce4 named]# named-checkconf -z /etc/named.conf
+zone intercloudzone.com/IN: loaded serial 0
+zone 122.168.192.in-addr.arpa/IN: loaded serial 0
+zone localhost.localdomain/IN: loaded serial 0
+zone localhost/IN: loaded serial 0
+zone 1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa/IN: loaded serial 0
+zone 1.0.0.127.in-addr.arpa/IN: loaded serial 0
+zone 0.in-addr.arpa/IN: loaded serial 0
+
+[root@rhce5 named]# named-checkzone -D intercloudzone.com intercloudzone.db
+zone intercloudzone.com/IN: loaded serial 0
+intercloudzone.com.           86400 IN SOA  intercloudzone.com. root.intercloudzone.com. 0 86400 3600 604800 10800
+intercloudzone.com.           86400 IN NS dns.intercloudzone.com.
+intercloudzone.com.           86400 IN MX 10 mail.intercloudzone.com.
+dns.intercloudzone.com.           86400 IN A  192.168.122.50
+dummy.intercloudzone.com.         86400 IN A  192.168.122.90
+dummy2.intercloudzone.com.          86400 IN CNAME  dummy.intercloudzone.com.
+mail.intercloudzone.com.          86400 IN A  192.168.122.50
+OK
+
+#Note
+Ensure the '.' at the end : $ORIGIN intercloudzone.com.
+
+#To flush the local cache 
+rndc flush
+
+--Dump the database
+rndc dump
+rndc dumpdb -zones
+
+#Configs worth noting.
+inteface, access-control and forward-zone
+
+[root@rhce4 named]# nmap -Pn -sT dns4.intercloudzone.com
+
+Starting Nmap 6.40 ( http://nmap.org ) at 2018-06-06 10:31 CDT
+Nmap scan report for dns4.intercloudzone.com (192.168.122.40)
+Host is up (0.0015s latency).
+Not shown: 998 closed ports
+PORT   STATE SERVICE
+22/tcp open  ssh
+53/tcp open  domain
+
+Nmap done: 1 IP address (1 host up) scanned in 0.16 seconds
+
+[root@rhce4 named]# ss -a sport = :53
+
+#Unbound (Caching only nameserver)
+
+unbound-control-setup ( Set's up the cred keys)
+
+#Update minimal configurations as below.
+interface: 0.0.0.0
+access-control: 0.0.0.0/0 allow
+ forward-zone:
+        name: "."
+        forward-host: 192.168.122.50
+
+
+[root@rhce5 ~]# unbound-checkconf
+unbound-checkconf: warning: . forward-host: "192.168.122.50" is an IP4 address, and when looked up as a host name during use may not resolve.
+/etc/unbound/unbound_server.key: No such file or directory
+[1528925699] unbound-checkconf[1599:0] fatal error: server-key-file: "/etc/unbound/unbound_server.key" does not exist
+
+[root@rhce5 ~]# systemctl restart unbound-keygen
+
+[root@rhce5 ~]# unbound-checkconf
+unbound-checkconf: warning: . forward-host: "192.168.122.50" is an IP4 address, and when looked up as a host name during use may not resolve.
+unbound-checkconf: no errors in /etc/unbound/unbound.conf
+
+
+</pre>
+ 
+						</div>
+					</div>
+
+					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
+					<span>05.</span>
+					<div class="screen-one-item-container">
+						<h3> Network Manager </h3>
+						<p>  To disable Network Manager updating resolv.conf<br> </p>
+
+						<p> </p>
+
+<pre>
+
+[root@rhce1 network-scripts]# find /etc/ -name "NetworkManager.conf"
+/etc/NetworkManager/NetworkManager.conf
+
+Add below under the [main] section, cannot append.
+dns=none
+
+
+</pre>
+					</div>
+				</div>
+
+
+					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
+					<span>06.</span>
+					<div class="screen-one-item-container">
+						<h3> Sender Policy Framework (SPF)   </h3>
+						<p> Configuration of sender policy framework record. </p>
+
+						<p> </p>
+<pre>
+
+[root@rhce4 named]# cat intercloudzone.com.db
+$TTL 1D
+$ORIGIN intercloudzone.com.
+@ IN SOA  @ root.intercloudzone.com. (
+          0 ; serial
+          1D  ; refresh
+          1H  ; retry
+          1W  ; expire
+          3H )  ; minimum
+  NS  dns4
+dns4  A 192.168.122.40
+rhce4 A 192.168.122.40
+rhce5 A 192.168.122.50
+dummy A 192.168.122.40
+@ TXT "intercloudzone-site-verification-code=RHCE-INTERCLOUDZONE.COM"
+
+[root@rhce4 named]# dig +short TXT intercloudzone.com @192.168.122.40
+"intercloudzone-site-verification-code=RHCE-INTERCLOUDZONE.COM"
+
+#SPF Record ( Sender Policy Framework)
+
+Reference:
+http://www.openspf.org/FAQ/Examples
+https://support.google.com/a/answer/33786?hl=en
+
+mail4 MX  10  192.168.122.40
+..
+@ TXT "v=spf1 a:mail4.intercloudzone.com ~all"
+
+This record indicates that there is only one server that is allowed to send mail using the intecloudzone.com domain, 
+and that is mail4.intercloudzone.com. Now that we know that, we look up the IP address of the mail.intercloudzone.com host.
+
+If the IP address matches the IP address of the incoming connection, then we have a match and the SPF test yields a Pass result.
+If the address does not match  then we go on to the next part of the SPF record, in this case "-all" which tells us that 
+there any other IP address yields a Fail result.
+
+Note if there was no SPF record for example.com, the result would be None, rather than Pass or Fail.
+
+Note:
+While most DNS uses UDP, if response data size exceeds 512 or 4096 bytes, the servers using EDNS
+will fall back to TCP to retry the query and thus the DNS should allow both TCP/UDP on port 53.
+
+dig +tcp or dig +vc options can be tried to check if the udp (default) output is sparse.
+
+sshd usually performs reverse DNS look-ups and missing PTR records will delay in connectivities.
+
+
+</pre>
+					</div>
+				</div>
+
+
+
+					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
+					<span>07.</span>
+					<div class="screen-one-item-container">
+						<h3> Team configuration. </h3>
+						<p> Team configurations using nmcli and teamd </p>
+						 <p> </p>
+
+<pre>
+
+Hint: For adding team (do man -k team or cp /usr/share/doc/teamd-1.25/example_configs/*.conf  )
+nmcli con add type team config /root/backup/team0.json ifname team0 con-name team0 autoconnect yes ip4 192.168.110.23 gw4 192.168.110.1
+
+nmcli con edit eth3
+set connection.master team0
+set connection.slave-type team
+
+
+#TEAMD configuration 
+
+copy the team.conf example from /usr/share/doc, ensure the interfaces are down..
+
+[root@rhce4 ~]# ip link show | egrep 'eth[3|4]' |grep DOWN
+5: eth3: <BROADCAST,MULTICAST> mtu 1500 qdisc pfifo_fast state DOWN mode DEFAULT qlen 1000
+6: eth4: <BROADCAST,MULTICAST> mtu 1500 qdisc pfifo_fast state DOWN mode DEFAULT qlen 1000
+
+[root@rhce4 ~]# cat team1.conf
+{
+  "device": "team1",
+  "runner": {"name": "activebackup"},
+  "link_watch": {"name": "ethtool"},
+  "ports":  {
+    "eth3": {
+      "prio": -10,
+      "sticky": true
+    },
+    "eth4": {
+      "prio": 100
+    }
+  }
+}
+
+teamd -g -f team1.conf -d
+
+Note: Important man page refer 
+man nm-settings
+
+</pre>
+					</div>
+				</div>
+					
+
+
+					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
+					<span>08.</span>
+					<div class="screen-one-item-container">
+						<h3> IPv6 </h3>
+						<p> Generic details on IPv6 </p>
+<pre>
+
+#The localhost address is ::1/128, which is 127.0.0.1/8 in IPv4 format.
+
+A unique local address is an IPv6 address in the block fc00::/7. (RFC1918)
+
+When including a ipv6 followed by port, include a square bracket
+[2001:db8:0:10::1]:80
+
+Note:
+Examples of routing are in /usr/share/doc/initscripts-9.49.39/sysconfig.txt
+
+The leading practice is to receive at least a /48 prefix from an ISP. 
+This leaves you with 2^80 bits to manipulate (128 bit address - 48 bits that can't be changed = 80 bits to use). 
+
+According to RFC4291 the current recommended smallest prefix is a /64. 
+
+-DHCPv6
+Since there is no broadcast address, host sends a DHCPv6 from link-local to port 547/UDP on ff02::1:2 - the all-dhcp-servers 
+link-local multicast group. The DHCP server sends back a reply with appropriate information to port 546/UDP on clients link-local
+address.
+
+-SLAAC - Stateless Adddress Autoconfiguration (SLAAC) 
+This dynamic configuration is similar to DHCPv6 where in hte host brings up it's interface with a link-local fe80::/64 address normally.
+It sends a router solicitation to ff02::2, the all-routers link-local multicast group. The IPV6 router on the local link responds to the
+hosts link-local address with a network prefix and possibly other information. The hose uses that network prefix with an interface id
+and it normally constructs in the same way that link local addresses are constructed.
+
+Following interface IDs are reserved and cannot be used for normal network
+All Zeros identifier 0000:0000:0000:0000 - Subnet router anycast used by all routers on the link.
+
+So for the network 2001:db8::/64, the address 2001:db8:: cannot be used.
+
+
+</pre>
+					</div>
+
+				</div>
+
+
+					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
+					<span>09.</span>
+					<div class="screen-one-item-container">
+						<h3> Bridge and Firewalld </h3>
+						<p> Troubleshooting bridge interfaces and zone priorities.
+						 </p>
+						 <p> </p>
+
+<pre>
+
+#Bridge
+A link-layer device that will forward traffic based on MAC address. It learns what hosts are connected to each network,
+builds a table around with all the MAC addresses and packet forwarding decisions are made based on this MAC table.
+
+nmcli con add type bridge con-name br0 ifname br0
+nmcli con add type bridge-slave master br0 con-name br0-port1 ifname eth3
+nmcli con add type bridge-slave master br0 con-name br0-port2 ifname eth4
+
+#Troubleshoot
+
+Note: Look for 'UP'
+[root@rhce4 network-scripts]# ip addr show br0
+10: br0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP qlen 1000
+
+#Check if bridge is in forwarding state
+
+[root@rhce4 network-scripts]# brctl showstp br0 |grep forwarding
+ port id    8001      state        forwarding
+ port id    8002      state        forwarding
+
+
+#Look for MACs registered.
+
+[root@rhce4 network-scripts]# brctl showmacs br0
+port no mac addr    is local? ageing timer
+  1 52:54:00:b4:fa:ec yes      0.00
+  1 52:54:00:b4:fa:ec yes      0.00
+  2 52:54:00:c5:e7:09 yes      0.00
+  2 52:54:00:c5:e7:09 yes      0.00
+
+
+#Firewalld
+
+firewalld separates all incoming traffic into zones. Firewalld uses this logic where the first rule matches wins.
+
+1. If source address of an incoming packet matches with a source rule setup for a zone, that packet will be routed through that zone.
+
+2. If incoming interface of a packet matches a filter setup for that zone, that zone will be used.
+
+3. Else default zone will be used.
+
+--Port Forwarding (NAT)
+With port forwarding, traffic to a single port is forwarded either a different port on same machine or a port on a different machine. 
+
+When a port forward is configured packets to a difference machine, any replies from that machine goes directly to the client and this 
+will result in invalid connection. The machine that is forwarded will have to be masqueraded through the firewall that performed 
+port forwarding.
+
+--Redirect all source to a specific zone.
+firewall-cmd --add-rich-rule 'rule family=ipv4 souce address=192.168.0.0/16 drop'
+
+Assign a specific zone to a source subnet
+
+firewall-cmd --zone=drop --add-source=192.168.0.0/16
+</pre>
+ 
+					</div>
+				</div>
+
+ 
+					
+
+					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
+					<span>10.</span>
+					<div class="screen-one-item-container">
+						<h3> whois </h3>
+						<p> whois examples to identify ASN and BGP Routing information (Incomplete!)
+						 </p>
+						 <p> </p>
+
+<pre>
+whois -h whois.radb.net -- '-i origin AS7160'
+whois -h whois.radb.net '!gAS7160'
+whois -h whois.radb.net -i origin -T route AS792 |grep route
+
+
+person with primary key "BK4727-RIPE"
+person: BABURAJ KALLARAKKAL
+address:  ***************
+phone:  +xxxxxxxx
+nic-hdl:  BK4727-RIPE
+mnt-by: BABURAJK-MNT
+created:  2018-02-15T03:25:49Z
+last-modified:  2018-02-15T03:25:49Z
+source: RIPE
+
+mntner: BABURAJK-MNT
+admin-c:  BK4727-RIPE
+upd-to: xxxxx@gmail.com
+auth: SSO xxxxxxx@gmail.com
+mnt-by: BABURAJK-MNT
+created:  2018-02-15T03:25:49Z
+last-modified:  2018-02-15T03:25:49Z
+source: RIPE
+
+
+</pre>
+ 
+					</div>
+				</div>
+
+<!-- Contact -->
+<a class="anchor" id="contact"></a>
+
+<section class="contact">
+		<div class="contact-wrap">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-12 __web-inspector-hide-shortcut__">
+						<div class="contact-title">
+							<h2></h2>
+							<p> 
+								<br class="disable"></p>
+						</div>
+						<!-- /.contact-title -->
+					</div>
+					<!-- /.col-md-12 -->
+					
+					<!-- /.col-md-10 -->
+				</div>
+				<!-- /.row -->
+			</div>
+			<!-- /.container -->
+		</div>
+		<!-- /.directions-wrap -->
+	</section>
+
+</div>
+<!-- Site content -->
+
+<!-- Footer -->
+<a class="anchor" id="footer"></a>
+<footer class="footer" style="background-image: url(img/footer-bg.jpg); background-position:center; background-size: cover; background-repeat:no-repeat;">
+	<div class="footer-wrap">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="footer-title">
+						<h2>www.intercloudzone.com</h2>
+						<ul class="footer-icons">
+						<script src="//platform.linkedin.com/in.js" type="text/javascript"> lang: en_US</script>
+						<script type="IN/Share" data-url="http://www.intercloudzone.com/networking.html"></script>
+						</ul>
+						<p> </p>
+					</div>
+					<!-- /.footer-title -->
+				</div>
+				<!-- /.col-md-12 -->
+			</div>
+			<!-- /.row -->
+		</div>
+		<!-- /.container -->
+	</div>
+	<!-- /.directions-wrap -->
+</footer>
+<!-- Footer -->
+
+
+
+<!-- links -->
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?key=AIzaSyDDuC8pr6YqiBr9wqfhNIJ56AqwzWKhiQo"></script>
+<!-- build:js -->
+
+ 
+
+<script src="js/libs/jquery.min.js"></script>
+<script type="text/javascript" src="js/libs/bootstrap.min.js"></script>
+<script type="text/javascript" src="js/libs/waypoints.min.js"></script>
+<script type="text/javascript" src="js/libs/slick.min.js"></script>
+<script type="text/javascript" src="js/libs/magnific-popup.min.js"></script>
+
+<script type="text/javascript" src="js/common.js"></script>
+<!-- endbuild -->
+<!-- links -->
+</body>
+</html>

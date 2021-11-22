@@ -1,0 +1,1055 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="Generator" content="EditPlus®">
+  <meta name="Author" content="">
+  <meta name="Keywords" content="">
+  <meta name="Description" content="">
+  <title>Notes</title>
+ <link rel="stylesheet" href="css/stylesheet1.css">
+ <link rel="stylesheet" href="css/stylesheet2.css">
+ <link rel="stylesheet" href="css/w3.css">
+
+ <style type="text/css" >
+	  
+ </style>
+<script Language="Javascript">
+function toggle() {
+    var x = document.getElementById('contents');
+    if (x.style.display === 'none') {
+		document.getElementById("togglelink").text = "hide"
+        x.style.display = 'block';
+    } else {
+        x.style.display = 'none';
+		document.getElementById("togglelink").text = "show"
+    }
+}
+</script>
+
+
+ </head>
+	<body> 
+		<div id="nav">
+			<div id="jumplinks"> Reference Notes/Hints </div>
+		</div>
+    
+		<div id="body">
+			<div id="content" class="mw-body" role="main">
+ 				<div id="toc" class="toc"><div id="toctitle"><h2>Contents</h2><span class="toctoggle">&nbsp;[<a href="javascript:toggle()" id="togglelink">hide</a>]&nbsp;</span></div>
+					<div id="contents">
+						<ul>
+							<li> <a href="#ip"> <span class="tocnumber">	1 </span> <span class="toctext"> ip command 	</span></a> </li>
+							<li> <a href="#attach-interface"> <span class="tocnumber">	2 </span> <span class="toctext"> virsh attach-interface 	</span></a> </li>
+							<li> <a href="#ntp"> <span class="tocnumber">	3 </span> <span class="toctext"> NTP 	</span></a> </li>
+							<li> <a href="#Norway"> <span class="tocnumber">	4 </span> <span class="toctext"> India  	</span></a> </li>
+						</ul>
+					</div>
+				</div>
+
+				<style>
+					html,body,h1,h2,h3,h4,h5,h6 { font-family: "Comic Sans MS", cursive, sans-serif; }
+				</style>
+ 
+
+
+<div class="w3-container">
+	<h1><span class="mw-headline" id="ip"> ip command </h1>
+		
+<p>
+
+</p>
+
+	
+
+<pre> 
+  Syntax: ip options object command parameters
+  
+  Reference: http://homepage.smc.edu/morgan_david/cs70/ip-cref.pdf
+
+  qdisk = Queuing Discpline, noqueue means nothing getting queued on this interface, noop means all packets are discarded (black hole).
+  
+
+root@panchajanya:~\> ip addr show dev enp8s0
+3: enp8s0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast master br_fe state UP qlen 1000
+    link/ether 00:1f:bc:02:01:67 brd ff:ff:ff:ff:ff:ff
+    inet6 fe80::21f:bcff:fe02:167/64 scope link
+       valid_lft forever preferred_lft forever
+	  
+	  
+--Overrun: Total number of receiver overruns resulting in dropped packets. THis means either kernel has issues or machine is too slow
+for the interface. (-s -s => More verbose )
+
+
+
+[root@lab19 ~]# ip -s -s -s link show dev eth0
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP mode DEFAULT qlen 1000
+    link/ether 52:54:00:45:56:5e brd ff:ff:ff:ff:ff:ff
+    RX: bytes  packets  errors  dropped overrun mcast
+    320095     2785     0       0       0       0
+    RX errors: length   crc     frame   fifo    missed
+               0        0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    124242     1232     0       0       0       0
+    TX errors: aborted  fifo   window heartbeat
+               0        0       0       0
+
+--Example of adding virtual host
+
+[root@lab19 ~]# ip addr add 192.168.132.20/24 dev eth3 brd + scope global label eth3:1
+[root@lab19 ~]# ip addr show dev eth3
+5: eth3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 52:54:00:01:bd:9f brd ff:ff:ff:ff:ff:ff
+    inet 192.168.132.19/24 brd 192.168.132.255 scope global eth3
+       valid_lft forever preferred_lft forever
+    inet 192.168.132.20/24 brd 192.168.132.255 scope global secondary eth3:1
+       valid_lft forever preferred_lft forever
+    inet6 fe80::5054:ff:fe01:bd9f/64 scope link
+       valid_lft forever preferred_lft forever
+	   
+--Example of flushing IP addresses on multiple interfaces
+
+ip addr flush label "eth*"
+	   
+-- Null Routes
+
+-Option-1
+
+[root@lab19 ~]# ping www.google.com
+PING www.google.com (172.217.12.68) 56(84) bytes of data.
+64 bytes from dfw28s05-in-f4.1e100.net (172.217.12.68): icmp_seq=1 ttl=53 time=20.9 ms
+
+[root@lab19 ~]# route add 172.217.12.68 gw 127.0.0.1 lo
+[root@lab19 ~]# ip route show
+default via 192.168.2.1 dev eth0  proto static  metric 100
+172.217.12.68 via 127.0.0.1 dev lo  scope link
+
+[root@lab19 ~]# ping 172.217.12.68 -c 1 -w 1
+PING 172.217.12.68 (172.217.12.68) 56(84) bytes of data.
+
+--- 172.217.12.68 ping statistics ---
+2 packets transmitted, 0 received, 100% packet loss, time 999ms
+
+
+-Option-2
+
+[root@lab19 ~]# route add -host 172.217.12.68 reject
+[root@lab19 ~]# ip route show
+default via 192.168.2.1 dev eth0  proto static  metric 100
+unreachable 172.217.12.68  scope host
+
+-Option-3
+
+[root@lab19 ~]# route add -net 17.217.12.0/24 gw 127.0.0.1 lo
+[root@lab19 ~]# ip route get 17.217.12.0/24
+17.217.12.0 dev lo  src 192.168.2.55
+    cache <local>
+[root@lab19 ~]# ip route show
+default via 192.168.2.1 dev eth0  proto static  metric 100
+17.217.12.0/24 via 127.0.0.1 dev lo  scope link
+
+-Option-4 
+
+
+[root@lab19 ~]# ip route add blackhole 172.217.12.68
+
+[root@lab19 ~]# ip route show
+default via 192.168.2.1 dev eth0  proto static  metric 100
+172.217.12.0/24 via 192.168.2.1 dev eth0
+blackhole 172.217.12.68
+192.168.2.0/24 dev eth0  proto kernel  scope link  src 192.168.2.55  metric 100
+
+
+[root@lab19 ~]# ip route get 172.217.12.68
+RTNETLINK answers: Network is unreachable
+[root@lab19 ~]# ping 172.217.12.68 -c 1 -w 1
+connect: Network is unreachable
+
+--Sample net command
+ip route add 17.217.12.0/24 via 192.168.2.0/24 dev eth0
+
+--Add NAT
+ip route add nat 192.168.132.19 via 192.168.134.19
+
+
+-Route change example
+
+[root@lab19 ~]# ip route add blackhole 172.217.12.68
+[root@lab19 ~]# ip route show
+default via 192.168.2.1 dev eth0  proto static  metric 100
+blackhole 172.217.12.68
+
+[root@lab19 ~]# ip route get 172.217.12.68
+RTNETLINK answers: Network is unreachable
+
+[root@lab19 ~]# ip route change 172.217.12.68 dev eth0
+[root@lab19 ~]# ip route get 172.217.12.68
+172.217.12.68 dev eth0  src 192.168.2.55
+    cache
+[root@lab19 ~]# ip route show
+default via 192.168.2.1 dev eth0  proto static  metric 100
+172.217.12.68 dev eth0  scope link
+
+
+
+root@panchajanya:~\> cat /etc/sysconfig/network
+# Created by anaconda
+NOZEROCONF=yes
+
+
+
+</pre>
+
+</div>
+
+ 	
+	
+
+	
+<div class="w3-container">
+	<h1><span class="mw-headline" id="ntp"> NTP </h1>
+		
+<p>
+
+ 
+</p>
+
+	
+
+<pre> 
+
+[root@lab125a ~]# ntpq -p
+     remote           refid      st t when poll reach   delay   offset  jitter
+==============================================================================
+-ns3.weiszhostin 64.250.105.228   2 u   17   64    1   69.389   -1.701   3.561
++b1-66er.matrix. 129.6.15.30      2 u   16   64    1   59.531    4.167   1.907
++y.ns.gin.ntt.ne 249.224.99.213   2 u   15   64    1   19.662    1.950   3.374
+*level1g.cs.unc. .PPS.            1 u   14   64    1   59.402    3.533   4.409
+ 192.168.2.255   .BCST.          16 u    -   64    0    0.000    0.000   0.000
+
+
+* => Current source of sync
+- => Indicates system not considered for sync.
+Blank => Indicates server rejected or high stratum level or failed sanity checks.
+
+3rd Column Stratum; Anything > 15 is invalid.
+
+reach = 377 All probes were answered.
+
+--Display in seconds.
+ntpdc -p 
+
+
+</pre>
+
+</div>
+	
+	
+
+<div class="w3-container">
+	<h1><span class="mw-headline" id="bonding-teaming"> Bonding/Teaming </h1>
+<p>
+
+</p>
+
+
+<pre> 
+Different mode of operations 
+
+Round Robin - "mode=balance-rr"
+Active Backup - "mode=active-backup"
+XOR - "mode=balance-xor" ( Uses source and destination ethernet addresses to transfer network traffic)
+Broadcast - "mode=broadcast"  ( Transmits network on all slaves)
+
+
+=> Load driver
+
+[root@server ~]# lsmod |grep bonding
+[root@server ~]# modprobe bonding
+[root@server ~]# lsmod |grep bonding
+bonding               136705  0
+
+=> Generate uuid's (if the interfaces dont' exist already)
+
+uuidgen eth2 
+uuidgen eth3 
+
+=> Create bond0 file.
+
+cd /etc/sysconfig/network-scripts
+vi ifcfg-bond0
+DEVICE=bond0
+NAME=bond0
+TYPE=bond
+BONDING_MASTER=yes
+BONDING_OPTS="mode=balance-rr"
+ONBOOT=yes
+BOOTPROTO=none
+IPADDR=192.1
+
+
+=> Refere xpath 
+
+yum provides xpath
+yum install perl-XML-XPath
+
+root@panchajanya:~\> cat server.xml | xpath domain/devices/interface
+Found 4 nodes:
+-- NODE --
+<interface type="bridge">
+      <mac address="52:54:00:2c:19:87" />
+      <source bridge="br_fe" />
+      <target dev="vnet0" />
+      <model type="virtio" />
+      <alias name="net0" />
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x03" function="0x0" />
+    </interface>-- NODE --
+<interface type="network">
+      <mac address="52:54:00:4b:a2:98" />
+      <source network="vnetnat" bridge="vbrnat" />
+      <target dev="vnet1" />
+      <model type="virtio" />
+      <alias name="net1" />
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x04" function="0x0" />
+    </interface>-- NODE --
+<interface type="network">
+      <mac address="52:54:00:f1:15:ef" />
+      <source network="vnetrou" bridge="vbrrou" />
+      <target dev="vnet2" />
+      <model type="virtio" />
+      <alias name="net2" />
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x05" function="0x0" />
+    </interface>-- NODE --
+<interface type="network">
+      <mac address="52:54:00:82:2f:44" />
+      <source network="vnetnat" bridge="vbrnat" />
+      <target dev="vnet3" />
+      <model type="virtio" />
+      <alias name="net3" />
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x10" function="0x0" />
+    </interface>
+
+=> Found from anywhere in doc
+
+root@panchajanya:~\> xpath server.xml //interface
+Found 4 nodes:
+
+=> FInd attributes
+xpath server.xml //@type
+
+
+virsh # net-list
+ Name                 State      Autostart     Persistent
+----------------------------------------------------------
+ default              active     yes           yes
+ virnet1              active     yes           yes
+ virnet2              active     yes           yes
+ vnetiso              active     yes           yes
+ vnetnat              active     yes           yes
+ vnetrou              active     yes           yes
+
+virsh # domiflist server
+Interface  Type       Source     Model       MAC
+-------------------------------------------------------
+vnet0      bridge     br_fe      virtio      52:54:00:2c:19:87
+vnet1      network    vnetnat    virtio      52:54:00:4b:a2:98
+vnet2      network    vnetrou    virtio      52:54:00:f1:15:ef
+vnet3      network    vnetnat    virtio      52:54:00:82:2f:44
+
+
+
+
+=> Supersedes all notes on detach/attach interfaces and recreate the iface files.
+
+
+
+virsh # detach-interface --domain server --type network --mac '52:54:00:82:2f:44' --persistent --live
+Interface detached successfully
+
+virsh # attach-interface --domain server --type network --source vnetnat --mac '52:54:00:82:2f:44' --model virtio --persistent --live
+Interface attached successfully
+
+
+[root@server network-scripts]# nmcli con delete a9dac657-c4ff-4296-a570-65bf15e54da8
+
+[root@server network-scripts]# nmcli dev connect eth3
+Device 'eth3' successfully activated with '19abec3c-668d-4e4a-865c-a49b4a767138'.
+
+=> Create interface file with the below
+
+[root@server network-scripts]# nmcli con add type ethernet con-name eth3 ifname eth3
+Connection 'eth3' (d9dc89bc-3cf1-467a-9907-f05ccb7f927b) successfully added.
+
+
+=> Bonding
+
+[root@server network-scripts]# nmcli con add type bond ifname bond0 bond.options "mode=balance-rr"
+Connection 'bond-bond0' (a31cd78a-a51c-43a9-9ba5-4fb4b0e976ae) successfully added.
+
+
+[root@server network-scripts]# nmcli con add type ethernet ifname eth3 master bond0
+Connection 'bond-slave-eth3' (4d2aa71a-b338-4af4-b447-4543fe49bbf6) successfully added.
+
+[root@server network-scripts]# nmcli con add type ethernet ifname eth1 master bond0
+Connection 'bond-slave-eth1' (ecc5ac47-7785-4b94-b2ce-5a85f15fa153) successfully added.
+
+
+=> Reboot
+
+[root@server ~]# nmcli con show
+NAME             UUID                                  TYPE            DEVICE
+System eth0      b6870dc4-b183-4bdd-b310-6d789c3e9ce0  802-3-ethernet  eth0
+System eth2      260c99eb-2a00-44b5-a3d6-e731d936a3b4  802-3-ethernet  eth2
+bond-bond0       a31cd78a-a51c-43a9-9ba5-4fb4b0e976ae  bond            bond0
+bond-slave-eth1  ecc5ac47-7785-4b94-b2ce-5a85f15fa153  802-3-ethernet  eth1
+bond-slave-eth3  4d2aa71a-b338-4af4-b447-4543fe49bbf6  802-3-ethernet  eth3
+
+3: eth1: <BROADCAST,MULTICAST,SLAVE,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast master bond0 state UP qlen 1000
+    link/ether 52:54:00:4b:a2:98 brd ff:ff:ff:ff:ff:ff
+
+5: eth3: <BROADCAST,MULTICAST,SLAVE,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast master bond0 state UP qlen 1000
+    link/ether 52:54:00:4b:a2:98 brd ff:ff:ff:ff:ff:ff
+
+6: bond0: <BROADCAST,MULTICAST,MASTER,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP
+    link/ether 52:54:00:4b:a2:98 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.134.179/24 brd 192.168.134.255 scope global dynamic bond0
+       valid_lft 2722sec preferred_lft 2722sec
+    inet6 fe80::5054:ff:fe4b:a298/64 scope link tentative dadfailed
+       valid_lft forever preferred_lft forever
+
+
+
+=> Change IP address to static 
+
+[root@server network-scripts]# nmcli con edit bond-bond0
+
+===| nmcli interactive connection editor |===
+
+Editing existing 'bond' connection: 'bond-bond0'
+
+Type 'help' or '?' for available commands.
+Type 'describe [<setting>.<prop>]' for detailed property description.
+
+You may edit the following settings: connection, bond, 802-3-ethernet (ethernet), ipv4, ipv6
+nmcli> print ipv4
+['ipv4' setting values]
+ipv4.method:                            auto
+
+....
+
+root@panchajanya:~\> virsh net-update vnetnat add ip-dhcp-host '<host mac="52:54:00:4b:a2:98" ip="192.168.134.52" />'
+Updated network vnetnat live state
+
+nmcli> set ipv4.address 192.168.134.52/24,ipv4.method manual
+Do you also want to set 'ipv4.method' to 'manual'? [yes]: yes
+
+nmcli> save
+Connection 'bond-bond0' (a31cd78a-a51c-43a9-9ba5-4fb4b0e976ae) successfully updated.
+
+
+
+=> Out of context command: dhclient
+
+[root@server network-scripts]# dhclient -v -r eth0
+Internet Systems Consortium DHCP Client 4.2.5
+Copyright 2004-2013 Internet Systems Consortium.
+All rights reserved.
+For info, please visit https://www.isc.org/software/dhcp/
+
+Listening on LPF/eth0/52:54:00:2c:19:87
+Sending on   LPF/eth0/52:54:00:2c:19:87
+Sending on   Socket/fallback
+
+
+=> Modifying bond options
+
+
+[root@server network-scripts]# nmcli dev mod bond0 +bond.options mii=100
+Connection successfully reapplied to device 'bond0'
+
+[root@server network-scripts]# nmcli dev mod bond0 +bond.options "mode=balance=rr,mii=100"
+Error: failed to modify bond.options: 'balance=rr' not among [balance-rr, active-backup, balance-xor, broadcast, 802.3ad, balance-tlb, balance-alb].
+
+[root@server network-scripts]# nmcli dev mod bond0 +bond.options "mode=balance-rr,mii=100"
+Connection successfully reapplied to device 'bond0'.
+
+
+
+=> Edited via nmtui 
+
+
+[root@server network-scripts]# nmcli con mod bond-bond0 +bond.options "mode=active-backup"
+ 
+[root@server network-scripts]# grep OPTS ifcfg-bond-bond0
+BONDING_OPTS=mode=active-backup
+
+nmcli con load /etc/sysconfig/network-scripts/ifcfg-bond-bond0
+
+
+[root@server network-scripts]# cat /sys/class/net/bonding_masters
+bond0
+
+=> To dynamically change the bonding parameters..
+ cd /sys/class/net/bond0/bonding/
+ echo 1000 > /sys/class/net/bond0/bonding/miimon
+
+
+==Channel Bonding
+
+virsh # attach-interface --domain server --type network --source vnetnat --model virtio --persistent --live
+Interface attached successfully
+
+virsh # attach-interface --domain server --type network --source vnetnat --model virtio --persistent --live
+Interface attached successfully
+
+=> Total number of macs now
+
+root@panchajanya:~\> virsh dumpxml server | xpath "count(//interface)"
+6
+
+root@panchajanya:~\> virsh dumpxml server | xpath "//interface/mac/@address"
+Found 6 nodes:
+-- NODE --
+ address="52:54:00:2c:19:87"-- NODE --
+ address="52:54:00:4b:a2:98"-- NODE --
+ address="52:54:00:f1:15:ef"-- NODE --
+ address="52:54:00:82:2f:44"-- NODE --
+ address="52:54:00:10:aa:ca"-- NODE --
+ address="52:54:00:17:9a:92"
+
+
+=> Create bonded interface.
+
+[root@server network-scripts]# nmcli con add type bond ifname bond1 bond.options "mode=balance-rr"
+Connection 'bond-bond1' (93592271-228b-46a6-b354-3404d779575e) successfully added.
+[root@server network-scripts]# ls -lr ifcfg-bond-*
+-rw-r--r--. 1 root root 123 Aug  8 22:36 ifcfg-bond-slave-eth3
+-rw-r--r--. 1 root root 123 Aug  8 22:36 ifcfg-bond-slave-eth1
+-rw-r--r--. 1 root root 359 Aug 10 10:45 ifcfg-bond-bond1
+-rw-r--r--. 1 root root 373 Aug  9 17:48 ifcfg-bond-bond0
+
+=> Switch slaves
+
+[root@server network-scripts]# nmcli con add type ethernet ifname eth4 master bond1
+Connection 'bond-slave-eth4' (e4b1d9d0-3820-4e70-bf4a-12c023497713) successfully added.
+ 
+[root@server network-scripts]# nmcli con add type ethernet ifname eth5 master bond1
+Connection 'bond-slave-eth5' (8a8ce8e0-81c4-43f1-9155-d8c0b2386c28) successfully added.
+[root@server network-scripts]# ls -ltr ifcfg-*
+-rw-r--r--. 1 root root 254 Sep 16  2015 ifcfg-lo
+-rw-r--r--. 1 root root 319 Jul 26 12:46 ifcfg-eth2
+-rw-r--r--. 1 root root 335 Jul 26 12:46 ifcfg-eth0
+-rw-r--r--. 1 root root 123 Aug  8 22:36 ifcfg-bond-slave-eth3
+-rw-r--r--. 1 root root 123 Aug  8 22:36 ifcfg-bond-slave-eth1
+-rw-r--r--. 1 root root 373 Aug  9 17:48 ifcfg-bond-bond0
+-rw-r--r--. 1 root root 359 Aug 10 10:45 ifcfg-bond-bond1
+-rw-r--r--. 1 root root 123 Aug 10 10:57 ifcfg-bond-slave-eth4
+-rw-r--r--. 1 root root 123 Aug 10 10:57 ifcfg-bond-slave-eth5
+
+[root@server network-scripts]# cat ifcfg-bond-slave-eth4
+TYPE=Ethernet
+NAME=bond-slave-eth4
+UUID=e4b1d9d0-3820-4e70-bf4a-12c023497713
+DEVICE=eth4
+ONBOOT=yes
+MASTER=bond1
+SLAVE=yes
+
+=> Bring connections up.
+
+[root@server network-scripts]# nmcli dev
+DEVICE  TYPE      STATE                                  CONNECTION
+bond0   bond      connected                              bond-bond0
+eth0    ethernet  connected                              System eth0
+eth1    ethernet  connected                              bond-slave-eth1
+eth2    ethernet  connected                              System eth2
+eth3    ethernet  connected                              bond-slave-eth3
+eth4    ethernet  connected                              Wired connection 1
+eth5    ethernet  connected                              Wired connection 2
+bond1   bond      connecting (getting IP configuration)  bond-bond1
+
+[root@server network-scripts]# nmcli con up bond-slave-eth4
+Connection successfully activated (D-Bus active path: /org/freedesktop/NetworkManager/ActiveConnection/10)
+
+[root@server network-scripts]# nmcli dev
+DEVICE  TYPE      STATE      CONNECTION
+bond0   bond      connected  bond-bond0
+bond1   bond      connected  bond-bond1
+
+
+10: bond1: <BROADCAST,MULTICAST,MASTER,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP
+    link/ether 52:54:00:10:aa:ca brd ff:ff:ff:ff:ff:ff
+    inet 192.168.134.94/24 brd 192.168.134.255 scope global dynamic bond1
+       valid_lft 3508sec preferred_lft 3508sec
+    inet6 fe80::4ddc:6a30:5cb2:1f24/64 scope link
+       valid_lft forever preferred_lft forever
+
+
+=> CHange the bonded interface to static ip address
+
+edit ifcfg-bond-bond1
+
+IPADDR=192.168.134.53
+GATEWAY=192.168.134.1
+BOOTPROT=none
+
+
+=> Reboot
+
+
+=> View Bonding Master
+
+[root@server network-scripts]# cat /sys/class/net/bonding_masters
+bond1 bond0
+
+
+**Note : Somehow the "mod" on same command isn't working. Cannot use add like below as it would create bond-bond1-1 interface.
+nmcli con add type bond ifname bond1 bond.options "mode=balance-rr"
+
+
+# To load bonding module (Persistent)
+
+# echo "# Load the bonding kernel module at boot" > /etc/modules-load.d/bonding.conf
+# echo "bonding" >> /etc/modules-load.d/bonding.conf
+
+
+=> Monitor the bonded interface via
+watch -dc -n 1 netstat -i
+
+=> Change Primary via OPTS to eth1 and check if kernel picked up change
+
+[root@server network-scripts]# grep OPTS ifcfg-bond-bond0
+BONDING_OPTS="miimon=100 updelay=200 downdelay=300 mode=active-backup primary=eth1"
+
+
+=> Check if kernel sees it
+[root@server network-scripts]# cat /proc/net/bonding/bond0
+Ethernet Channel Bonding Driver: v3.7.1 (April 27, 2011)
+
+Bonding Mode: fault-tolerance (active-backup)
+Primary Slave: None
+Currently Active Slave: eth1
+MII Status: up
+..
+
+
+=> To check the actual configuration
+
+[root@server network-scripts]# cat /sys/class/net/bond0/bonding/mode
+active-backup 1
+[root@server network-scripts]# cat /sys/class/net/bond1/bonding/mode
+balance-rr 0
+
+
+=> Check interface status
+
+[root@server network-scripts]# ethtool bond1 | grep "Link detected"
+	Link detected: yes
+
+
+=> Man pages
+
+man 5 nmcli-examples
+https://people.freedesktop.org/~lkundrak/nm-docs/nmcli-examples.html
+https://www.kernel.org/doc/Documentation/networking/bonding.txt
+
+teamd uses libteam to control one instance of team driver. Logic common to all
+
+
+
+[root@server ~]# find /lib/modules/$(uname -r)/kernel/drivers -iname "bond*"
+/lib/modules/3.10.0-327.el7.x86_64/kernel/drivers/net/bonding
+/lib/modules/3.10.0-327.el7.x86_64/kernel/drivers/net/bonding/bonding.ko
+[root@server ~]# find /lib/modules/$(uname -r)/kernel/drivers -iname "team*"
+/lib/modules/3.10.0-327.el7.x86_64/kernel/drivers/net/team
+/lib/modules/3.10.0-327.el7.x86_64/kernel/drivers/net/team/team.ko
+/lib/modules/3.10.0-327.el7.x86_64/kernel/drivers/net/team/team_mode_activebackup.ko
+/lib/modules/3.10.0-327.el7.x86_64/kernel/drivers/net/team/team_mode_broadcast.ko
+/lib/modules/3.10.0-327.el7.x86_64/kernel/drivers/net/team/team_mode_loadbalance.ko
+/lib/modules/3.10.0-327.el7.x86_64/kernel/drivers/net/team/team_mode_random.ko
+/lib/modules/3.10.0-327.el7.x86_64/kernel/drivers/net/team/team_mode_roundrobin.ko
+
+
+
+[root@server ~]# echo "team" > /etc/modules-load.d/team.conf
+[root@server ~]# cat /etc/modules-load.d/team.conf
+team
+
+[root@server ~]# lsmod |grep team
+[root@server ~]#
+
+
+[root@server network-scripts]# systemctl status teamd
+● teamd.service
+   Loaded: not-found (Reason: No such file or directory)
+   Active: inactive (dead)
+
+=> Add interface
+
+virsh # attach-interface server --source vnetnat  --type network  --model virtio --persistent --live
+Interface attached successfully
+
+virsh # attach-interface server --source vnetnat  --type network  --model virtio --persistent --live
+Interface attached successfully
+
+=> Configured via nmtui
+
+[root@server network-scripts]# cat ifcfg-Team-0
+DEVICE=team0
+BOOTPROTO=none
+DEFROUTE=yes
+IPV4_FAILURE_FATAL=no
+IPV6INIT=yes
+IPV6_AUTOCONF=yes
+IPV6_DEFROUTE=yes
+IPV6_FAILURE_FATAL=no
+IPV6_ADDR_GEN_MODE=stable-privacy
+NAME=team0
+UUID=93d89704-0c10-46fa-a653-02df2eb2cb27
+ONBOOT=yes
+DEVICETYPE=Team
+IPADDR=192.168.134.55
+PREFIX=32
+GATEWAY=192.168.2.1
+IPV6_PEERDNS=yes
+IPV6_PEERROUTES=yes
+
+[root@server network-scripts]# cat ifcfg-System-eth6
+NAME=eth6
+UUID=dac2bf67-ecab-47c0-a404-286f19dd4b5e
+DEVICE=eth6
+ONBOOT=yes
+TEAM_MASTER=team0
+DEVICETYPE=TeamPort
+TEAM_MASTER_UUID=93d89704-0c10-46fa-a653-02df2eb2cb27
+
+
+[root@server network-scripts]# cat ifcfg-System-eth7
+NAME=eth7
+UUID=e5be80f7-5806-4673-aca5-9bd378e6058a
+DEVICE=eth7
+ONBOOT=yes
+TEAM_MASTER=team0
+DEVICETYPE=TeamPort
+TEAM_MASTER_UUID=93d89704-0c10-46fa-a653-02df2eb2cb27
+
+=> Adding team via nmcli
+
+[root@server network-scripts]# nmcli con add type team con-name team0 ifname eth6
+Connection 'team0' (d1dfa81c-8b73-48e9-ab61-0a49ff71b7fb) successfully added.
+
+[root@server network-scripts]# cat ifcfg-team0
+DEVICE=eth6
+BOOTPROTO=dhcp
+DEFROUTE=yes
+PEERDNS=yes
+PEERROUTES=yes
+IPV4_FAILURE_FATAL=no
+IPV6INIT=yes
+IPV6_AUTOCONF=yes
+IPV6_DEFROUTE=yes
+IPV6_PEERDNS=yes
+IPV6_PEERROUTES=yes
+IPV6_FAILURE_FATAL=no
+IPV6_ADDR_GEN_MODE=stable-privacy
+NAME=team0
+UUID=d1dfa81c-8b73-48e9-ab61-0a49ff71b7fb
+ONBOOT=yes
+DEVICETYPE=Team
+
+[root@server network-scripts]# nmcli con add type team con-name team0 ifname eth7
+Connection 'team0' (9ca87de1-3c17-401c-97e3-d8020724ba8a) successfully added.
+
+[root@server network-scripts]# nmcli con edit 5a0dcb56-d2c3-362d-abc0-b2b5ca797851
+
+===| nmcli interactive connection editor |===
+
+Editing existing '802-3-ethernet' connection: '5a0dcb56-d2c3-362d-abc0-b2b5ca797851'
+
+Type 'help' or '?' for available commands.
+Type 'describe [<setting>.<prop>]' for detailed property description.
+
+You may edit the following settings: connection, 802-3-ethernet (ethernet), 802-1x, dcb, ipv4, ipv6
+nmcli> print ipv4
+['ipv4' setting values]
+ipv4.method:                            auto
+ipv4.dns:
+ipv4.dns-search:
+ipv4.dns-options:                       (default)
+ipv4.dns-priority:                      0
+ipv4.addresses:
+ipv4.gateway:                           --
+ipv4.routes:
+ipv4.route-metric:                      -1
+ipv4.ignore-auto-routes:                no
+ipv4.ignore-auto-dns:                   no
+ipv4.dhcp-client-id:                    --
+ipv4.dhcp-timeout:                      0
+ipv4.dhcp-send-hostname:                yes
+ipv4.dhcp-hostname:                     --
+ipv4.dhcp-fqdn:                         --
+ipv4.never-default:                     no
+ipv4.may-fail:                          yes
+ipv4.dad-timeout:                       -1 (default)
+nmcli> set ipv4.address=192.168.134.56/24
+Error: invalid property: 'address=192.168.134.56/24' not among [method, dns, dns-search, dns-options, dns-priority, addresses, gateway, routes, route-metric, ignore-auto-routes, ignore-auto-dns, dhcp-hostname, dhcp-send-hostname, never-default, may-fail, dad-timeout, dhcp-timeout, dhcp-client-id, dhcp-fqdn]
+
+nmcli> set ipv4.addresses 192.168.134.56/24
+Do you also want to set 'ipv4.method' to 'manual'? [yes]: yes
+nmcli> print ipv4
+['ipv4' setting values]
+ipv4.method:                            manual
+ipv4.dns:
+ipv4.dns-search:
+ipv4.dns-options:                       (default)
+ipv4.dns-priority:                      0
+ipv4.addresses:                         192.168.134.56/24
+ipv4.gateway:                           --
+ipv4.routes:
+ipv4.route-metric:                      -1
+ipv4.ignore-auto-routes:                no
+ipv4.ignore-auto-dns:                   no
+ipv4.dhcp-client-id:                    --
+ipv4.dhcp-timeout:                      0
+ipv4.dhcp-send-hostname:                yes
+ipv4.dhcp-hostname:                     --
+ipv4.dhcp-fqdn:                         --
+ipv4.never-default:                     no
+ipv4.may-fail:                          yes
+ipv4.dad-timeout:                       -1 (default)
+nmcli> save
+Connection 'Wired connection 1' (5a0dcb56-d2c3-362d-abc0-b2b5ca797851) successfully updated.
+nmcli> quit
+
+
+=> File name created as 
+
+-rw-r--r--. 1 root root   254 Aug 10 18:37 ifcfg-lo
+-rw-r--r--. 1 root root   425 Aug 10 19:31 ifcfg-bond-bond0
+-rw-r--r--. 1 root root   421 Aug 10 20:02 ifcfg-mybond
+-rw-r--r--. 1 root root   368 Aug 11 18:51 ifcfg-Wired_connection_1
+
+[root@server network-scripts]# nmcli con modify 5a0dcb56-d2c3-362d-abc0-b2b5ca797851 connection.name eth6
+Error: invalid property 'name': 'name' not among [id, uuid, interface-name, type, permissions, autoconnect, autoconnect-priority, timestamp, read-only, zone, master, slave-type, autoconnect-slaves, secondaries, gateway-ping-timeout, metered, lldp, stable-id].
+
+Start here: https://access.redhat.com/solutions/2592561
+
+
+=> Connection 
+[root@server network-scripts]# nmcli con add type team con-name team0 ifname team0 ip4  192.168.134.70/24 gw4 192.168.2.1
+
+[root@server network-scripts]# cat ifcfg-team0
+DEVICE=team0
+BOOTPROTO=none
+IPADDR=192.168.134.70
+PREFIX=24
+GATEWAY=192.168.2.1
+DEFROUTE=yes
+IPV4_FAILURE_FATAL=no
+IPV6INIT=yes
+IPV6_AUTOCONF=yes
+IPV6_DEFROUTE=yes
+IPV6_PEERDNS=yes
+IPV6_PEERROUTES=yes
+IPV6_FAILURE_FATAL=no
+IPV6_ADDR_GEN_MODE=stable-privacy
+NAME=team0
+UUID=ed3d1376-bb3c-448f-8f08-391ecb097506
+ONBOOT=yes
+DEVICETYPE=Team
+
+Bestway to edit/create team configurations is to copy a templaet and edit 
+
+[root@server network-scripts]# ls -ltr /usr/share/doc/teamd-1.17/example_configs/
+total 64
+-rw-r--r--. 1 root root  97 Apr  2  2015 roundrobin.conf
+-rw-r--r--. 1 root root 244 Apr  2  2015 roundrobin_2.conf
+-rw-r--r--. 1 root root  93 Apr  2  2015 random.conf
+-rw-r--r--. 1 root root 183 Apr  2  2015 loadbalance_3.conf
+-rw-r--r--. 1 root root 140 Apr  2  2015 loadbalance_2.conf
+-rw-r--r--. 1 root root  98 Apr  2  2015 loadbalance_1.conf
+-rw-r--r--. 1 root root 209 Apr  2  2015 lacp_1.conf
+-rw-r--r--. 1 root root  96 Apr  2  2015 broadcast.conf
+-rw-r--r--. 1 root root 318 Apr  2  2015 activebackup_tipc.conf
+-rw-r--r--. 1 root root 285 Apr  2  2015 activebackup_nsna_ping_1.conf
+-rw-r--r--. 1 root root 447 Apr  2  2015 activebackup_multi_lw_1.conf
+-rw-r--r--. 1 root root 241 Apr  2  2015 activebackup_ethtool_3.conf
+-rw-r--r--. 1 root root 212 Apr  2  2015 activebackup_ethtool_2.conf
+-rw-r--r--. 1 root root 194 Apr  2  2015 activebackup_ethtool_1.conf
+-rw-r--r--. 1 root root 465 Apr  2  2015 activebackup_arp_ping_2.conf
+-rw-r--r--. 1 root root 305 Apr  2  2015 activebackup_arp_ping_1.conf
+
+=> Team89 example
+
+virsh # attach-interface server --source vnetnat  --type network  --model virtio --persistent --live
+Interface attached successfully
+
+virsh # attach-interface server --source vnetnat  --type network  --model virtio --persistent --live
+Interface attached successfully
+
+19: eth8: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 52:54:00:02:c3:a1 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.134.5/24 brd 192.168.134.255 scope global dynamic eth8
+       valid_lft 3600sec preferred_lft 3600sec
+    inet6 fe80::5506:7254:be0:f513/64 scope link
+       valid_lft forever preferred_lft forever
+20: eth9: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 52:54:00:4b:3b:c6 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.134.43/24 brd 192.168.134.255 scope global dynamic eth9
+       valid_lft 3600sec preferred_lft 3600sec
+    inet6 fe80::d594:df13:9875:802/64 scope link
+       valid_lft forever preferred_lft forever
+
+
+       -rw-r--r--. 1 root root 374 Aug 14 12:29 ifcfg-eth6
+-rw-r--r--. 1 root root 339 Aug 14 12:39 ifcfg-team89
+[root@server network-scripts]# cat ifcfg-team89
+DEVICE=team89
+BOOTPROTO=none
+IPADDR=192.168.134.75
+PREFIX=24
+GATEWAY=192.168.2.1
+DEFROUTE=yes
+IPV4_FAILURE_FATAL=no
+IPV6INIT=yes
+IPV6_AUTOCONF=yes
+IPV6_DEFROUTE=yes
+IPV6_PEERDNS=yes
+IPV6_PEERROUTES=yes
+IPV6_FAILURE_FATAL=no
+IPV6_ADDR_GEN_MODE=stable-privacy
+NAME=team89
+UUID=9a44fa39-d1d7-486d-b9b5-ca331b9c230e
+ONBOOT=yes
+DEVICETYPE=Team
+
+
+[root@server network-scripts]# nmcli con add type team-slave con-name eth8 ifname eth8 master team89
+Connection 'eth8' (26151597-6a17-4b55-baef-8a9e2126e1bb) successfully added.
+[root@server network-scripts]# nmcli con add type team-slave con-name eth9 ifname eth9 master team89
+Connection 'eth9' (a00735db-35a7-4fad-b387-c13c5cc0a79e) successfully added.
+[root@server network-scripts]# ls -ltr ifcfg-eth
+ifcfg-eth0    ifcfg-eth2    ifcfg-eth6    ifcfg-eth6-1  ifcfg-eth7    ifcfg-eth7-1  ifcfg-eth8    ifcfg-eth9
+
+[root@server network-scripts]# cat ifcfg-eth8
+NAME=eth8
+UUID=26151597-6a17-4b55-baef-8a9e2126e1bb
+DEVICE=eth8
+ONBOOT=yes
+TEAM_MASTER=team89
+DEVICETYPE=TeamPort
+[root@server network-scripts]# cat ifcfg-eth9
+NAME=eth9
+UUID=a00735db-35a7-4fad-b387-c13c5cc0a79e
+DEVICE=eth9
+ONBOOT=yes
+TEAM_MASTER=team89
+DEVICETYPE=TeamPort
+
+nmcli con up team89
+
+21: team89: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc noqueue state DOWN
+    link/ether ea:53:89:b1:c7:cf brd ff:ff:ff:ff:ff:ff
+    inet 192.168.134.75/24 brd 192.168.134.255 scope global team89
+       valid_lft forever preferred_lft forever
+
+19: eth8: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 52:54:00:02:c3:a1 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.134.5/24 brd 192.168.134.255 scope global dynamic eth8
+       valid_lft 3312sec preferred_lft 3312sec
+    inet6 fe80::5506:7254:be0:f513/64 scope link
+       valid_lft forever preferred_lft forever
+20: eth9: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 52:54:00:4b:3b:c6 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.134.43/24 brd 192.168.134.255 scope global dynamic eth9
+       valid_lft 3312sec preferred_lft 3312sec
+    inet6 fe80::d594:df13:9875:802/64 scope link
+       valid_lft forever preferred_lft forever
+
+
+=> eth8 & eth9 still using IP's (dhcp). Reload did not work. 
+
+[root@server network-scripts]# ifdown eth8
+Device 'eth8' successfully disconnected.
+[root@server network-scripts]# ifdown eth9
+Device 'eth9' successfully disconnected.
+
+Use nmcli to bring the devices up
+
+[root@server network-scripts]# nmcli con up eth8
+[root@server network-scripts]# nmcli con up eth9
+
+19: eth8: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast master team89 state UP qlen 1000
+    link/ether 52:54:00:02:c3:a1 brd ff:ff:ff:ff:ff:ff
+20: eth9: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast master team89 state UP qlen 1000
+    link/ether 52:54:00:02:c3:a1 brd ff:ff:ff:ff:ff:ff
+
+
+    [root@server network-scripts]# teamdctl team89 state
+setup:
+  runner: roundrobin
+ports:
+  eth8
+    link watches:
+      link summary: up
+      instance[link_watch_0]:
+        name: ethtool
+        link: up
+        down count: 0
+  eth9
+    link watches:
+      link summary: up
+      instance[link_watch_0]:
+        name: ethtool
+        link: up
+        down count: 0
+
+
+[root@server network-scripts]# teamnl team89 ports
+ 20: eth9: up 0Mbit HD
+ 19: eth8: up 0Mbit HD
+
+ [root@server network-scripts]# teamnl team0 setoption mode activebackup
+[root@server network-scripts]# teamnl team0 options
+ activeport 0
+ mcast_rejoin_interval 0
+ mcast_rejoin_count 0
+ notify_peers_interval 0
+ notify_peers_count 0
+ mode activebackup
+
+=> Add ip address to existing team
+
+[root@server network-scripts]# ip addr show team0
+18: team0: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc noqueue state DOWN
+    link/ether 7e:71:79:28:e3:05 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.134.70/24 brd 192.168.134.255 scope global team0
+       valid_lft forever preferred_lft forever
+[root@server network-scripts]# ip addr add 192.168.134.78/24 dev team0
+[root@server network-scripts]# ip addr show team0
+18: team0: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc noqueue state DOWN
+    link/ether 7e:71:79:28:e3:05 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.134.70/24 brd 192.168.134.255 scope global team0
+       valid_lft forever preferred_lft forever
+    inet 192.168.134.78/24 scope global secondary team0
+       valid_lft forever preferred_lft forever
+
+=> To add/remove ports
+
+teamdctl team0 port add eth9
+teamdctl team0 port remove eth9
+
+
+https://documentation.meraki.com/MS/Layer_3_Switching/Layer_3_versus_Layer_2_Switch_for_VLANs
+
+
+
+
+</pre>
+
+</div>
+
+
+	
+</body>
+</html>

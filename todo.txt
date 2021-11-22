@@ -1,0 +1,962 @@
+https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst3560/software/release/12-2_52_se/configuration/guide/3560scg/swvlan.html#wp1103064
+
+
+Understanding VLANs
+A VLAN is a switched network that is logically segmented by function, project team, or application, without regard to the physical locations of the users. VLANs have the same attributes as physical LANs, but you can group end stations even if they are not physically located on the same LAN segment. Any switch port can belong to a VLAN, and unicast, broadcast, and multicast packets are forwarded and flooded only to end stations in the VLAN. Each VLAN is considered a logical network, and packets destined for stations that do not belong to the VLAN must be forwarded through a router or a switch supporting fallback bridging, as shown in Figure 13-1. Because a VLAN is considered a separate logical network, it contains its own bridge Management Information Base (MIB) information and can support its own implementation of spanning tree.
+
+VLANs are often associated with IP subnetworks. For example, all the end stations in a particular IP subnet belong to the same VLAN. Interface VLAN membership on the switch is assigned manually on an interface-by-interface basis. When you assign switch interfaces to VLANs by using this method, it is known as interface-based, or static, VLAN membership.
+
+Traffic between VLANs must be routed or fallback bridged. The switch can route traffic between VLANs by using switch virtual interfaces (SVIs). An SVI must be explicitly configured and assigned an IP address to route traffic between VLANs. For more information, see the "Switch Virtual Interfaces" section on page 11-5 and the "Configuring Layer 3 Interfaces" section on page 11-25.
+
+#Trunking
+https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst3560/software/release/12-2_52_se/configuration/guide/3560scg/swvlan.html#wp1150302
+
+
+  
+-Clear vlan
+shutdown
+no vlan 2
+no interface vlan2
+
+
+
+virt, shr, res ( dstat, stress)
+
+
+
+-config vlan
+
+cloud10(config-if)#switchport access vlan 10
+
+
+
+sh spanning-tree vlan 100
+interface Port-channel100
+
+   switchport mode trunk
+   switchport trunk allowed vlan 100
+
+
+
+#Switch Configurations.
+
+baburaj@Aurora-4:~\> ipcalc 10.0.0.0/8 -s 1000000
+Address:   10.0.0.0             00001010. 00000000.00000000.00000000
+Netmask:   255.0.0.0 = 8        11111111. 00000000.00000000.00000000
+Wildcard:  0.255.255.255        00000000. 11111111.11111111.11111111
+=>
+Network:   10.0.0.0/8           00001010. 00000000.00000000.00000000
+HostMin:   10.0.0.1             00001010. 00000000.00000000.00000001
+HostMax:   10.255.255.254       00001010. 11111111.11111111.11111110
+Broadcast: 10.255.255.255       00001010. 11111111.11111111.11111111
+Hosts/Net: 16777214              Class A, Private Internet
+
+1. Requested size: 1000000 hosts
+Netmask:   255.240.0.0 = 12     11111111.1111 0000.00000000.00000000
+Network:   10.0.0.0/12          00001010.0000 0000.00000000.00000000
+HostMin:   10.0.0.1             00001010.0000 0000.00000000.00000001
+HostMax:   10.15.255.254        00001010.0000 1111.11111111.11111110
+Broadcast: 10.15.255.255        00001010.0000 1111.11111111.11111111
+Hosts/Net: 1048574               Class A, Private Internet
+
+Needed size:  1048576 addresses.
+Used network: 10.0.0.0/12
+Unused:
+10.16.0.0/12
+10.32.0.0/11
+10.64.0.0/10
+10.128.0.0/9
+
+baburaj@Aurora-4:~\> ipcalc 10.16.0.0/12
+Address:   10.16.0.0            00001010.0001 0000.00000000.00000000
+Netmask:   255.240.0.0 = 12     11111111.1111 0000.00000000.00000000
+Wildcard:  0.15.255.255         00000000.0000 1111.11111111.11111111
+=>
+Network:   10.16.0.0/12         00001010.0001 0000.00000000.00000000
+HostMin:   10.16.0.1            00001010.0001 0000.00000000.00000001
+HostMax:   10.31.255.254        00001010.0001 1111.11111111.11111110
+Broadcast: 10.31.255.255        00001010.0001 1111.11111111.11111111
+Hosts/Net: 1048574               Class A, Private Internet
+
+ 
+baburaj@Aurora-4:~\> ipcalc 10.32.0.0/11
+Address:   10.32.0.0            00001010.001 00000.00000000.00000000
+Netmask:   255.224.0.0 = 11     11111111.111 00000.00000000.00000000
+Wildcard:  0.31.255.255         00000000.000 11111.11111111.11111111
+=>
+Network:   10.32.0.0/11         00001010.001 00000.00000000.00000000
+HostMin:   10.32.0.1            00001010.001 00000.00000000.00000001
+HostMax:   10.63.255.254        00001010.001 11111.11111111.11111110
+Broadcast: 10.63.255.255        00001010.001 11111.11111111.11111111
+Hosts/Net: 2097150               Class A, Private Internet
+
+
+
+
+https://www.cisco.com/c/en/us/support/docs/lan-switching/inter-vlan-routing/41860-howto-L3-intervlanrouting.html
+
+no ip route 10.0.0.0 
+root@panchajanya: \> screen /dev/ttyUSB0 9600
+
+
+==Configure the ethernet port upstream
+
+cloud10#configure terminal
+Enter configuration commands, one per line.  End with CNTL/Z.
+cloud10(config)#interface fastEthernet0/1
+cloud10(config-if)#ip address 192.168.2.10 255.255.255.0
+cloud10(config-if)#no switchport
+cloud10(config-if)#no shutdown
+cloud10(config-if)#exit
+
+cloud10#configure terminal
+Enter configuration commands, one per line.  End with CNTL/Z.
+cloud10(config)#interface fastEthernet0/1
+cloud10(config-if)#ip address 10.16.0.1 255.240.0.0
+cloud10(config-if)#no switchport
+cloud10(config-if)#no shutdown
+cloud10(config-if)#exit
+
+
+cloud10(config)#ip route 0.0.0.0 0.0.0.0 192.168.2.1
+cloud10(config)#ip route 10.0.0.0/8 fastEthernet 0/10 10.0.0.10
+
+cloud10(config)#do ping 8.8.8.8
+
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 8.8.8.8, timeout is 2 seconds:
+!!!!!
+Success rate is 100 percent (5/5), round-trip min/avg/max = 8/11/17 ms
+
+cloud10(config)#do traceroute 8.8.8.8
+
+Type escape sequence to abort.
+Tracing the route to google-public-dns-a.google.com (8.8.8.8)
+
+  1 192.168.2.1 0 msec 0 msec 0 msec
+  2 192.168.3.1 9 msec 0 msec 8 msec
+  3 192.168.1.254 0 msec 9 msec 0 msec
+  4 162-193-132-1.lightspeed.austtx.sbcglobal.net (162.193.132.1) 8 msec 17 msec 8 msec
+  5 71.149.77.116 8 msec 8 msec 9 msec
+  6  *  *  *
+  7 12.83.68.137 9 msec
+    12.83.68.145 17 msec 8 msec
+  8 12.122.85.197 17 msec 17 msec 9 msec
+  9 206.121.120.90 16 msec
+    206.121.120.86 17 msec 16 msec
+ 10 108.170.252.129 9 msec *
+    108.170.252.161 8 msec
+ 11 108.170.229.137 17 msec
+    108.170.229.133 9 msec
+    108.170.229.115 17 msec
+ 12 google-public-dns-a.google.com (8.8.8.8) 9 msec
+    209.85.242.241 16 msec
+    108.170.229.121 17 msec
+
+
+cloud10#show ip interface brief
+Interface              IP-Address      OK? Method Status                Protocol
+Vlan1                  unassigned      YES manual up                    up
+Vlan10                 10.16.0.1       YES manual up                    down
+FastEthernet0/1        192.168.2.10    YES manual up                    up
+
+cloud10#show ip route
+Codes: C - connected, S - static, R - RIP, M - mobile, B - BGP
+       D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area
+       N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
+       E1 - OSPF external type 1, E2 - OSPF external type 2
+       i - IS-IS, su - IS-IS summary, L1 - IS-IS level-1, L2 - IS-IS level-2
+       ia - IS-IS inter area, * - candidate default, U - per-user static route
+       o - ODR, P - periodic downloaded static route
+
+Gateway of last resort is 192.168.2.1 to network 0.0.0.0
+
+C    192.168.2.0/24 is directly connected, FastEthernet0/1
+S*   0.0.0.0/0 [1/0] via 192.168.2.1
+
+
+cloud10# copy running-config startup-config
+
+
+cloud10#ping 10.16.0.10
+
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 10.16.0.10, timeout is 2 seconds:
+!!!!!
+Success rate is 100 percent (5/5), round-trip min/avg/max = 1/2/9 ms
+
+10.16.0.0/12
+10.32.0.0/11
+
+
+
+
+https://www.cisco.com/c/en/us/support/docs/lan-switching/inter-vlan-routing/41860-howto-L3-intervlanrouting.html
+
+ip routing 
+
+
+
+en 
+    conf t
+    hostname cloud10
+    int vlan 10
+    ip address 10.16.0.1 255.240.0.0
+    exit
+
+    conf t
+    cloud10(config)#interface FastEthernet0/10
+
+    cloud10(config-if)#no switchport
+cloud10(config-if)#ip address 10.16.0.10 255.240.0.0
+*Mar  1 00:44:12.117: %LINK-3-UPDOWN: Interface FastEthernet0/10, changed state to down
+10.16.0.0 overlaps with Vlan10
+
+cloud10#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+cloud10(config)#ip route 0.0.0.0 0.0.0.0 192.168.2.10
+%Invalid next hop address (it's this router)
+cloud10(config)#ip route 0.0.0.0 0.0.0.0 192.168.2.1
+
+https://networkengineering.stackexchange.com/questions/640/how-can-i-capture-traffic-on-cisco-ios-switches
+https://www.cisco.com/c/en/us/support/docs/lan-switching/inter-vlan-routing/41860-howto-L3-intervlanrouting.html
+
+
+Usually you correspond one vlan to one subnet, so for example
+
+vlan 20 192.168.2.1/.24
+
+vlan 40 192.168.4.1/24
+
+You create an svi for each vlan
+
+config t
+
+inter vlan 20
+
+ip add 192.168.2.1 255.255.255.0
+
+inter vlan 40
+
+ip add 192.168.4.1 255.255.255.0
+
+then you assign what ever ports you want to each vlan
+
+example
+
+config t
+
+inter gi1/0/10
+
+switchport mode access
+
+switchport access vlan 20
+
+inter gi1/0/20
+
+switchport mode access
+
+switchport access vlan 40
+
+
+
+To configure normal-range VLANs (VLAN IDs 1 to 1005), use the vlan vlan-id global configuration command to enter config-vlan mode or the vlan database privileged EXEC command to enter VLAN database configuration mode. The VLAN configurations for VLAN IDs 1 to 1005 are saved in the VLAN database. To configure extended-range VLANs (VLAN IDs 1006 to 4094), you must use config-vlan mode with VTP mode set to transparent. Extended-range VLANs are not added to the VLAN database. When VTP mode is transparent, the VTP and VLAN configuration is saved in the switch running configuration, and you can save it in the switch startup configuration file by entering the copy running-config startup-config privileged EXEC command.
+  
+
+
+
+
+****
+cloud10#sh int Vlan1
+Vlan1 is up, line protocol is up
+  Hardware is EtherSVI, address is 001c.0e58.3740 (bia 001c.0e58.3740)
+  Internet address is 192.168.2.10/24
+  MTU 1500 bytes, BW 1000000 Kbit, DLY 10 usec,
+     reliability 255/255, txload 1/255, rxload 1/255
+  Encapsulation ARPA, loopback not set
+  Keepalive not supported
+
+--How internet routing works.
+
+Core Layer - Backbone network
+Distribution Layer - Switching
+Access Layer - Routing.
+
+
+
+
+--How Higss works? NATING 
+a) Packet get's originated from the VM - hits the Higgs GTWY 
+    It checks in the reachability list which is a mapping between CLoud IP and NAT IP (Public) and if it finds it a Source Natting is done to swap the Private IP (RFC1918) to the Cloud IP (RFC6598)
+    If it cannot find it in the Cloud-IP Pool, it checks in Default Pool and does a SRC Natting to the Public IP and thus the packet get's routed to the destination.
+
+    Physical NAT Mapping:
+
+    This is mostly for inbound and in here, the packet comign in will be Destination NAT'd on the HIggs Gateway. So if there's a mapping of 129.x.x.x to 100.x.x.x here, this mapping is used by the Higgs Gateway
+    to route the request to the VM using the Cloud IP.
+
+
+
+-Check SNAT/DNAT
+
+
+- Small Issues
+
+a) Timeout while trying to upload file, hits 499 and soon after it sends 502. Turns out the proxy on the browser..
+
+b) GRE Tunnel issue, where the mapping of CloudIP/NATIng messed up.
+
+c) The shared listeners/VLBR's ended up in wrong DVLBR. Extract all URL's from DB, 
+
+
+
+Given API access log file where timestamp, API method(GET/POST) and IP address are captured, find out top 10 IPs which contain more than x,000 entries.
+
+
+Networking - Scripting. The Scripting interview will be over Coderpad. Coderpad (https://coderpad.io/) is an online, shared document space with a built-in IDE were you write code on-the-fly directly (Coderpad described in more detail below). 
+
+A typical Scripting exercise might be, write a script to poll a number of network devices; and general questions around monitoring and automation; write a function to sort an array; write a function to search for specific words in a file and remove them from the file; write a function to remove duplicates from an array; write a function that reads a list of hostnames and resolves each IP address and print them; write a function that monitors a running application, for example: parse one of the memory columns from the output of vmstat or the free command. And if the memory value exceeds a certain threshold for more than a certain timeframe, then print a report to alert the Ops team. 
+
+A good resource for other examples is: https://www.careercup.com/page?pid=production-engineer-interview-questions 
+(I did a search for interview questions = "production engineer" but you should all review questions for "systems engineer" or "network engineer"). So I would practice these problems or problems like these on a piece of paper (writing them out) or a whiteboard.
+
+
+****
+
+
+https://community.akamai.com/customers/s/article/How-does-HTTP-2-solve-the-Head-of-Line-blocking-HOL-issue?language=en_US
+
+HTTP/1.1 introduced a feature called "Pipelining" which allowed a client sending several HTTP requests over the same TCP connection. However HTTP/1.1 still required the responses to arrive in order so it didn't really solved the HOL issue and as of today it is not widely adopted
+
+HTTP/2 does however still suffer from another type of HOL, as it runs over a TCP connection; and due to TCP's congestion control, one lost packet in the TCP stream makes all streams wait until that package is re-transmitted and received.
+
+The obvious solution would be to run HTTP/2 over UDP + an optimized way of managing congestion, and that's precisely what the QUIC protocol does, so stay tuned for what the future of the HTTP protocol will be!
+
+HTTP/2 (h2) solves the HOL issue by means of multiplexing requests over the same TCP connection, so a client can make multiple requests to a server without having to wait for the previous ones to complete as the responses can arrive in any order.
+
+
+-- 502, 503 and 504 Response Codes
+
+502 Bad Gateway
+A 502 error means that a website server that is serving as a reverse proxy for the website origin server (for example, a CDN PoP) did not receive a valid response from the origin server. This may be because the origin server is experiencing issues, there is an invalid or incorrect DNS name, or because a firewall on the origin server has blocked the reverse proxy server request.
+
+This may also occur when requests at the origin server are taking several minutes to complete and a caching tool such as Varnish Cache has been instructed to timeout after a set number of seconds.
+
+
+Note: 
+The occurence of the IP Tables rate limit/burst to mitigate DDoS attacks along with the health checks resulted in the 502's.
+What's been set today is --limit 500/s --limit-burst 25
+
+
+Example of limit burst:
+As a rough example, lets say you have a burst of 10 and a timer of 1/second, on an ACCEPT rule. Lets say you get 20 matching packets all within a second. The first ten match and are accepted, the rest do not. Ten seconds after that, the burst counter is back to maximum of 10. Now 5 matches come in (within a second), they all match no problem, counter would now be at 5. 2 seconds go by without matches, putting the counter at 7 Another 20 matches come in; the first 7 would match and accept, the rest not.
+
+Say we say match one packet per second with a five packet burst, but packets start coming in at four per second, for three seconds, then start again in another three seconds.
+
+
+https://netfilter.org/documentation/HOWTO/packet-filtering-HOWTO-7.html
+
+
+503 Service Unavailable
+The 503 service unavailable message means that the website origin server is not available and is usually a temporary state. This error could be triggered because something running on the website server side has crashed or your site is purposefully down for maintenance.
+
+504 Gateway Timeout
+Similar to the 502 error, the 504 Gateway Timeout error occurs if the server that is acting as a proxy for the website origin server did not receive a response from the website origin server within a set time period. This may indicate an issue with the DNS host or hosting company, or with the connection or configuration between the reverse proxy servers and the website origin server.
+
+
+ 
+0.a One tip: Remember that breadth-first uses a queue ↴ and depth-first uses a stack ↴ (could be the call stack or an actual stack object). That's not just a clue about implementation, it also helps with figuring out the differences in behavior. Those differences come from whether we visit nodes in the order we see them (first in, first out) or we visit the last-seen node first (last in, first out).
+
+
+How to check browser DNS cache, Router Cache, ISP Cache, 
+
+
+--REST APIs
+
+It is client/server: 
+The business logic is decoupled from presentation. So you can change one without impacting the other. 
+
+It is stateless: 
+All messages exchanged between client and server has all the context needed to know what to do with the message. This visibility has several benefits: you can route a message where ever you want depending on its contents and any server can service a request. So you an just scale your server by creating several instances of it. You dont need to send all messages from the same client or user to the same server. And if you want to supertune the backend, you can rout messages to different server depending on the message. For example, having a CPU intensive request to one server and a memory intensive one to another. 
+
+The cons: the client is sending all messages with redundant information. This adds bandwidth and again, negligible latency.
+
+
+It is cacheable:
+so if you were worried about latency you save bandwidth cacheing responses from the server.
+It has a uniform interface based on hypermedia (you know, that HATEOAS thing). The great thing about this is that you can greatly improve decoupling between client and server. If server responses contain hypermedia to all referenced resources and available actions within the context of the last request, the client does not need to know much about the server but an entry point and a few conventions about the hypermedia. Properly implemented, you could change many things in the server side without rewriting a single line in the client.
+
+And finally, it's layered, like an onion. You can put several layers of components between client and server, for routing purposes, load balancing, cacheing or whatever you need. Of course it adds latency but also lots of flexibility. And if you change a layer, only the previous layer could be impacted, so propagation of change effects is limited.
+
+In general the only cons are related to latency in request processing times and bandwidth usage. But its a great general purpose architecture that provides:
+great flexibility
+lower maintenance costs
+high scalability
+simplicity
+
+cons
+Cannot make async calls
+stateless
+
+
+PUT replaces an existing resource or create a resource it it doesn't exist.
+POST creates a new resource 
+
+PUT is idempotent vs POST is not idempotent.
+
+https://restfulapi.net/rest-put-vs-post/
+
+The protocol used by traceroute can make a big difference.The default Linux traceroute uses UDP
+Load balancing can distort discovered routes.
+You can end up with a very incomplete view of the end-to-end path. 
+Traceroute does not report on Layer 2 hops.
+Interfaces are not known, only the devices. Further look-ups are required to get to this level of detail.
+
+1. In Python only lists, sets and dicts are mutable. 
+   Ref: https://medium.com/@meghamohan/mutable-and-immutable-side-of-python-c2145cf72747
+   
+2. Hashtables O(1) for insert, delete, lookup (best case) and O(n) for worst case compared to Arrays O(1) for append/lookup.
+
+    Disadvantages : Keys aren't ordered so key lookups are costly, Unordered keys - so a lookup based on smallest key can take O(n) time.
+
+    Hash table data structure: hash, hash map, map, unordered map, dictionary
+
+3. Range function
+
+>>> range(1,10,2)
+range(1, 10, 2)
+>>> list(range(1,10,2))
+[1, 3, 5, 7, 9]
+
+4. Data types and functions : https://en.wikiversity.org/wiki/Python_Programming/Tuples_and_Sets
+
+5. List, set, dict are the only mutuable ones.
+
+6. Stack and Queue : O(1) for push,pop, peek; O(1) for append/lookups for Arrays/Dynamic Arrays; O(1) for insert, lookup, delete too for Dicts/Sets .
+
+
+7. Note: Site to revise for all actions on data structures: http://thomas-cokelaer.info/tutorials/python/sets.html
+
+8. Lists and Tuples
+    Can contain any type of objects
+    Lists - mutable, Tuples - Not mutable
+    Tuples are faster
+
+-- Tuples can be created with commas
+
+>>> s=1,2
+>>> type(s)
+<class 'tuple'>
+
+-- Create a tuple with n numbers.
+
+>>> s=(1,) * 5
+>>> s
+(1, 1, 1, 1, 1)
+
+-- Tuples are optimized and There are only two methods. index and count.
+
+>>> s=9,8,9,9,5,
+>>> s.count(9)
+3
+>>> s.index(9)
+0
+
+-- Read a file
+
+with open("afile","r+") as fp:
+        #print (fp.readline())
+        for line in iter(fp.readline,''):
+            print(line)
+
+
+Tuples are:
+faster than lists
+protect the data, which is immutable
+tuples can be used as keys on dictionaries
+
+-IF a value within the tuple is mutable it can be changed.
+
+>>> t=(1,2,[9,10])
+>>> t[2][0]=100
+>>> t
+(1, 2, [100, 10])
+
+-List can be used as stack/queue
+
+>>> stack
+['a', 'b', ['d', 'e'], 'f', 'g']
+>>> l = ['a','b','c']
+>>> l.append('d')
+>>> l
+['a', 'b', 'c', 'd']
+>>> l.pop(0)
+'a'
+
+
+-Three ways to copy a list
+>>> l2 = list(l)
+>>> l2 = l[:]
+>>> import copy
+>>> l2 = copy.copy(l)
+
+Above does a shallow copy, the nested objects aren't copied.
+
+>>> l1=[1,2,[3,4]]
+>>> l2=l1[:]
+>>> l2
+[1, 2, [3, 4]]
+>>> l1[2][0]=10
+>>> l1
+[1, 2, [10, 4]]
+>>> l2
+[1, 2, [10, 4]]
+
+
+-Do  deep copy
+>>> import copy
+>>> l3 = copy.deepcopy(l1)
+>>> l3
+[1, 2, [10, 4]]
+>>> l1[2][0]=100
+>>> l1
+[1, 2, [100, 4]]
+>>> l3
+[1, 2, [10, 4]]
+
+-Dictionary
+
+>>> d={'k1':'v1','k2':'v2'}
+>>> d.items()
+dict_items([('k1', 'v1'), ('k2', 'v2')])
+
+--Create an empty dict given few keys
+
+>>> {}.fromkeys(['a','b'])
+{'a': None, 'b': None}
+
+-Dict comprehension
+
+>>> d={1:10,2:20,3:30}
+>>> d1={k:v*2 for k,v in d.items()}
+>>> d1
+{1: 20, 2: 40, 3: 60}
+>>>
+
+
+-Set
+
+>>> a = set([1, 2, 3, 4])
+>>> b = set([3, 4, 5, 6])
+>>> a | b # Union
+{1, 2, 3, 4, 5, 6}
+>>> a & b # Intersection
+{3, 4}
+>>> a < b # Subset
+False
+>>> a - b # Difference
+{1, 2}
+>>> a ^ b # Symmetric Difference
+{1, 2, 5, 6}
+
+
+Enumerating the possibilities allowed by the grammar:
+
+>>> seq[:]                # [seq[0],   seq[1],          ..., seq[-1]    ]
+>>> seq[low:]             # [seq[low], seq[low+1],      ..., seq[-1]    ]
+>>> seq[:high]            # [seq[0],   seq[1],          ..., seq[high-1]]
+>>> seq[low:high]         # [seq[low], seq[low+1],      ..., seq[high-1]]
+>>> seq[::stride]         # [seq[0],   seq[stride],     ..., seq[-1]    ]
+>>> seq[low::stride]      # [seq[low], seq[low+stride], ..., seq[-1]    ]
+>>> seq[:high:stride]     # [seq[0],   seq[stride],     ..., seq[high-1]]
+>>> seq[low:high:stride]  # [seq[low], seq[low+stride], ..., seq[high-1]]
+
+
+https://supportforums.cisco.com/t5/network-infrastructure-documents/how-to-configure-a-gre-tunnel/ta-p/3131970
+
+http://xmodulo.com/bgp-traffic-engineering-quagga-linux.html
+https://docs.aws.amazon.com/AmazonVPC/latest/NetworkAdminGuide/GenericConfig.html
+https://exain.wordpress.com/2017/08/02/use-amazons-aws-vpc-your-vpn-to-extend-your-server-infrastructure-using-static-routing/amp/
+http://xmodulo.com/filter-bgp-routes-quagga-bgp-router.html
+
+
+https://www.noction.com/blog/bgp-looking-glass-servers
+https://ripe70.ripe.net/presentations/55-bgpstream.pdf
+https://github.com/mehrdadrad/mylg
+
+$ whois -h whois.arin.net AS1712
+$ whois -h whois.ripe.net AS1712
+$ whois -h whois.afrinic.net AS1712
+$ whois -h whois.apnic.net AS1712
+$ whois -h whois.lacnic.net AS1712
+curl -O http://mylg.io/dl/linux/mylg && chmod u+s,+x mylg && mv mylg /usr/bin/
+
+
+
+root@mayura:~\> whois -h whois.radb.net -T route 129.150.160.0
+Warning: RIPE flags used with a traditional server.
+route:      129.150.0.0/15
+
+--More specifics
+
+
+
+cloud10>show int fa0/3
+
+https://dn42.net/Home?lipi=urn%3Ali%3Apage%3Ad_flagship3_pulse_read%3BQmOIQug%2FQzSDJyaFF1p5kg%3D%3D
+person with primary key "BK4727-RIPE"
+person: BABURAJ KALLARAKKAL
+address:    3052 PORTULACA DR, ROUND ROCK, TX, 78681
+phone:  +2482293794
+nic-hdl:    BK4727-RIPE
+mnt-by: BABURAJK-MNT
+created:    2018-02-15T03:25:49Z
+last-modified:  2018-02-15T03:25:49Z
+source: RIPE
+
+mntner: BABURAJK-MNT
+admin-c:    BK4727-RIPE
+upd-to: raj.anju@gmail.com
+auth:   SSO raj.anju@gmail.com
+mnt-by: BABURAJK-MNT
+created:    2018-02-15T03:25:49Z
+last-modified:  2018-02-15T03:25:49Z
+source: RIPE
+
+https://linuxacademy.com/howtoguides/posts/show/topic/13750-managing-docker-containers-with-ansible
+https://blog.gruntwork.io/why-we-use-terraform-and-not-chef-puppet-ansible-saltstack-or-cloudformation-7989dad2865c?gi=67404216edb1
+
+-BGP -
+https://www.ripe.net/manage-ips-and-asns/db/support/security/maintainers
+http://www.stubarea51.net/2016/01/21/put-500000-bgp-routes-in-your-lab-network-download-this-vm-and-become-your-own-upstream-bgp-isp-for-testing/
+https://static.open-scap.org/ssg-guides/ssg-rhel7-guide-index.html
+
+GRE Tunnel
+https://static.open-scap.org/openscap-1.2/oscap_user_manual.html#_installation
+
+http://xmodulo.com/bgp-looking-glass-server-centos.html
+https://vincent.bernat.im/en/blog/2017-ipv4-route-lookup-linux
+
+
+http://docs.ansible.com/ansible-tower/3.2.1/html/towerapi/tower_cli.html#api-towercli
+http://tjheeta.github.io/2015/04/15/ansible-vs-chef/
+
+http://www.slac.stanford.edu/xorg/nmtf/nmtf-tools.html
+0. Check all the perf (PSR) tuning bench mark stuff..
+
+Python Networking book, BGP routing book.
+http://ddiguru.com/blog/45-dns/125-anycast-dns-part-5-using-bgp
+https://www.microfocus.co.jp/manuals/ED21/html/HHSTSTCERT06.htmlUDEMY BGP routing.
+https://easyipv6.wordpress.com/2013/06/28/building-a-fast-content-network-with-anycast/
+https://www.samir.ca/2016/12/11/build-your-own-anycast-network-in-9-steps.html
+https://stat.ripe.net
+
+katacoda (docker),  Python networking book.
+
+https://serverfault.com/questions/126243/finding-all-currently-used-ip-addresses-of-website
+https://www.arin.net/resources/services/whois_guide.html
+whois -h whois.radb.net -i origin -T route AS792 |grep route
+http://www.irr.net/docs/list.html#LEVEL3
+
+1. Check the ip-forwarding.
+
+root@panchajanya:~\> sysctl net.ipv4.ip_forward
+net.ipv4.ip_forward = 1
+
+
+sysctl -w net.ipv4.ip_forward=1
+
+
+
+http://tjheeta.github.io/2015/04/15/ansible-vs-chef/
+
+
+
+http://libguestfs.org/virt-resize.1.html
+Read more on xargs and options
+dstat
+fingerprinting (PKI)
+
+https://www.ibm.com/developerworks/aix/library/au-vitips.html
+
+nping
+mtr
+nmap
+refer cookbook linux security
+
+stress
+
+ hping3
+SlowHTTPTest
+FunkLoad
+ipv6-toolkit
+t50
+thc-ipv6
+thc-ssl-dos 
+
+hulk
+
+slowloris
+
+NOTE: Good site
+https://www.statdns.com/resources/
+Slowloris   
+slowhttptest -c 1000 -H -i 30 -r 200 -t GET -u https://adc-fap0070-gse.oracledemos.com/main.html -x 24 -p 3
+Lancope Fail - no Lancope Alarm 
+ 
+    HTTP Slow Post  slowhttptest -c 1000 -B -i 110 -r 200 -s 8192 -t FAKEVERB -u https://adc-fap0070-gse.oracledemos.com/main.html -x 10 -p 3 -l 360    Lancope Fail - no Lancope           
+ 
+    HTTP Slow Read  slowhttptest -c 10000 -X -r 200  -w 10 -y 20 -n 5 -z 32 -u https://adc-fap0070-gse.oracledemos.com/main.html -p 5 -l 360
+
+ 
+
+
+    port scanning   nmap    nmap -sT -p 22, 80, 443 10.10.10.10  
+ssh brute force ncrack  
+ncrack -p 22 --user root -P 500-worst-passwords.txt 10.10.10.10
+ web scanning   nikto   
+nikto.pl -host http://10.10.10.10
+ application denial of service  http slow post  slowhttptest -c 1000 -H -i 30 -r 200 -t GET -u https://10.10.10.10/main.html -x 24 -p 3   
+web form brute force    Burp Intruder   https://support.portswigger.net/customer/portal/articles/1964020-using-burp-to-brute-force-a-login-page  
+OS fingerprinting   nmap    nmap -O 10.10.10.10 Alien Vault
+Evasion (substitution, etc) nitko/nmap  
+nikto.pl -h http://10.10.10.10 -evasion 1
+ nmap -sS -sV -T1 -f —mtu=24 —data-length=1227 10.10.10.10
+
+
+
+Alien Vault
+Web Backdoors   laudanum    https://sourceforge.net/projects/laudanum/  
+Alien Vault,  
+Tunneling   netcat/socat    socat TCP4-LISTEN:80,fork TCP4:10.10.10.10:80    
+
+nping
+
+
+== Revision thorough.
+== DNS Latency Tools, nscd
+== Network Security Tools
+== Python, Ruby, Perl - Code snippets
+== Interview Book
+==
+
+
+
+https://jamielinux.com/docs/libvirt-networking-handbook/custom-routed-network.html
+Review "LEarning RHEL networking"
+
+https://www.certdepot.net/rhel7-use-kerberos-control-access-nfs-network-shares/
+https://unix.stackexchange.com/questions/198590/what-is-a-bind-mount
+http://chschneider.eu/linux/server/nfs.shtml
+
+ 
+
+Chapter 10 NFS & Autofs after Chapter 20 , excercises pending too
+
+0. Check the routing/static routes between VM's on diff subnets via Brigge/NAT (SNAT, DNAT etc.)
+1. ldap configuration
+2. kerberos
+3. nmcli 
+4. ntp 
+5. Refresh tunneling/port-forwarding syntaxes
+6. nmcli/ virsh attach/detach interfaces.
+7. virsh snapshot backups.
+8. port forwarding
+9. Review all books/downloads
+10. Review Page-255
+11. Review commands lsmod, depmod etc.
+12. accessing vm console
+13. configure ntp & chronyd
+
+14. Boot when the initrd is corrupted. 
+    mkinitrd -f test-$(uname -r).img  $(uname -r)
+
+15. http://www.voleg.info/linux-mirror-system-disk.html
+
+
+Interview
+1. Replay ssh 
+2. Security Tools/files
+3. Networking tools/utils.
+4. Python Algos
+5. Ruby Alogs
+6. Ansible 
+7. Read on docker.
+
+nana_ping, arp_pping, Linux Networking Cookbook, lft, whois
+
+
+
+
+#Review again 
+https://www.virtkick.com/docs/how-to-perform-a-live-backup-on-your-kvm-virtual-machines.html
+https://access.redhat.com/solutions/23016
+https://wiki.libvirt.org/page/VirtualNetworking
+https://libvirt.org/sources/virshcmdref/html/sect-net-create.html
+https://www.cyberciti.biz/faq/linux-ip-command-examples-usage-syntax/
+
+https://www.interviewcake.com/amazon-interview-questions
+https://www.centos.org/docs/5/html/5.2/Deployment_Guide/sec-sel-fsrelabel.html
+
+ http://brainscraps.wikia.com/wiki/Setup_Gateway_Routing_On_Multiple_Network_Interfaces
+https://github.com/luckylittle/RHCE/blob/master/RHCE_notes_v2.1.txt
+http://libvirt.org/archnetwork.html
+
+ 
+https://www.alteeve.com/w/Changing_Ethernet_Device_Names_in_EL7_and_Fedora_15+
+ https://www.certdepot.net/rhel7-access-virtual-machines-console/
+
+
+
+
+
+
+Systems -  Unix & Linux internals
+ 
+Modern Operating Systems
+Unix and Linux System Administration Handbook
+Essential System Administration, 3rd Edition
+Unix in a Nutshell, 4th Edition 
+Unix Power Tools 
+Linux Server Hacks
+Linux Quick Fix Notebook
+Advanced Programming in the UNIX Environment 
+UNIX Network Programming, Volume 2: Interprocess Communications, Second Edition
+The Unix Programming Environment
+How Linux Works: What Every Superuser Should Know
+ 
+Linux misc:
+http://www.tldp.org/guides.html
+http://www.linuxfromscratch.org/
+http://www.tldp.org/LDP/abs/html/index.html
+http://www.tldp.org/LDP/lkmpg/2.6/html/index.html
+http://www.tldp.org/LDP/sag/html/index.html
+http://www.tldp.org/LDP/Linux-Dictionary/html/index.html
+http://www.tldp.org/LDP/Linux-Filesystem-Hierarchy/html/index.html
+http://www.tldp.org/LDP/lki/index.html
+http://www.tldp.org/HOWTO/Unix-and-Internet-Fundamentals-HOWTO/index.html
+http://www.tldp.org/HOWTO/Linux+IPv6-HOWTO/index.html
+http://catb.org/esr/writings/taoup/html/
+http://linuxcommand.org/
+ 
+ 
+Coding
+Cracking the Coding Interview
+Problem Solving in Data Structures & Algorithms Using Python: Programming Interview Guide 
+Programming Pearls
+ 
+ 
+Networks
+TCP/IP Illustrated, Vol. 1: The Protocols
+Network Troubleshooting Tools 
+TCP/IP Network Administration, 3rd Edition
+ 
+Troubleshooting
+Self-Service Linux: Determining Problems and Finding Solutions (free ebook) 
+Linux Troubleshooting Bible
+DevOps Troubleshooting: Linux Server Best Practices
+Effective Debugging (Spinellis)
+ 
+Scalable Architectures
+Distributed systems for fun and profit (free, many digital formats)
+https://www.usenix.org/blog/non-abstract-large-system-design-sysadmins
+https://www.somethingsimilar.com/2013/01/14/notes-on-distributed-systems-for-young-bloods/
+http://www.rgoarchitects.com/Files/fallacies.pdf (free pdf)
+https://12factor.net/
+NoSQL Revolution: Under the Covers of Distributed Systems at Scale (SPOT401) | AWS re:Invent 2013
+https://github.com/donnemartin/system-design-primer
+ 
+SRE
+https://landing.google.com/sre/book.html  (free html)
+The Practice of System and Network Administration: Devops and Other Best Practices for Enterprise it Volume 1
+Practice of Cloud System Administration, The: Designing and Operating Large Distributed Systems, Volume 2
+ 
+Misc
+Time Management for System Administrators
+Learning the vi and Vim Editors, 7th Edition 
+sed & awk, 2nd Edition
+DNS and BIND, 5th Edition 
+bash Cookbook
+
+
+
+
+https://www.lisenet.com/2016/rhce-sample-exam-for-rhel-7/
+
+OS-X MAC
+
+Turn it off
+Shift + Ctrl + Option : Holddown Power Button 3-5 seconds
+
+NVRAM reset
+Turn on computer, immediately P , R, Commnd, Option - computer restarts two times..
+
+
+Reset bluetooth mouse.
+
+
+
+#Mount a CD/DVD
+
+blkid
+
+root@mayura:/data/sdc01/rhce-dvd\> dmesg | egrep -i --color 'cdrom|dvd|cd/rw|writer'
+[    1.277393] ata3.00: ATAPI: TSSTcorp CDDVDW SH-S202N, SB01, max UDMA/66
+[    1.437905] scsi 2:0:0:0: CD-ROM            TSSTcorp CDDVDW SH-S202N  SB01 PQ: 0 ANSI: 5
+[    1.467997] sr 2:0:0:0: [sr0] scsi3-mmc drive: 48x/48x writer dvd-ram cd/rw xa/form2 cdda tray
+[    1.467999] cdrom: Uniform CD-ROM driver Revision: 3.20
+
+root@mayura:/var/ftp/pub/ksconfig\> virsh vol-create-as vpoolsdd02 rhceuefi_hdd0.img 10G
+Vol rhceuefi_hdd0.img created
+
+virt-install --name=rhceuefi --ram=1024 --vcpus=1 --autostart --os-type=linux --os-variant=rhel7 --boot=uefi --location=https://dl.fedoraproject.org/pub/fedora/linux/releases/22/Workstation/x86_64/os/ --network bridge=br_fe --network bridge=virbr0 --network bridge=virbr1 --network bridge=virbr2 --disk vol=vpoolsdd02/rhceuefi_hdd0.img --extra-args ks=ftp://192.168.2.21/pub/ksconfig/rhceuefi.cfg
+
+
+
+
+
+[root@lab125a ~]# date ; stress -c 4 -t 30 ; date
+Mon Sep 25 08:37:16 CDT 2017
+stress: info: [2563] dispatching hogs: 4 cpu, 0 io, 0 vm, 0 hdd
+stress: info: [2563] successful run completed in 30s
+Mon Sep 25 08:37:46 CDT 2017
+
+
+[root@lab125a ~]# dstat -cmdnt
+----total-cpu-usage---- ------memory-usage----- -dsk/total- -net/total- ----system----
+usr sys idl wai hiq siq| used  buff  cach  free| read  writ| recv  send|     time
+  8   3  85   4   0   0| 158M  952k 89.6M  744M| 734k   72k|   0     0 |25-09 08:37:15
+  0   0 100   0   0   0| 158M  952k 89.6M  744M|   0     0 | 118B  102B|25-09 08:37:16
+ 29   0  71   0   0   0| 159M  952k 89.6M  744M|   0     0 | 418B  488B|25-09 08:37:17
+100   0   0   0   0   0| 159M  952k 89.6M  744M|   0     0 | 118B  118B|25-09 08:37:18
+100   0   0   0   0   0| 159M  952k 89.6M  744M|   0     0 | 118B  134B|25-09 08:37:19
+100   0   0   0   0   0| 159M  952k 89.6M  744M|   0     0 | 118B  118B|25-09 08:37:20
+....
+..
+
+100   0   0   0   0   0| 159M  952k 89.6M  744M|   0     0 | 118B  102B|25-09 08:37:44
+100   0   0   0   0   0| 159M  952k 89.6M  744M|   0     0 | 118B  102B|25-09 08:37:45
+100   0   0   0   0   0| 159M  952k 89.6M  744M|   0     0 | 118B  102B|25-09 08:37:46
+ 69   0  31   0   0   0| 159M  952k 89.6M  744M|   0     0 | 250B  338B|25-09 08:37:47
+  0   0 100   0   0   0| 159M  952k 89.6M  744M|   0     0 | 118B  118B|25-09 08:37:48
+  0   0 100   0   0   0| 159M  952k 89.6M  744M|   0     0 | 118B  134B|25-09 08:37:49
+  0   0 100   0   0   0| 159M  952k 89.6M  744M|   0     0 | 118B  118B|25-09 08:37:50^C
+
+
+
+
+# Additional reference for screen.
+
+
+
+
+#Additional options
+screen -wipe ( will wipe all sessions which can't be attached)
+screen -r is used for re-attaching a screen session which is not already attached.
+screen -Dr will detach a running screen session and attach it here
+screen -x attach to a non-detached screen.
+screen -S termxa -X quit
+
+
+
+

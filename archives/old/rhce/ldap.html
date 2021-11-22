@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="Generator" content="EditPlus®">
+  <meta name="Author" content="">
+  <meta name="Keywords" content="">
+  <meta name="Description" content="">
+  <title>Notes</title>
+ <link rel="stylesheet" href="css/stylesheet1.css">
+ <link rel="stylesheet" href="css/stylesheet2.css">
+ <link rel="stylesheet" href="css/w3.css">
+
+ <style type="text/css" >
+	  
+ </style>
+<script Language="Javascript">
+function toggle() {
+    var x = document.getElementById('contents');
+    if (x.style.display === 'none') {
+		document.getElementById("togglelink").text = "hide"
+        x.style.display = 'block';
+    } else {
+        x.style.display = 'none';
+		document.getElementById("togglelink").text = "show"
+    }
+}
+</script>
+
+
+ </head>
+	<body> 
+		<div id="nav">
+			<div id="jumplinks"> Reference Notes/Hints </div>
+		</div>
+    
+		<div id="body">
+			<div id="content" class="mw-body" role="main">
+ 				<div id="toc" class="toc"><div id="toctitle"><h2>Contents</h2><span class="toctoggle">&nbsp;[<a href="javascript:toggle()" id="togglelink">hide</a>]&nbsp;</span></div>
+					<div id="contents">
+						<ul>
+							<li> <a href="#generic">	 <span class="tocnumber">	1 </span> <span class="toctext"> GENERIC	</span></a> </li> 
+							<li> <a href="#ldap">	 <span class="tocnumber">	2 </span> <span class="toctext"> LDAP	</span></a> </li> 
+
+						</ul>
+					</div>
+				</div>
+
+				<style>
+					html,body,h1,h2,h3,h4,h5,h6 { font-family: "Comic Sans MS", cursive, sans-serif; }
+				</style>
+ 
+
+
+
+	
+<div class="w3-container">
+	<h1><span class="mw-headline" id="ldap"> ldap </h1>
+	
+<p>
+
+</p>
+
+	
+<pre> 
+yum install openldap openldap-clients nss-pam-ldapd sssd authconfig authconfig-gtk
+
+
+ [root@lab11 conf.d]# authconfig --enableldap --enableldapauth --ldapserver=ldap://server --enablesssd --ldapbasedn="dc=example,dc=com" --update
+
+ [root@lab11 sssd]# grep -v ^# /etc/openldap/ldap.conf
+ 
+TLS_CACERTDIR /etc/openldap/cacerts
+
+SASL_NOCANON	on
+URI ldap://server
+BASE dc=example,dc=com
+
+# https://www.certdepot.net/rhel7-configure-ldap-directory-service-user-connection/ 
+
+#Server setup
+yum install -y openldap openldap-clients openldap-servers migrationtools
+
+#Generate ldap password from a secret key.
+
+[root@server ~]# slappasswd -s redhat -n  > /etc/openldap/passwd
+[root@server ~]# cat /etc/openldap/passwd
+{SSHA}yB19hMMrLO+O2wPaIl3ZXk5qqjL8zaRb
+
+
+#Generate a self-signed cert 
+
+[root@server ~]# openssl req -new -x509 -nodes -out /etc/openldap/certs/cert.pem -keyout  /etc/openldap/certs/priv.pem -days 365
+Generating a 2048 bit RSA private key
+.......................................+++
+...............+++
+writing new private key to '/etc/openldap/certs/priv.pem'
+-----
+You are about to be asked to enter information that will be incorporated
+into your certificate request.
+What you are about to enter is what is called a Distinguished Name or a DN.
+There are quite a few fields but you can leave some blank
+For some fields there will be a default value,
+If you enter '.', the field will be left blank.
+-----
+Country Name (2 letter code) [XX]:us
+State or Province Name (full name) []:texas
+Locality Name (eg, city) [Default City]:round rock
+Organization Name (eg, company) [Default Company Ltd]:intercloudzone.com
+Organizational Unit Name (eg, section) []:dba
+Common Name (eg, your name or your server's hostname) []:server.intercloudzone.com
+
+
+
+#Secure the contents 
+
+[root@server certs]# chown ldap:ldap *
+[root@server certs]# chmod 600 priv.pem
+[root@server certs]# pwd
+/etc/openldap/certs
+
+
+#Prepare the database
+[root@server certs]# cp /usr/share/openldap-servers/DB_CONFIG.example /var/lib/ldap/DB_CONFIG
+
+#Generate database files.
+
+[root@server certs]# slaptest
+59822d10 hdb_db_open: database "dc=my-domain,dc=com": db_open(/var/lib/ldap/id2entry.bdb) failed: No such file or directory (2).
+59822d10 backend_startup_one (type=hdb, suffix="dc=my-domain,dc=com"): bi_db_open failed! (2)
+slap_startup failed (test would succeed using the -u switch)
+
+
+[root@server certs]# chown ldap:ldap /var/lib/ldap/*
+
+#Enable and start slapd
+
+[root@server certs]# systemctl enable slapd
+Created symlink from /etc/systemd/system/multi-user.target.wants/slapd.service to /usr/lib/systemd/system/slapd.service.
+[root@server certs]# systemctl start slapd
+[root@server certs]# systemctl status slapd
+
+
+
+[root@server certs]# netstat -lt |grep ldap
+tcp        0      0 0.0.0.0:ldap            0.0.0.0:*               LISTEN
+tcp6       0      0 [::]:ldap               [::]:*                  LISTEN
+
+## Ss another tool to investigate sockets
+
+[root@server certs]# ss -ltap | grep ldap
+LISTEN     0      128        *:ldap                     *:*                     users:(("slapd",pid=2828,fd=8))
+LISTEN     0      128       :::ldap                    :::*                     users:(("slapd",pid=2828,fd=9))
+
+
+
+#To start the configuration of the LDAP server, add the cosine & nis LDAP schemas:
+
+
+cd /etc/openldap/schema/
+
+
+[root@server schema]# ldapadd -Y EXTERNAL -H ldapi:/// -D "cn=config" -f cosine.ldif
+SASL/EXTERNAL authentication started
+SASL username: gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth
+SASL SSF: 0
+adding new entry "cn=cosine,cn=schema,cn=config"
+ 
+[root@server schema]# ldapadd -Y EXTERNAL -H ldapi:/// -D "cn=config" -f nis.ldif
+SASL/EXTERNAL authentication started
+SASL username: gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth
+SASL SSF: 0
+adding new entry "cn=nis,cn=schema,cn=config"
+
+
+#Create changes.ldif file
+
+[root@server schema]# cat /etc/openldap/changes.ldif
+dn: olcDatabase={2}hdb,cn=config
+changetype: modify
+replace: olcSuffix
+olcSuffix: dc=intercloudzone,dc=com
+
+dn: olcDatabase={2}hdb,cn=config
+changetype: modify
+replace: olcRootDN
+olcRootDN: cn=Manager,dc=intercloudzone,dc=com
+
+dn: olcDatabase={2}hdb,cn=config
+changetype: modify
+replace: olcRootPW
+olcRootPW: {SSHA}yB19hMMrLO+O2wPaIl3ZXk5qqjL8zaRb
+
+dn: cn=config
+changetype: modify
+replace: olcTLSCertificateFile
+olcTLSCertificateFile: /etc/openldap/certs/cert.pem
+
+dn: cn=config
+changetype: modify
+replace: olcTLSCertificateKeyFile
+olcTLSCertificateKeyFile: /etc/openldap/certs/priv.pem
+
+dn: cn=config
+changetype: modify
+replace: olcLogLevel
+olcLogLevel: -1
+
+dn: olcDatabase={1}monitor,cn=config
+changetype: modify
+replace: olcAccess
+olcAccess: {0}to * by dn.base="gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth" read by dn.base="cn=Manager,dc=intercloudzone,dc=com" read by * none
+
+#Send changes to LDAP DB
+
+[root@server schema]# ldapmodify -Y EXTERNAL -H ldapi:/// -f /etc/openldap/changes.ldif
+SASL/EXTERNAL authentication started
+SASL username: gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth
+SASL SSF: 0
+modifying entry "olcDatabase={2}hdb,cn=config"
+
+modifying entry "olcDatabase={2}hdb,cn=config"
+
+modifying entry "olcDatabase={2}hdb,cn=config"
+
+modifying entry "cn=config"
+
+modifying entry "cn=config"
+
+modifying entry "cn=config"
+
+modifying entry "olcDatabase={1}monitor,cn=config"
+
+
+#Create base ldif file
+
+[root@server schema]# cat /etc/openldap/base.ldif
+dn: dc=intercloudzone,dc=com
+dc: intercloudzone
+objectClass: top
+objectClass: domain
+
+dn: ou=People,dc=intercloudzone,dc=com
+ou: People
+objectClass: top
+objectClass: organizationalUnit
+
+dn: ou=Group,dc=intercloudzone,dc=com
+ou: Group
+objectClass: top
+objectClass: organizationalUnit
+
+#Create base directory structure in ldap
+
+[root@server schema]# ldapadd -x -w redhat -D cn=Manager,dc=intercloudzone,dc=com -f /etc/openldap/base.ldif
+adding new entry "dc=intercloudzone,dc=com"
+
+adding new entry "ou=People,dc=intercloudzone,dc=com"
+
+adding new entry "ou=Group,dc=intercloudzone,dc=com"
+
+#Create two users for testing
+
+[root@server schema]# mkdir /home/guests
+[root@server schema]# useradd -d /home/guests/ldapuser01 ldapuser01
+[root@server schema]# useradd -d /home/guests/ldapuser02 ldapuser02
+
+
+[root@server migrationtools]# egrep '^\$DEFAULT_BASE|^\$DEFAULT_MAIL_DOMAIN' migrate_common.ph
+$DEFAULT_MAIL_DOMAIN = "intercloudzone.com";
+$DEFAULT_BASE = "dc=intercloudzone,dc=com";
+
+
+#Migrate users to ldap
+
+[root@server migrationtools]# grep ":10[0-9][0-9]" /etc/passwd > passwd
+[root@server migrationtools]# ./migrate_passwd.pl passwd users.ldif
+
+
+[root@server migrationtools]# ldapadd -x -w redhat -D cn=Manager,dc=intercloudzone,dc=com -f users.ldif
+adding new entry "uid=kuttu,ou=People,dc=intercloudzone,dc=com"
+
+
+[root@server migrationtools]# ldapsearch -x cn=ldapuser01 -b dc=intercloudzone,dc=com
+# extended LDIF
+#
+# LDAPv3
+# base <dc=intercloudzone,dc=com> with scope subtree
+# filter: cn=ldapuser01
+# requesting: ALL
+#
+
+# ldapuser01, People, intercloudzone.com
+dn: uid=ldapuser01,ou=People,dc=intercloudzone,dc=com
+uid: ldapuser01
+cn: ldapuser01
+objectClass: account
+objectClass: posixAccount
+objectClass: top
+objectClass: shadowAccount
+userPassword:: e2NyeXB0fSQ2JER5elgwQlMwJDBEUzZJVy9ET1lReG9FRWdQYThrZXhLMmgzSGZ
+ BcmxzbTZRQWExTkRiOGo2bzFhWGVVMnBiL3NPN1FyU1IyUzdLTU1uZWxRQ2dzYnpIS0ZCalc3WlYu
+shadowLastChange: 17380
+shadowMin: 0
+shadowMax: 99999
+shadowWarning: 7
+loginShell: /bin/bash
+uidNumber: 1012
+gidNumber: 1012
+homeDirectory: /home/guests/ldapuser01
+
+# search result
+search: 2
+result: 0 Success
+
+
+
+
+
+#Migrate groups 
+
+cd /usr/share/migrationtools
+cat /etc/group > group
+./migrate_group.pl group groups.ldif
+
+
+[root@server migrationtools]# ldapadd -x -w redhat -D "cn=Manager,dc=intercloudzone,dc=com" -f groups.ldif
+adding new entry "cn=root,ou=Group,dc=intercloudzone,dc=com"
+
+-- Generate rsyslog messages
+[root@server1 rsyslog.d]# echo "*.debug /var/log/messages-debug" > /etc/rsyslog.d/debug.conf
+[root@server1 rsyslog.d]# cat debug.conf
+*.debug /var/log/messages-debug
+[root@server1 rsyslog.d]# systemctl restart rsyslog
+[root@server1 rsyslog.d]# logger -p user.debug "Debug message test"
+
+--Make journals permanent.
+[root@server1 html]# systemd-tmpfiles --create --prefix /var/log/journal/
+[root@server1 html]# ls -ld /var/log/journal/
+drwxr-sr-x+ 2 root systemd-journal 4096 Nov 17 16:58 /var/log/journal/
+[root@server1 html]# systemctl restart systemd-journald
+
+[root@server1 html]# ls -ltr /var/log/journal/
+total 8
+drwxr-xr-x+ 2 root systemd-journal 4096 Nov 17 16:59 d3c8d48d2a8343fbb7674d25dd8da8e0
+[root@server1 html]# cat /etc/machine-id
+d3c8d48d2a8343fbb7674d25dd8da8e0
+
+#Add service to fw
+
+firewall-cmd --permanent --add-service=ldap
+
+
+Edit the /etc/rsyslog.conf file and add the following line:
+
+local4.* /var/log/ldap.log
+
+systemctl restart rsyslog
+
+
+# On the client
+authconfig --enableldap --enableldapauth --ldapserver=ldap://server --enablesssd --ldapbasedn="dc=intercloudzone,dc=com" --update
+
+[root@lab11 ~]# getent passwd ldapuser01
+ldapuser01:*:1012:1012:ldapuser01:/home/guests/ldapuser01:/bin/bash
+
+[root@lab11 ~]# su - ldapuser01
+su: warning: cannot change directory to /home/guests/ldapuser01: No such file or directory
+id: cannot find name for group ID 1012
+
+[root@lab11 ~]# authconfig --enablemkhomedir --update
+[root@lab11 ~]# su - ldapuser01
+Creating directory '/home/guests/ldapuser01'.
+Last login: Wed Aug  2 15:50:08 CDT 2017 on pts/0
+id: cannot find name for group ID 1012
+
+
+#On Server - adding a user
+
+[root@server migrationtools]# ldapadd -x -W -D cn=Manager,dc=intercloudzone,dc=com -f babu.ldif
+Enter LDAP Password:
+adding new entry "uid=babu,ou=People,dc=intercloudzone,dc=com"
+
+[root@server migrationtools]# cat babu.ldif
+dn: uid=babu,ou=People,dc=intercloudzone,dc=com
+uid: babu
+cn: babu
+objectClass: account
+objectClass: posixAccount
+objectClass: top
+objectClass: shadowAccount
+userPassword: {crypt}$6$/3bu6bR7$kDwUZNT88YMB3dScmfm2xEHYLLKYA9O.O3MJi1jMQDSg7asebqtoPGoio2LV.2ZkfZguwWoVamjbk2meNgPqN1
+shadowLastChange: 17380
+shadowMin: 0
+shadowMax: 99999
+shadowWarning: 7
+loginShell: /bin/bash
+uidNumber: 1013
+gidNumber: 1013
+homeDirectory: /home/guests/babu
+
+
+#USER ADD
+
+[root@server migrationtools]# ldapadd -x -w redhat -D "cn=Manager,dc=intercloudzone,dc=com" -f radha.ldif
+adding new entry "uid=radha,ou=People,dc=intercloudzone,dc=com"
+
+
+[root@lab11 ~]# su - radha
+Creating directory '/home/guests/radha'.
+id: cannot find name for group ID 2000
+
+
+Adding OpenLDAP POSIX groups
+
+
+[root@server migrationtools]# cat radha-group.ldif
+dn: cn=radha,ou=Group,dc=intercloudzone,dc=com
+objectClass: top
+objectClass: posixGroup
+cn: radha
+userPassword: {crypt}$6$/3bu6bR7$kDwUZNT88YMB3dScmfm2xEHYLLKYA9O.O3MJi1jMQDSg7asebqtoPGoio2LV.2ZkfZguwWoVamjbk2meNgPqN1
+gidNumber: 2000
+
+
+[root@server migrationtools]# ldapadd -x -w redhat -D "cn=Manager,dc=intercloudzone,dc=com" -f radha-group.ldif
+adding new entry "cn=radha,ou=Group,dc=intercloudzone,dc=com"
+
+
+[root@lab11 ~]# su - radha
+Last login: Wed Aug  2 16:54:53 CDT 2017 on pts/0
+
+
+https://techhelplist.com/index.php/tech-tutorials/34-openldap/48-user-management-in-openldap
+
+#Change Password
+
+[root@lab11 ~]# ldappasswd -x -D "cn=Manager,dc=intercloudzone,dc=com" -w redhat "uid=radha,ou=People,dc=intercloudzone,dc=com"
+New password: OQMBvAHI
+[root@lab11 ~]# ldappasswd -x -D "cn=Manager,dc=intercloudzone,dc=com" -w redhat "uid=radha,ou=People,dc=intercloudzone,dc=com" -s radha
+
+[root@lab11 ~]# ldapsearch -x -D "cn=Manager,dc=intercloudzone,dc=com" -w redhat -s sub "cn=*radha*"
+# extended LDIF
+#
+# LDAPv3
+
+
+
+#Search every entry
+[root@lab11 ~]# ldapsearch -x -D "cn=Manager,dc=intercloudzone,dc=com" -w redhat -s sub "objectclass=*"
+
+#Display only dn
+ldapsearch -x -D "cn=Manager,dc=intercloudzone,dc=com" -w redhat -s sub "objectclass=*" dn
+
+#Change admin password
+
+[root@server cn=config]# grep ldapadm olcDatabase\=\{2\}hdb.ldif
+olcRootDN: cn=ldapadm,dc=intercloudzone,dc=com
+[root@server cn=config]# pwd
+/etc/openldap/slapd.d/cn=config
+
+[root@lab11 ~]# ldapsearch -x -D "cn=ldapadm,dc=intercloudzone,dc=com" -w redhat -s sub "objectclass=*" dn
+
+[root@server ~]# mkinitrd -f test-$(uname -r).img  $(uname -r)
+
+#Volume Group missing in /dev/mapper
+
+[root@server ~]# vgscan --mknodes -v
+    Wiping cache of LVM-capable devices
+    Wiping internal VG cache
+  Reading all physical volumes.  This may take a while...
+    Using volume group(s) on command line.
+  Found volume group "vgdata0" using metadata type lvm2
+  Found volume group "vg01" using metadata type lvm2
+  Found volume group "vgos" using metadata type lvm2
+    Using logical volume(s) on command line.
+    Found same device /dev/vdd with same pvid ywDFI8P7iwtvcxw9mE6lcsbC1Wcf38b4
+    Found same device /dev/vdc1 with same pvid BqF5eyDAnfn9jWVlYovW21KaYZZJx913
+    Found same device /dev/vda2 with same pvid WJJmyni5cuaquhl8FJbyRgQecm2MNcoe
+
+
+
+
+
+</pre>
+
+</div>
+ 
+	
+</body>
+</html>

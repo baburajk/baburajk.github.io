@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head> <script data-ad-client="ca-pub-2393111531899119" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script> 
+	<meta charset="utf-8">
+	<title>intercloudzone</title>
+	<meta name="description" content="">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<meta property="og:image" content="path/to/image.jpg">
+<!-- favicon -->
+<link rel="shortcut icon" href="img/favicon/favicon.ico" type="image/x-icon">
+<link rel="apple-touch-icon" href="img/favicon/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="72x72" href="img/favicon/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="114x114" href="img/favicon/apple-touch-icon-114x114.png">
+<!-- favicon -->
+<!-- build:css -->
+<link rel="stylesheet" href="css/libs/bootstrap.min.css">
+<link rel="stylesheet" href="css/libs/font-awesome.min.css">
+<link rel="stylesheet" href="css/libs/animate.min.css">
+<link rel="stylesheet" href="css/libs/slick.css">
+<link rel="stylesheet" href="css/libs/magnific-popup.css">
+
+<link rel="stylesheet" href="css/main.css">
+<link rel="stylesheet" href="css/media.css">
+<!-- endbuild -->
+	<!-- Chrome, Firefox OS and Opera -->
+	<meta name="theme-color" content="#000">
+	<!-- Windows Phone -->
+	<meta name="msapplication-navbutton-color" content="#000">
+	<!-- iOS Safari -->
+	<meta name="apple-mobile-web-app-status-bar-style" content="#000">
+	<!-- <style>body { opacity:s 0; overflow-x: hidden; } html { background-color: #fff; }</style> -->
+</head>
+<body data-spy="scroll" data-target=".navbar" data-offset="50" class="loaded" link="blue">
+<!-- Preloader -->
+<div class="preloader">
+	<div class="cssload-spinner">
+		<div class="cssload-ball cssload-ball-1"></div>
+		<div class="cssload-ball cssload-ball-2"></div>
+		<div class="cssload-ball cssload-ball-3"></div>
+		<div class="cssload-ball cssload-ball-4"></div>
+	</div>
+</div>
+<!-- Preloader -->
+<div class="site-content">
+	<!-- Naviigation -->
+	<div class="navbar-wrap">
+		<div class="navbar">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-12">
+						<nav class="navbar-menu">
+							<div class="navbar-header">
+								<button class="collapsed navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-example-js-navbar-scrollspy">
+									<span class="icon-bar"></span>
+									<span class="icon-bar"></span>
+									<span class="icon-bar"></span>
+								</button>
+							</div>
+							 
+							<div class="navbar-full">
+								<div class="collapse bs-example-js-navbar-scrollspy">
+									<ul class="nav navbar-nav">
+										<li style="display: none;"><a></a></li>
+										<li><a href="http://www.linkedin.com/in/baburajkallarakkal">About Me</a></li>
+										<li><a href="http://padmavyuha.blogspot.com/">Blog</a></li>
+										<li><a href="https://sourceforge.net/projects/oraclerman/">Projects</a></li>
+										<li><a href="https://hub.docker.com/u/baburaj/">Docker</a></li>
+										<li><a href="mailto:raj.anju@gmail.com">Contact Me</a></li>
+										<li>
+										</li>
+									</ul>
+									<!-- btn -->
+									<div class="nav-button main-button">
+										<a href="#" class="btn btn-nav btn-block" role="button">
+											Site is in Beta!
+										</a>
+									</div>
+									<!-- btn -->
+								</div>
+							</div>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Naviigation -->
+<!-- Header -->
+	<div class="menu-sticky"></div>
+
+ 
+
+	<!-- Screen-one -->
+	<div class="screen-one">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="screen-one-title">
+						<h2>NFS, ISCSI, LVM and Storage specific notes</h2>
+					</div>
+				</div>
+			</div>
+		</div>
+	 
+		<div class="container">
+					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0s">
+						<span>01.</span>
+						<div class="screen-one-item-container">
+							<h3>NFS </h3>
+							<p> NFS, selinux, kerberos mounts. </p>
+							<p> </p>
+<pre>
+
+#Enable Debugging info into the nfs 
+Change the parameter : /etc/sysconfig/nfs 
+RPCGSSDARGS="-v -v -v "
+
+#SELinux Context for sharing files between multiple services.
+If you want to share files with multiple domains (Apache, FTP, rsync, Samba), you can set a file context of public_content_t and public_content_rw_t. 
+
+#Ensure to run restorecon and also set the nfsd_anon_write to allow 'writes'
+semanage fcontext -a -t public_content_t "/var/nfsd(/.*)?" 
+restorecon -F -R -v /var/nfsd
+setsebool -P nfsd_anon_write 1
+
+#Kerberos configuration tips. Make sure nfs-secure is enabled on both the client and server.
+yum install nfs-utils
+systemctl enable rpcbind nfs nfs-server nfs-secure
+
+Note: nfs-secure need to be enabled on both client and server. On client use v4.2,sec=krb5p to ensure SELinux lables are exported.
+
+#Exportfs Syntax
+export host1(options1) host2(options2) host3(options3)
+
+#On the server the mounted directories can be found here.
+Mounted directories in /var/lib/nfs/etab
+
+#Defaults
+ro,sync,wdelay,root_squash (Squashes power of root)
+
+#What all_squash means.  
+To squash every remote user (including root), use all_squash. To specify the user and group IDs that the NFS server 
+should assign to remote users from a particular host, use the anonuid and anongid options, respectively, as in:
+export host(anonuid=uid,anongid=gid)
+
+#Spaces can make a difference in the 'syntax', source RedHat.
+/home bob.example.com(rw) 
+/home bob.example.com (rw)
+
+The first line allows only users from bob.example.com read/write access to the /home directory. The second line allows users from 
+bob.example.com to mount the directory as read-only (the default), while the rest of the world can mount it read/write.
+
+#rpcbind
+NFS requires rpcbind, which dynamically assigns ports for RPC services and can cause problems for configuring firewall rules. To allow
+clients to access NFS shares behind a firewall, edit the /etc/sysconfig/nfs file to set which ports the RPC services run on
+
+#Mounts can be found here..
+cat /var/lib/nfs/etab (server) and /etc/mtab (on client)
+
+#Firewall - Ensure all 3 services are allowed in the firewall.
+firewall-cmd add-service={nfs,mountd,rpc-bind}
+
+#Options to check the mount points from client.
+showmount -e rhce1
+rpcinfo -p rhce1.intercloudzone.com
+
+# While enabling kerberos daemons, also enable nfs-secure.
+systemctl start kadmin krb5kdc nfs-secure
+
+#Notes
+insecure in NFS property to ensure the clients use ports < 1024
+nfsd server process runs on port 2049
+rpcbind runs on both server & client.
+rpc.quotad runs on both the server and client. 
+
+#High level steps to enable/configure kerberos.
+
+kadmin:  addprinc -randkey nfs/rhce1.intercloudzone.com
+WARNING: no policy specified for nfs/rhce1.intercloudzone.com@INTERCLOUDZONE.COM; defaulting to no policy
+Principal "nfs/rhce1.intercloudzone.com@INTERCLOUDZONE.COM" created.
+
+kadmin:  addprinc -randkey nfs/rhce2.intercloudzone.com
+WARNING: no policy specified for nfs/rhce2.intercloudzone.com@INTERCLOUDZONE.COM; defaulting to no policy
+Principal "nfs/rhce2.intercloudzone.com@INTERCLOUDZONE.COM" created.
+
+[root@rhce1 ~]# systemctl enable nfs-secure
+[root@rhce1 ~]# systemctl start nfs-secure
+
+[root@rhce2 ~]# kadmin
+Authenticating as principal root/admin@INTERCLOUDZONE.COM with password.
+Password for root/admin@INTERCLOUDZONE.COM:
+kadmin:  ktadd nfs/rhce1.intercloudzone.com
+Entry for principal nfs/rhce1.intercloudzone.com with kvno 2, encryption type aes256-cts-hmac-sha1-96 added to keytab FILE:/etc/krb5.keytab
+..
+...
+Entry for principal nfs/rhce1.intercloudzone.com with kvno 2, encryption type des-cbc-md5 added to keytab FILE:/etc/krb5.keytab.
+kadmin:  quit
+
+[root@rhce2 ~]# ls -ltr /etc/krb5.keytab
+-rw-------. 1 root root 3002 Feb  1 17:02 /etc/krb5.keytab
+
+#Check the client for mounted directories
+[root@rhce2 ~]# showmount -e rhce1
+Export list for rhce1:
+/nfskrb5  rhce2.intercloudzone.com
+/nfsdata  rhce2.intercloudzone.com
+/nfsrhcsa rhce3.intercloudzone.com
+/common   rhce2.intercloudzone.com
+
+=> On Server...
+ 
+Test-1
+
+[root@lab125a network-scripts]# cat /var/lib/nfs/etab
+/nfsdummy0	lab125a(rw,sync,wdelay,hide,nocrossmnt,secure,no_root_squash,no_all_squash,
+no_subtree_check,secure_locks,acl,no_pnfs,anonuid=65534,anongid=65534,sec=sys,rw,secure,no_root_squash,no_all_squash)
+/nfsrw	lab125a(rw,sync,wdelay,hide,nocrossmnt,secure,
+root_squash,all_squash,no_subtree_check,secure_locks,acl,no_pnfs,anonuid=65534,anongid=65534,sec=sys,rw,secure,root_squash,all_squash)
+/nfsro	lab125a(ro,sync,wdelay,hide,nocrossmnt,secure,no_root_squash,
+no_all_squash,no_subtree_check,secure_locks,acl,no_pnfs,anonuid=65534,anongid=65534,sec=sys,ro,secure,no_root_squash,no_all_squash)
+
+[root@lab130a network-scripts]# mount -v -t nfs -o rw 192.168.2.50:/nfsro /dataro
+mount.nfs: timeout set for Mon Aug 21 14:45:53 2017
+mount.nfs: trying text-based options 'vers=4,addr=192.168.2.50,clientaddr=192.168.2.53'
+mount.nfs: mount(2): Permission denied
+mount.nfs: access denied by server while mounting 192.168.2.50:/nfsro
+
+#Make sure to add both the 'nfs' and 'host' principals for client and server.
+
+- Add both client and server to nfs
+ktadd -k nfs/server.intercloudzone.com
+ktadd -k nfs/client.intercloudzone.com
+
+- Add both client and server to host
+ktadd -k host/server.intercloudzone.com
+ktadd -k host/client.intercloudzone.com
+
+-Check the ACL to see if its updated
+[root@rhce4 ~]# cat /var/kerberos/krb5kdc/kadm5.acl
+*/admin@INTERCLOUDZONE.COM	*
+
+-Copy the keytab file
+[root@rhce5 ~]# scp server.intercloudzone.com:/etc/krb5.keytab /etc/
+ Restricted computer - message from /etc/banner
+root@server.intercloudzone.com's password:
+krb5.keytab                                                                                     100% 8074     4.1MB/s   00:00
+
+-Update the /etc/krb5.conf file on both server and client..
+[root@rhce4 ~]# grep -Hi intercloudzone /etc/krb5.conf
+/etc/krb5.conf: default_realm = INTERCLOUDZONE.COM
+/etc/krb5.conf: INTERCLOUDZONE.COM = {
+/etc/krb5.conf:  kdc = kerberos.intercloudzone.com
+/etc/krb5.conf:  admin_server = kerberos.intercloudzone.com
+/etc/krb5.conf: .intercloudzone.com = INTERCLOUDZONE.COM
+/etc/krb5.conf: intercloudzone.com = INTERCLOUDZONE.COM
+
+[root@rhce5 ~]# mount.nfs4 -vvv -o sec=krb5 server.intercloudzone.com:/shared /tester
+mount.nfs4: timeout set for Thu May 10 09:07:59 2018
+mount.nfs4: trying text-based options 'sec=krb5,vers=4.1,addr=192.168.122.40,clientaddr=192.168.122.50'
+
+=> Known bugs/issues.
+https://bugzilla.redhat.com/show_bug.cgi?id=1402427
+
+[root@rhce4 ~]# grep RPC /etc/sysconfig/nfs
+RPCNFSDARGS=""
+#RPCNFSDCOUNT=16
+RPCMOUNTDOPTS=""
+RPCIDMAPDARGS=""
+RPCGSSDARGS="-vvv"
+
+SELinux is preventing /usr/sbin/rpc.gssd from using the block_suspend capability.
+May  7 20:37:24 rhce4 dbus[642]: [system] Activating service name='org.fedoraproject.Setroubleshootd' (using servicehelper)
+May  7 20:37:25 rhce4 dbus[642]: [system] Successfully activated service 'org.fedoraproject.Setroubleshootd'
+May  7 20:37:25 rhce4 setroubleshoot: SELinux is preventing /usr/sbin/rpc.gssd from using the block_suspend capability. For complete SELinux messages run: sealert -l 75c702ec-b199-44a5-9a16-705b0ec79cce
+May  7 20:37:25 rhce4 python: SELinux is preventing /usr/sbin/rpc.gssd from using the block_suspend capability.#012#012*****  Plugin catchall (100. confidence) suggests   **************************#012#012If you believe that rpc.gssd should have the block_suspend capability by default.#012Then you should report this as a bug.#012You can generate a local policy module to allow this access.#012Do#012allow this access for now by executing:#012# ausearch -c 'rpc.gssd' --raw | audit2allow -M my-rpcgssd#012# semodule -i my-rpcgssd.pp#012
+
+
+</pre>
+						</div>
+				</div>
+
+
+
+					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
+					<span>02.</span>
+					<div class="screen-one-item-container">
+						<h3> Autofs Mounting </h3>
+						<p>  autofs, auto.net and auto.direct options. </p>
+
+						<p> </p>
+
+<pre>
+
+#Additional Notes: Autofs mounting
+
+[root@lab130a etc]# tail -2 auto.master
++auto.master
+/-	/etc/auto.direct
+
+[root@lab130a etc]# cat auto.direct
+/autodir 192.168.2.50:/nfsexports/data
+
+root@rhce5 ~]# cd -
+/etc/auto.master.d
+
+[root@rhce5 auto.master.d]# ls -ltr
+total 8
+-rw-r--r--. 1 root root 39 May  7 22:31 tools.autofs
+-rw-r--r--. 1 root root 41 May  7 22:31 autofs.tools
+
+[root@rhce5 auto.master.d]# cat tools.autofs
+/tools /etc/auto.master.d/autofs.tools
+
+[root@rhce5 auto.master.d]# cat autofs.tools
+tsubdir server.intercloudzone.com:/tools
+
+[root@rhce5 auto.master.d]# ls -ltr /tools/tsubdir/
+total 0
+-rw-r--r--. 1 root root 0 May  7 22:31 afile
+
+[root@rhce5 auto.master.d]# /etc/auto.net rhce4.intercloudzone.com -fstype=nfs
+-fstype=nfs,hard,intr,nodev,nosuid \
+  /home rhce4.intercloudzone.com:/home \
+  /shared rhce4.intercloudzone.com:/shared \
+  /tools rhce4.intercloudzone.com:/tools
+
+[root@rhce5 auto.master.d]# cd /net/
+
+[root@rhce5 net]# ls -l
+total 0
+
+[root@rhce5 net]# cd rhce4.intercloudzone.com
+
+[root@rhce5 rhce4.intercloudzone.com]# ls -lr
+total 0
+drwxr-xr-x. 2 root root 0 May  7 22:33 tools
+drwxr-xr-x. 2 root root 0 May  7 22:33 shared
+drwxr-xr-x. 2 root root 0 May  7 22:33 home
+
+   [root@rhce2 ~]# /etc/auto.net rhce1.intercloudzone.com -fstype=nfs /nfsdata
+-fstype=nfs,hard,intr,nodev,nosuid \
+  /common rhce1.intercloudzone.com:/common \
+  /nfsdata rhce1.intercloudzone.com:/nfsdata \
+  /nfskrb5 rhce1.intercloudzone.com:/nfskrb5 \
+  /nfsrhcsa rhce1.intercloudzone.com:/nfsrhcsa
+
+</pre>
+					</div>
+				</div>
+
+				   <div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.1s">
+						<span>03.</span>
+						<div class="screen-one-item-container">
+							<h3> ISCSI </h3>
+							<p> Configuring ISCSI targets. 
+							</p>
+							<p> </p>
+
+<pre>
+
+#Create block device
+/backstores/block> create iscsidisk1 dev=/dev/vdb 
+
+#While mounting add _netdev.  
+UUID=84c298ec-139a-4a4b-8869-ec7af8615ca2 /tmp/iscsimnt                   xfs     _netdev        0 0
+
+#What is iscsi wwn 
+Word Wide Name
+
+#Create IQN, TPG, LUN.
+
+/iscsi> create iqn.2018-01.com.intercloudzone:iscsidisk1
+Created target iqn.2018-01.com.intercloudzone:iscsidisk1.
+Created TPG 1.
+
+Global pref auto_add_default_portal=true
+Created default portal listening on all IPs (0.0.0.0), port 3260.
+/iscsi> ls
+o- iscsi ..................................................[Targets: 1]
+  o- iqn.2018-01.com.intercloudzone:iscsidisk1 ...............[TPGs: 1]
+    o- tpg1 .....................................[no-gen-acls, no-auth]
+      o- acls ................................................[ACLs: 0]
+      o- luns ................................................[LUNs: 0]
+      o- portals ..........................................[Portals: 1]
+        o- 0.0.0.0:3260 ...........................................[OK]
+/iscsi>
+
+/iscsi/iqn.20.../tpg1/portals> create 192.168.122.10
+Using default IP port 3260
+Could not create NetworkPortal in configFS
+
+/iscsi/iqn.20.../tpg1/portals> ls
+o- portals ................................................[Portals: 1]
+  o- 0.0.0.0:3260 .................................................[OK]
+/iscsi/iqn.20.../tpg1/portals> delete 0.0.0.0 ip_port=3260
+Deleted network portal 0.0.0.0:3260
+
+/iscsi/iqn.20.../tpg1/portals> create 192.168.122.10
+Using default IP port 3260
+Created network portal 192.168.122.10:3260.
+
+/iscsi/iqn.20...sk1/tpg1/luns> create /backstores/block/iscsidisk1
+Created LUN 0.
+
+#Create ACL using the initiator name on the client.
+
+[root@rhce2 ~]# cat /etc/iscsi/initiatorname.iscsi
+InitiatorName=iqn.1994-05.com.redhat:ab5f22d09eca
+
+/iscsi/iqn.20...sk1/tpg1/acls> create iqn.1994-05.com.redhat:ab5f22d09eca
+Created Node ACL for iqn.1994-05.com.redhat:ab5f22d09eca
+Created mapped LUN 1.
+Created mapped LUN 0.
+
+#Discover targets
+[root@rhce2 ~]# iscsiadm --mode discovery --type sendtargets --portal 192.168.122.10
+192.168.122.10:3260,1 iqn.2018-01.com.intercloudzone:iscsidisk1
+
+#Try to login
+[root@rhce2 ~]# iscsiadm -m node -T iqn.2018-01.com.intercloudzone:iscsidisk1 -l
+Logging in to [iface: default, target: iqn.2018-01.com.intercloudzone:iscsidisk1, portal: 192.168.122.10,3260] (multiple)
+Login to [iface: default, target: iqn.2018-01.com.intercloudzone:iscsidisk1, portal: 192.168.122.10,3260] successful.
+
+#Check sessions
+[root@rhce2 ~]# iscsiadm -m session -P 0
+tcp: [1] 192.168.122.10:3260,1 iqn.2018-01.com.intercloudzone:iscsidisk1 (non-flash)
+
+#Check the devices ()
+[root@rhce2 ~]# lsblk --scsi
+NAME HCTL       TYPE VENDOR   MODEL             REV TRAN
+sda  2:0:0:0    disk LIO-ORG  iscsidisk1       4.0  iscsi
+sdb  2:0:0:1    disk LIO-ORG  testfile         4.0  iscsi
+
+#Devices can also be found under 'disk/by-path'
+[root@rhce5 /]# ls -l /dev/disk/by-path/
+total 0
+lrwxrwxrwx. 1 root root  9 May 17 13:00 ip-192.168.122.40:3260-iscsi-iqn.2015-01.com.example:server1-disk1-lun-0 -> ../../sdb
+
+#Logout 
+
+[root@rhce2 ~]# iscsiadm -m node -u
+Logging out of session [sid: 1, target: iqn.2018-01.com.intercloudzone:iscsidisk1, portal: 192.168.122.10,3260]
+Logout of [sid: 1, target: iqn.2018-01.com.intercloudzone:iscsidisk1, portal: 192.168.122.10,3260] successful.
+[root@rhce2 ~]# lsblk --scsi
+[root@rhce2 ~]# iscsiadm -m session -P 0
+iscsiadm: No active sessions.
+
+#Example of mapping lun afterwards
+/iscsi/iqn.20...ce4-disk1-acl> create mapped_lun=0 tpg_lun_or_backstore=/backstores/block/disk1
+Created Mapped LUN 0.
+
+#Create a write-protected LUN (under ACL) 
+
+/iscsi/iqn.20...ce4-disk1-acl> create mapped_lun=1 tpg_lun_or_backstore=/backstores/fileio/file1 write_protect=1
+Created Mapped LUN 1.
+/iscsi/iqn.20...ce4-disk1-acl> ls
+o- iqn.2018-04.com.intercloudzone:rhce4-disk1-acl ....[Mapped LUNs: 2]
+  o- mapped_lun0 ..............................[lun0 block/disk1 (rw)]
+  o- mapped_lun1 .............................[lun1 fileio/file1 (ro)
+
+#Cleanup nodes if things go wrong
+
+[root@rhce3 ~]# lsblk --scsi
+NAME HCTL       TYPE VENDOR   MODEL             REV TRAN
+sda  18:0:0:0   disk LIO-ORG  san0             4.0  iscsi
+sdb  17:0:0:0   disk LIO-ORG  iscsidisk1       4.0  iscsi
+sdc  18:0:0:1   disk LIO-ORG  san1             4.0  iscsi
+sdd  17:0:0:1   disk LIO-ORG  testfile         4.0  iscsi
+
+
+[root@rhce3 ~]# ls -lr /var/lib/iscsi/nodes/
+total 0
+drw-------. 3 root root 35 Jan 26 12:15 iqn.2018-01.local.rhce.ipa:target
+drw-------. 3 root root 35 Jan 26 12:15 iqn.2018-01.com.intercloudzone:iscsidisk1
+
+[root@rhce3 ~]# iscsiadm -m node -T iqn.2018-01.local.rhce.ipa:target -p 192.168.122.10 --logout
+Logging out of session [sid: 17, target: iqn.2018-01.local.rhce.ipa:target, portal: 192.168.122.10,3260]
+Logout of [sid: 17, target: iqn.2018-01.local.rhce.ipa:target, portal: 192.168.122.10,3260] successful.
+[root@rhce3 ~]# iscsiadm -m node -T iqn.2018-01.local.rhce.ipa:target -p 192.168.122.10 -o delete
+
+[root@rhce3 ~]# lsblk --scsi
+NAME HCTL       TYPE VENDOR   MODEL             REV TRAN
+sdb  17:0:0:0   disk LIO-ORG  iscsidisk1       4.0  iscsi
+sdd  17:0:0:1   disk LIO-ORG  testfile         4.0  iscsi
+
+[root@rhce3 ~]# blkid  |grep sdb
+/dev/sdb: UUID="2ef58790-64b7-4723-8e04-daa05b040127" TYPE="xfs"
+
+/iscsi/iqn.20...:c3e0e869a66f> set auth userid=client password=client
+Parameter password is now 'client'.
+Parameter userid is now 'client'.
+
+Note: The device names may vary during reboots, so only the UUID's should be used to mount with _netdev option.
+#UUID="4ee8aecb-de46-4d29-9858-811be645a195"     /test ext3     _netdev         0 0
+
+--DIscover (-D should be passed in case of discoverydb mode)
+[root@rhce5 doc]# iscsiadm -m discoverydb -t sendtargets -p rhce4.intercloudzone.com -D
+192.168.122.40:3260,1 iqn.2018-04.com.intercloudzone:rhce4-disk1
+
+</pre>
+						</div>
+					</div>
+
+					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
+						<span>04.</span>
+						<div class="screen-one-item-container">
+							<h3> File System </h3>
+							<p>  Remove stale volume groups using dmsetup, File System Block Corruption & Repair using fsck. <br>
+
+							  <br>
+						</p>
+						<p> </p>
+
+<pre>
+
+#How to remove stale volume group entries..
+
+[root@rhce1 ~]# pvscan
+  /dev/vgsan/lvsan0: read failed after 0 of 4096 at 0: Input/output error
+  /dev/vgsan/lvsan0: read failed after 0 of 4096 at 1073676288: Input/output error
+  /dev/vgsan/lvsan0: read failed after 0 of 4096 at 1073733632: Input/output e
+
+[root@rhce1 ~]# dmsetup remove vgsan-lvsan1 -f
+[root@rhce1 ~]# dmsetup remove vgsan-lvsan0 -f
+[root@rhce1 ~]# dmsetup ls
+vgos-home (253:4)
+vgos-swap (253:1)
+vgos-root (253:0)
+
+[root@server ~]# e2label /dev/mapper/vg01-lvol1
+teste2
+
+[root@server ~]# mount LABEL=teste2 /mnt/
+
+[root@server ~]# findmnt -t ext4
+TARGET SOURCE                 FSTYPE OPTIONS
+/mnt   /dev/mapper/vg01-lvol1 ext4   rw,relatime,seclabel,data=ordered
+
+[root@server ~]# dumpe2fs /dev/mapper/vg01-lvol1 |grep superblock
+dumpe2fs 1.42.9 (28-Dec-2013)
+  Primary superblock at 1, Group descriptors at 2-3
+  Backup superblock at 8193, Group descriptors at 8194-8195
+  Backup superblock at 24577, Group descriptors at 24578-24579
+  Backup superblock at 40961, Group descriptors at 40962-40963
+  Backup superblock at 57345, Group descriptors at 57346-57347
+  Backup superblock at 73729, Group descriptors at 73730-73731
+  Backup superblock at 204801, Group descriptors at 204802-204803
+
+[root@server ~]# fsck -b 8193 /dev/mapper/vg01-lvol1
+fsck from util-linux 2.23.2
+e2fsck 1.42.9 (28-Dec-2013)
+teste2 was not cleanly unmounted, check forced.
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+
+teste2: ***** FILE SYSTEM WAS MODIFIED *****
+teste2: 11/53248 files (0.0% non-contiguous), 12632/212992 blocks
+
+#Error
+[root@server ~]# pvcreate /dev/vdd
+  WARNING: Device for PV xdVv91-0Gfz-uzSs-1pzu-CDVQ-34Pm-PwsGBd not found or rejected by a filter.
+  Device /dev/vdd not found (or ignored by filtering).
+
+[root@server ~]# uuidgen
+c534079b-103f-45ab-9252-839684568fd6
+
+[root@server ~]# tune2fs /dev/vdd -U c534079b-103f-45ab-9252-839684568fd6
+tune2fs 1.42.9 (28-Dec-2013)
+tune2fs: Bad magic number in super-block while trying to open /dev/vdd
+Couldn't find valid filesystem superblock.
+
+[root@server ~]# dumpe2fs /dev/vdd
+dumpe2fs 1.42.9 (28-Dec-2013)
+dumpe2fs: Bad magic number in super-block while trying to open /dev/vdd
+Couldn't find valid filesystem superblock.
+
+[root@server ~]# fsck -b 98304 /dev/vdd
+fsck from util-linux 2.23.2
+e2fsck 1.42.9 (28-Dec-2013)
+fsck.ext2: Invalid argument while trying to open /dev/vdd
+
+The superblock could not be read or does not describe a correct ext2
+filesystem.  If the device is valid and it really contains an ext2
+filesystem (and not swap or ufs or something else), then the superblock
+is corrupt, and you might try running e2fsck with an alternate superblock:
+    e2fsck -b 8193 <device>
+
+#Last ditch effort of recreating ONLY superblocks
+
+[root@server ~]# mke2fs -S /dev/vdd -t ext4
+mke2fs 1.42.9 (28-Dec-2013)
+Filesystem label=
+OS type: Linux
+Block size=4096 (log=2)
+Fragment size=4096 (log=2)
+Stride=0 blocks, Stripe width=0 blocks
+196608 inodes, 786432 blocks
+39321 blocks (5.00%) reserved for the super user
+First data block=0
+Maximum filesystem blocks=805306368
+24 block groups
+32768 blocks per group, 32768 fragments per group
+8192 inodes per group
+Superblock backups stored on blocks:
+  32768, 98304, 163840, 229376, 294912
+
+Allocating group tables: done
+Skipping journal creation in super-only mode
+Writing superblocks and filesystem accounting information: done
+
+Run e2fsck immediately..
+
+root@server ~]# e2fsck /dev/vdd
+
+#Display devices ..
+[root@server ~]# lvs -a -o +devices
+  WARNING: Device for PV xdVv91-0Gfz-uzSs-1pzu-CDVQ-34Pm-PwsGBd not found or rejected by a filter.
+  LV     VG   Attr       LSize   Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert Devices
+  lvol0  vg01 -wi-a----- 208.00m                                                     /dev/vde(0)
+
+#Another utility
+debugfs
+
+[root@server ~]# vgs -a -o +pv_name
+  VG   #PV #LV #SN Attr   VSize VFree   PV
+  vg01   2   3   0 wz--n- 3.97g   3.36g /dev/vde
+  vg01   2   3   0 wz--n- 3.97g   3.36g /dev/vdc1
+  vgos   1   2   0 wz--n- 9.76g 996.00m /dev/vda2
+
+[root@server ~]# vgreduce vg01 --removemissing --force
+  WARNING: Device for PV xdVv91-0Gfz-uzSs-1pzu-CDVQ-34Pm-PwsGBd not found or rejected by a filter.
+  WARNING: Device for PV xdVv91-0Gfz-uzSs-1pzu-CDVQ-34Pm-PwsGBd not found or rejected by a filter.
+  Wrote out consistent volume group vg01
+
+ [root@server ~]# pvcreate /dev/vdd
+  Physical volume "/dev/vdd" successfully created
+
+#Parted Free block list
+parted unit MB print free
+
+#LVM Info.
+[root@rhce4 ~]# dmsetup info -C
+Name             Maj Min Stat Open Targ Event  UUID
+vgos-home        253   2 L--w    1    1      0 LVM-f1f8CpRwz610Z0djw9dOwwwdD1SpQyVKAcHyMlbAi8IJ6He9JQSLl47i3YyyfMN4
+vgos-swap        253   1 L--w    2    1      0 LVM-f1f8CpRwz610Z0djw9dOwwwdD1SpQyVKuREdxh9vrSecNuQc0JEurmw6KM9Tt8W7
+vgos-root        253   0 L--w    1    1      0 LVM-f1f8CpRwz610Z0djw9dOwwwdD1SpQyVKoyRvRaGTZIMRrz3Hv6kCW4w3PHYAL4pI
+
+#Volume Group missing in /dev/mapper
+
+[root@server ~]# vgscan --mknodes -v
+    Wiping cache of LVM-capable devices
+    Wiping internal VG cache
+  Reading all physical volumes.  This may take a while...
+    Using volume group(s) on command line.
+  Found volume group "vgdata0" using metadata type lvm2
+  Found volume group "vg01" using metadata type lvm2
+  Found volume group "vgos" using metadata type lvm2
+    Using logical volume(s) on command line.
+    Found same device /dev/vdd with same pvid ywDFI8P7iwtvcxw9mE6lcsbC1Wcf38b4
+    Found same device /dev/vdc1 with same pvid BqF5eyDAnfn9jWVlYovW21KaYZZJx913
+    Found same device /dev/vda2 with same pvid WJJmyni5cuaquhl8FJbyRgQecm2MNcoe
+</pre>
+ 
+						</div>
+					</div>
+
+<!-- Contact -->
+<a class="anchor" id="contact"></a>
+
+<section class="contact">
+		<div class="contact-wrap">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-12 __web-inspector-hide-shortcut__">
+						<div class="contact-title">
+							<h2></h2>
+							<p> 
+								<br class="disable"></p>
+						</div>
+						<!-- /.contact-title -->
+					</div>
+					<!-- /.col-md-12 -->
+					
+					<!-- /.col-md-10 -->
+				</div>
+				<!-- /.row -->
+			</div>
+			<!-- /.container -->
+		</div>
+		<!-- /.directions-wrap -->
+	</section>
+
+</div>
+<!-- Site content -->
+
+<!-- Footer -->
+<a class="anchor" id="footer"></a>
+<footer class="footer" style="background-image: url(img/footer-bg.jpg); background-position:center; background-size: cover; background-repeat:no-repeat;">
+	<div class="footer-wrap">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="footer-title">
+						<h2>www.intercloudzone.com</h2>
+						<ul class="footer-icons">
+						<script src="//platform.linkedin.com/in.js" type="text/javascript"> lang: en_US</script>
+						<script type="IN/Share" data-url="http://www.intercloudzone.com/nfs-iscsi.html"></script>
+						</ul>
+						<p> </p>
+					</div>
+					<!-- /.footer-title -->
+				</div>
+				<!-- /.col-md-12 -->
+			</div>
+			<!-- /.row -->
+		</div>
+		<!-- /.container -->
+	</div>
+	<!-- /.directions-wrap -->
+</footer>
+<!-- Footer -->
+
+
+
+<!-- links -->
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?key=AIzaSyDDuC8pr6YqiBr9wqfhNIJ56AqwzWKhiQo"></script>
+<!-- build:js -->
+
+ 
+
+<script src="js/libs/jquery.min.js"></script>
+<script type="text/javascript" src="js/libs/bootstrap.min.js"></script>
+<script type="text/javascript" src="js/libs/waypoints.min.js"></script>
+<script type="text/javascript" src="js/libs/slick.min.js"></script>
+<script type="text/javascript" src="js/libs/magnific-popup.min.js"></script>
+
+<script type="text/javascript" src="js/common.js"></script>
+<!-- endbuild -->
+<!-- links -->
+</body>
+</html>

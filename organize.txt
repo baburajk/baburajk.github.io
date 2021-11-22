@@ -1,0 +1,387 @@
+  
+ 
+ 
+
+#setuid
+rwS = (Executable permission bit not set, this is an error) vs rws (setuid and x set) 
+
+#DNS Servers getting over-written on the interface files, disable via "DNS=none"
+[root@rhce1 network-scripts]# find /etc/ -name "NetworkManager.conf"
+/etc/NetworkManager/NetworkManager.conf
+
+Add below under the [main] section, cannot append.
+dns=none
+
+chattr +i afile # Immutable, can't be deleted, renamed or changed
+chattr +a afile # Can only be appended
+
+#Resize vs xfs_grow
+resize2fs vs xfs_grow is former uses the device and later uses the mountpoint.
+
+#SELinux context issuse - check this file.
+matchpathcon -V filename
+
+
+
+#Vim helps
+http://vimdoc.sourceforge.net/htmldoc/vimindex.html#ex-cmd-index
+
+</pre>
+								</div>
+							</div>
+
+
+							<div class="questions-container-accordion-set">
+								<a><h3> IPv6 Addresses. </h3><i class="fa fa-chevron-circle-down" aria-hidden="true"></i></a>
+								<div class="content">
+									<p>  </p>
+<pre>  
+
+:: equivalent to ipv4 0.0.0.0      - Listening on all configured ip addresses.
+::/0 equivalent to ipv4 0.0.0.0/0  - Default Route for IPv6 internet. The route chosen when there are no explicit routes available.
+2000::/3 Global Unicast Address
+fc00::/10 Unique Local Address (RFC4193) - equivalent to ipv4 RFC1918
+fe80::/64 - Link-Local address, automatically configured for every device.
+
+ff00::/8 - Multicast - equivalent to 224.0.0.0/4. There is no broadcast address in IPv6.
+
+ping6 ff02::1 is a multicast address which will send packet all local-links.
+
+ff02::1:2 -- all-dhcp-servers link-local multicast group
+ff02::2   -- all-routers link-local multicast group
+
+</pre>	
+								</div>
+							</div>
+
+
+
+							<div class="questions-container-accordion-set">
+								<a><h3> Basics </h3><i class="fa fa-chevron-circle-down" aria-hidden="true"></i></a>
+								<div class="content">
+									<p>  </p>
+<pre>  
+
+
+#Carriage Return/Linefeed/Form Feed.
+
+
+
+#Monitor the bonded interface via
+watch -dc -n 1 netstat -i
+
+--To send keys to hung guests
+root@panchajanya:~\> virsh send-key lab125a KEY_LEFTALT KEY_SYSRQ KEY_H
+
+--Exammple (Decoding/Escaping XML for display)
+root@mayura:/data/sdd02\> perl -p -e 'BEGIN { use CGI qw(escapeHTML); } $_ = escapeHTML($_); ' virnet3.xml
+
+#Block Devices vs Character Devices
+Character(raw) devices are accessed serially - printers, mice, keyboards, terminals, etc and 
+block devices are accessed in parallel via blocks - HDD, optical drives etc.
+
+#Terminal vs Shell
+Terminal converts keys into control sequences (e.g. Left → \e[D). 
+The shell converts control sequences into commands (e.g. \e[D → backward-char).
+
+#Find files by reference
+touch -d '1 day ago' cutoff
+[root@rhcsa1 ~]# find . ! -newer cutoff --samefile cutoff
+ 
+#Generate SHA512 crypt passwords
+
+[root@server1 ~]# python
+Python 2.7.5 (default, Nov 20 2015, 02:00:19)
+[GCC 4.8.5 20150623 (Red Hat 4.8.5-4)] on linux2
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import crypt
+>>> print (crypt.crypt("oracle",crypt.mksalt(crypt.METHOD_SHA512)))
+$6$mS0WeRwcJtXUprd8$Gg3PbM/x5yopaBZ57Hk9atr5W/vDdcfr5tegM28XhjNAkxOpl8DyFe17RHJmtpO.7f21v609r6l0nQUwBXmf60
+>>>
+
+#How to check the encryption standard based on the crypt password quick.
+$6 = SHA512, $5 = SHA256, $1 = MD5 ( Format = $ENCRYPTION $SALT $ENCRYPTED PASSWORD)
+
+-Terminal vs Shell
+Terminal converts keys into control sequences (e.g. Left → \e[D). 
+The shell converts control sequences into commands (e.g. \e[D → backward-char).
+
+#Difference between command and space!
+--Logical "AND" implied
+pgrep -u root sshd
+
+--Logical "OR" implied
+pgrep -u root,sshd
+
+#Histformat 
+export HISTTIMEFORMAT="%d/%m/%y %T "
+export PS1='\u@\h:\w\> '
+
+set -o vi
+shopt -s histappend
+PROMPT_COMMAND='history -a'
+export HISTCONTROL=ignoredups:erasedups
+export HISTIGNORE="pwd:ls:ls -ltr:"
+export HISTSIZE=900000
+
+--Example of flushing IP addresses on multiple interfaces
+ip addr flush label "eth*"
+
+-Disable ICMP's
+
+[root@rhce5 network-scripts]# sysctl -w net.ipv4.icmp_echo_ignore_all=1
+net.ipv4.icmp_echo_ignore_all = 1
+
+[root@rhce5 network-scripts]# cat /proc/sys/net/ipv4/icmp_echo_ignore_all
+1
+
+[root@rhce5 network-scripts]# sysctl -w net.ipv4.icmp_echo_ignore_broadcasts=1
+net.ipv4.icmp_echo_ignore_broadcasts=1
+
+#Redirects
+&> file (Combines stdout and stderr to one file)
+
+>> file 2>&1 (Sends stderr to stdout through a pipe )
+
+#Cascade deletes
+userdel -r ( always run with -r )
+
+#IF userdel -r not used, the UID/GID is re-used for the future users..
+find / -nouser -o -nogroup 2>/dev/null
+
+#Usermod
+usermod -aG newgroup ( without -a , the existing groups will be removed)
+
+#Load Average vs CPU
+Divide the load-average with number of logical CPU's ( grep "model name" /proc/cpuinfo )
+
+#List all groups from the variant file (Under RepoPackage)
+cat variant.xml | xpath comps/environment/grouplist/groupid
+
+#systemd-tmpfiles 
+
+When systemd starts a system, one of the first service units launched is systemd-tmpfiles-setup. This service runs the command
+systemd-tmpfiles --create --remove.  This command reads configuration files from /usr/lib/tmpfiles.d/*.conf, /run/tmpfiles.d/*.conf and
+/etc/tmpfiles.d/*.conf
+
+#Example.
+[root@server1 demo]# cat /etc/tmpfiles.d/demo.conf
+d /var/run/demo 0700 root root 5s
+
+[root@server1 tmpfiles.d]# cd /var/run/demo/
+
+[root@server1 demo]# touch afile bfile
+
+[root@server1 demo]# ls -ltr
+total 0
+-rw-rw-r--. 1 root root 0 Nov 29 16:37 bfile
+-rw-rw-r--. 1 root root 0 Nov 29 16:37 afile
+
+[root@server1 demo]# systemd-tmpfiles --clean /etc/tmpfiles.d/demo.conf
+
+[root@server1 demo]# ls -ltr
+total 0
+
+#Sent message to terminal
+ 
+[root@lab125a ~]# echo "test" > /dev/ttyS0   
+[root@lab125a ~]# echo "You will be kicked out soon " | write root pts/0
+
+#Reset the size of the console/terminal
+virsh console lab125a
+
+[root@lab125a ~]# stty rows 80 columns 120
+
+#Commands to display screen-size/options
+stty size
+tputs columns
+
+#Terminates the shell if there's no activity on specified number of seconds, in /etc/profile.
+export TMOUT=120
+readonly TMOUT
+
+#Restore lost file from RPM
+
+--Lost file /etc/ntp.conf
+root@panchajanya:/tmp\> rpm -q --whatprovides /etc/ntp.conf
+ntp-4.2.6p5-22.el7.centos.x86_64
+
+root@panchajanya:/tmp\> rpm -qf /etc/ntp.conf
+ntp-4.2.6p5-22.el7.centos.x86_64
+
+--rpm2cpio, cpio -id => i = extract files, d= create directories
+
+root@panchajanya:/tmp/extract\> ls -ltr
+total 544
+-r--r--r--. 1 root root 556104 Sep 28 12:13 ntp-4.2.6p5-22.el7.centos.x86_64.rpm
+
+root@panchajanya:/tmp/extract\> rpm2cpio ntp-4.2.6p5-22.el7.centos.x86_64.rpm | cpio -id
+2812 blocks
+
+
+ </pre>
+								</div>
+							</div>
+
+
+							<div class="questions-container-accordion-set">
+								<a><h3> sudo and su </h3><i class="fa fa-chevron-circle-down" aria-hidden="true"></i></a>
+								<div class="content">
+									<p>  </p>
+<pre>
+
+--su - (Hypen) ensures that directory is switched to the homedirectory of new user , changes environment variables to that of new user.
+
+service : user@source
+
+--suoders reference
+http://sleepyhead.de/howto/?href=sudo
+http://toroid.org/sudoers-syntax
+
+User Host = (Runas) Command
+
+Runas
+If you also specify a target group, e.g., (postgres:postgres), sudo will accept any combination of the listed 
+users and groups (see the section on aliases below). If you specify only a target group, e.g., (:postgres),
+ sudo will accept and act on “-g postgres” but run commands only as the invoking user.
+
+ams ALL=/bin/ls, /bin/df -h /, /bin/date ""
+Double quotes implies command can be executed only without arguments.
+
+Options
+Before the command, you can specify zero or more options to control how it will be executed. The most important options are NOPASSWD (to not require a password) and SETENV 
+(to allow the user to set environment variables for the command).
+ams ALL=(ALL) NOPASSWD: SETENV: /bin/ls
+
+</pre>
+								</div>
+							</div>
+
+ 
+							<div class="questions-container-accordion-set">
+								<a><h3> Docker Quick Steps </h3><i class="fa fa-chevron-circle-down" aria-hidden="true"></i></a>
+								<div class="content">
+									<p>  </p>
+
+<pre>  
+-Docker
+
+docker search rhel7
+docker pull registry.access.redhat.com/rhel7.5
+docker images # List images
+
+[root@rhce5 certs]# docker run -i -t rhel7 bash
+[root@47abe2f93c44 /]# echo hello > /tmp/test
+[root@47abe2f93c44 /]# exit
+exit
+
+docker ps -a #Shows the container is still running.
+root@rhce5 certs]# docker ps -a
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS                      PORTS               NAMES
+47abe2f93c44        rhel7               "bash"              32 seconds ago      Exited (0) 21 seconds ago                       goofy_saha
+
+
+#Since the container was not removed, while existing - start it interactively.
+[root@rhce5 certs]# docker start -ai goofy_saha
+[root@47abe2f93c44 /]# cat /tmp/test
+hello
+
+#Baking stuff to container
+docker run -i rhel7 bash -c "yum install -y httpd; yum clean all"
+
+[root@rhce5 certs]# docker ps -a
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS                        PORTS               NAMES
+bd3b8aab438a        rhel7               "bash -c 'yum inst..."   50 seconds ago      Exited (0) 12 seconds ago                         nifty_hamilton
+47abe2f93c44        rhel7               "bash"                   3 minutes ago       Exited (127) 54 seconds ago                       goofy_saha
+
+-Commit to create a new image with httpd included
+
+[root@rhce5 certs]# docker commit -m "RHEL7 + httpd" nifty_hamilton rhel_httpd
+sha256:39116a6f88a2d786553dd8e7fe14d62e344a891d6a71a7d8e838c48f34817629
+
+[root@rhce5 certs]# docker images
+REPOSITORY                           TAG                 IMAGE ID            CREATED             SIZE
+rhel_httpd                           latest              39116a6f88a2        25 seconds ago      231 MB
+
+-p 8080:80 option will map port 8080 on the host to 80 on the container
+-d to background
+/usr/sbin/httpd -DFOREGROUND will start httpd in a very basic mode
+
+
+[root@rhce5 certs]# docker run -p 8080:80 -d rhel_httpd /usr/sbin/httpd -DFOREGROUND
+0f2eb5034da68e0d45e3d5387449af511bbfdf9afa48f27ece062862679fdb45
+
+[root@rhce5 certs]# curl -s http://localhost:8080 |grep Test
+     title>Test Page for the Apache HTTP Server on Red Hat Enterprise LinuxRed Hat Enterprise Linux Test Page
+
+</pre>
+	
+								</div>
+							</div>
+
+
+
+							<div class="questions-container-accordion-set">
+								<a><h3> RHCE Hints </h3><i class="fa fa-chevron-circle-down" aria-hidden="true"></i></a>
+								<div class="content">
+									<p>  </p>
+<pre>  
+0. Install tcp_wrappers, also enable firewall-cmd --add-serivce ssh(test specific) 
+1. Enable Services on both (iscsi requires enablement on client as well.) 
+2. Check SELINUX context and booleans ( sepolicy booleans, seinfo -t) 
+3. Add firewalld with --permanent.
+4. Install SELINUX Docs. (sepolicy manpage -a -p /usr/share/man/man8, mandb) 
+5. For Kerberos run authconfig with --update to ensure the kerberos is enabled. (Enable *SSSD* in sssd.conf, install sssd as well) 
+6. Update /etc/krb5.conf - Kerberos REALM, also update ACL on both client and server : /var/kerberos/krb5kdc/kadm5.acl
+7. When it comes to NFS, addprinc -randkey host/ , nfs/, cifs/
+8. Configure NTP/Chrony along with Kerberos and ensure the timesync before Kerberos setup.
+9. Enable nfs-secure on both server and client ( mount -o v4.2,sec=krb5p alongwith RPCNFSDARGS="-V 4.2" in /etc/sysconfig/nfs
+10.Check semanage permissive -a and back it out via -d to see if there are selinux issues (preview changes by semanage fcontext -C -l).
+11.Refer to /usr/share/doc/pam-1.1.8/txts/*listfile* for restricting logins.
+12.Add samba-client to FW on the client as well.
+13.In general add UID/GID to any users getting created for easy mapping.
+14.For NFS, if public_content_rw_t is used nfs_anon_write boolean should be enabled and 
+15.Do a nmap scan at the end to ensure the ports are open: nmap -Pn -sT dns4.intercloudzone.com
+16.Restricting a login options: /etc/nologin, /etc/securetty (console/root), /sbin/nologin (passwd file), pam_sshd(listfile), tcpd(/etc/hosts.allow or hosts.deny), sshd_config(DenyUsers/AllowUsers)
+17. Routing information doc: /usr/share/doc/initscripts-9.49.39/sysconfig.txt
+18. Apache Home Directory(chmod o+x /home/userdir or setfacl -R -m u:apache:X /home/userdir, setfacl -R -m d:u:apache:X /home/userdir)
+19. Unable to login to mysql (Worst-case, mysqld_safe --skip-grant-tables, update user set password=password('oracle') where user='root')
+20. Deny login access (/etc/securetty, /sbin/nologin, /etc/nologin, /etc/pam.d/ssh (Refer *listfiles*), sshd_config(DenyUsers))
+21. /usr/libexec/mysqld --verbose --help and mysqladmin variables (lists the current system)
+22. Add Header always set Strict-Transport-Security for HSTS under VirtualHost.
+23. ldapsearch example (ldapsearch -x cn=ldapuser01 -b dc=intercloudzone,dc=com) or ldapadd -x -w redhat -D "cn=Manager,dc=intercloudzone,dc=com" x = simple auth, b = Base DN, D = Bind DN.
+24. IP Forwarding ( net.ipv6.conf.all.forwarding and net.ipv4.ip_forward)
+25. Disable ICMPs ( sysctl -w net.ipv4.icmp_echo_ignore_all=1) or ICMP Broadcasts (sysctl -w net.ipv4.icmp_echo_ignore_broadcasts=1)
+26. HTTP: Do restorecon after copying certs/pkeys to /etc/pki/tls/certs for SSL enabling.
+27. /etc/profile is executed only on a login shell vs. /etc/bashrc are executed everytime a shell is created. So any command ot be available for sub-shell, should be in the bashrc script.
+28. smbd_anon_write and samba_share_nfs should be enabled if the context is public_content_rw_t
+29. Use subnets/IP addresses along with hostnames where ever possible, including allow/deny access for services
+30. Ensure chrony/ntp is installed/configured for nfs-secure/kerberos. Also do restorecon /etc/krb5.keytab. Install kerberos-workstation as well.
+31. Add ssh for firewalld/systemctl enable ssh.
+32. Samba booleans, also ensure the directory permissions are in tact.
+33. Note: semanage fcontext, should be followed by restorecon.
+34. Samba mount options, ntlmssp and multiuser.
+35. Do chown for named.
+36. httpd manuals of interest, auth.html, sections.html.
+37. Careful with AllowUsers implicitly all the rest are denied.
+38. ISCSI add service and also add port to firewalld and enable the iscsi, iscsiadm on the client.
+39. _netdev important in the fstab and also UUID.
+40. Caching DNS server, ensure the resolv.conf is updated.
+41. To enable Samba home directories do enable on both server and client. 
+setsebool -P use_samba_home_dirs on
+setsebool -P samba_enable_home_dirs on
+42. For NFS/Kerberos, install the chrony, add server to ntp server and also do timedate-ctl set-ntp true 
+43. In tcp_wrappers only for IPv4, the CIDR notation is NOT supported. Adhere to either of these options: ALL : 192.168.0.0/255.255.254.0 or ALL : 192.168.
+44. In samba hosts allow can be 192.168., 127.0 comma separated 
+45. If man pages screws/rolls over : man ls | col -b > /tmp/ls.lst. Another option is to export LESS="-XF"
+
+</pre>
+	
+								</div>
+							</div>
+
+
+
+
+
+ 

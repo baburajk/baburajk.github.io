@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head> <script data-ad-client="ca-pub-2393111531899119" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script> 
+	<meta charset="utf-8">
+	<title>intercloudzone</title>
+	<meta name="description" content="">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<meta property="og:image" content="path/to/image.jpg">
+<!-- favicon -->
+<link rel="shortcut icon" href="img/favicon/favicon.ico" type="image/x-icon">
+<link rel="apple-touch-icon" href="img/favicon/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="72x72" href="img/favicon/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="114x114" href="img/favicon/apple-touch-icon-114x114.png">
+<!-- favicon -->
+<!-- build:css -->
+<link rel="stylesheet" href="css/libs/bootstrap.min.css">
+<link rel="stylesheet" href="css/libs/font-awesome.min.css">
+<link rel="stylesheet" href="css/libs/animate.min.css">
+<link rel="stylesheet" href="css/libs/slick.css">
+<link rel="stylesheet" href="css/libs/magnific-popup.css">
+
+<link rel="stylesheet" href="css/main.css">
+<link rel="stylesheet" href="css/media.css">
+<!-- endbuild -->
+	<!-- Chrome, Firefox OS and Opera -->
+	<meta name="theme-color" content="#000">
+	<!-- Windows Phone -->
+	<meta name="msapplication-navbutton-color" content="#000">
+	<!-- iOS Safari -->
+	<meta name="apple-mobile-web-app-status-bar-style" content="#000">
+	<!-- <style>body { opacity:s 0; overflow-x: hidden; } html { background-color: #fff; }</style> -->
+</head>
+<body data-spy="scroll" data-target=".navbar" data-offset="50" class="loaded" link="blue">
+<!-- Preloader -->
+<div class="preloader">
+	<div class="cssload-spinner">
+		<div class="cssload-ball cssload-ball-1"></div>
+		<div class="cssload-ball cssload-ball-2"></div>
+		<div class="cssload-ball cssload-ball-3"></div>
+		<div class="cssload-ball cssload-ball-4"></div>
+	</div>
+</div>
+<!-- Preloader -->
+<div class="site-content">
+	<!-- Naviigation -->
+	<div class="navbar-wrap">
+		<div class="navbar">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-12">
+						<nav class="navbar-menu">
+							<div class="navbar-header">
+								<button class="collapsed navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-example-js-navbar-scrollspy">
+									<span class="icon-bar"></span>
+									<span class="icon-bar"></span>
+									<span class="icon-bar"></span>
+								</button>
+							</div>
+							 
+							<div class="navbar-full">
+								<div class="collapse bs-example-js-navbar-scrollspy">
+									<ul class="nav navbar-nav">
+										<li style="display: none;"><a></a></li>
+										<li><a href="http://www.linkedin.com/in/baburajkallarakkal">About Me</a></li>
+										<li><a href="http://padmavyuha.blogspot.com/">Blog</a></li>
+										<li><a href="https://sourceforge.net/projects/oraclerman/">Projects</a></li>
+										<li><a href="https://hub.docker.com/u/baburaj/">Docker</a></li>
+										<li><a href="mailto:raj.anju@gmail.com">Contact Me</a></li>
+										<li>
+										</li>
+									</ul>
+									<!-- btn -->
+									<div class="nav-button main-button">
+										<a href="#" class="btn btn-nav btn-block" role="button">
+											Site is in Beta!
+										</a>
+									</div>
+									<!-- btn -->
+								</div>
+							</div>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Naviigation -->
+<!-- Header -->
+	<div class="menu-sticky"></div>
+
+ 
+	<!-- Screen-one -->
+	<div class="screen-one">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="screen-one-title">
+						<h2>IPC - Inter Process Communication </h2>
+					</div>
+				</div>
+			</div>
+		</div>
+	 
+		<div class="container">
+					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0s">
+						<span>01.</span>
+						<div class="screen-one-item-container">
+							<h3>signals, reptyr, screen, huponexit, nohup, bg, fg </h3>
+							<p> Moving an active process to another terminal or screen session. </p>
+							<p> 
+Source: <a href="https://en.wikipedia.org/wiki/Job_control_(Unix)#Implementation">Wikipedia</a>
+
+Shell keeps a list of jobs in a job table (jobs -l) and when a user logs out of session the shell sends a SIGHUP to all jobs in the job table.
+
+When a job is backgrouned via 'CTRL+z', effectively a SIGTSTP (Terminal Stop) is sent to the process and so that the process is stopped and controll is returned to the shell.
+
+The next step is usually a 'bg' (Backgrounding), this effectively sends out a SIGCONT to the job, so that it's resumed in the background. It can be brought to the foreground
+using fg <jobid> (fg -l will list the job numbers)
+
+But the job is still in the jobtable and as a result if the user session is killed/logged out, the SIGHUP sent by shell to this job will be effective and thus 
+the process will get terminated.
+
+The disown command is then used to remove the job from job table, so that when session ends the process will continue to run in the background.
+
+Ideally the jobs should be killed by specifying the jobid - but that can be done only from the shell/terminal that's been logged in.
+
+nohup can also be used to effectively separate the process from the terminal. It redirects the stdin and stdout to nohup.out and prevents the process from receiving SIGHUP from shell however
+it will not put the process to background so will need to be backgrounded using & 
+
+One more effective way is to enable the huponexit option, which will also effectively disables the SIGHUP to be sent to the process's upon exiting the shell. (shopt huponexit)
+<br>
+<br>
+
+</p>
+<pre>
+
+#Initiate a wget/long running job with rate-limit so not to fill the files system up.
+
+[root@rhce6 data]# wget http://mirror.chpc.utah.edu/pub/centos/7/isos/x86_64/CentOS-7-x86_64-DVD-1804.iso --limit-rate=100
+
+#CTRL+z or send SIGTSTP (Terminal STOP)
+[root@rhce6 ~]# kill -s SIGTSTP $(pgrep wget)
+
+[root@rhce6 data]# jobs -l
+[1]+  1451 Stopped                 wget http://mirror.chpc.utah.edu/pub/centos/7/isos/x86_64/CentOS-7-x86_64-DVD-1804.iso --limit-rate=100
+
+[root@rhce6 ~]# echo $SSH_TTY
+/dev/pts/0
+
+#Run 'bg' or send SIGCONT signal to resume the process in background.
+kill -s SIGCONT $(pgrep wget)
+
+#Disown the job using the jobid (jobs -l)
+disown %1 
+
+#The jobs can be re-attached to a different terminal or screen session (here it's terminal-1) using reptyr
+[root@rhce6 ~]# echo $SSH_TTY
+/dev/pts/1
+
+#Install reptyr
+[root@rhce6 ~]# wget http://dl.fedoraproject.org/pub/epel/7/x86_64/Packages/r/reptyr-0.5-1.el7.x86_64.rpm
+[root@rhce6 ~]# yum localinstall reptyr-0.5-1.el7.x86_64.rpm -y
+
+[root@rhce6 ~]# reptyr $(pgrep wget)
+ 0% [                                                                                        ] 96,860       100B/s  eta 517d
+
+
+# To attach the job to a new screen session, create a socket.
+screen -S termxa
+
+[root@rhce6 ~]# screen -list
+There is a screen on:
+        1551.termxa     (Attached)
+1 Socket in /var/run/screen/S-root.
+
+[root@rhce6 ~]# echo $STY
+1551.termxa
+
+#The process can be attached with repeater(REPTYR) like below and to detach screen use CTRL+A and CTRL+D
+[root@rhce6 ~]# reptyr $(pgrep wget)
+ 0% [                                                                                        ] 216,398      100B/s  eta 517d
+ 
+
+#Backgrounding, redirection can also be accomplished by using huponexit.
+
+[root@rhce6 data]# shopt huponexit
+huponexit      	off
+
+#Enable it.
+[root@rhce6 data]# shopt -s huponexit
+
+[root@rhce6 data]# shopt huponexit
+huponexit      	on
+
+[root@rhce6 data]# exit
+logout
+Connection to rhce6 closed.
+
+#Jobs are still running even after the shell was exited.
+[root@rhce6 data]# echo $SSH_TTY
+/dev/pts/1
+
+[root@rhce6 data]# pgrep wget
+1924
+1926
+
+
+</pre>
+						</div>
+				</div>
+
+
+<!-- Contact -->
+<a class="anchor" id="contact"></a>
+
+<section class="contact">
+		<div class="contact-wrap">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-12 __web-inspector-hide-shortcut__">
+						<div class="contact-title">
+							<h2></h2>
+							<p> 
+								<br class="disable"></p>
+						</div>
+						<!-- /.contact-title -->
+					</div>
+					<!-- /.col-md-12 -->
+					
+					<!-- /.col-md-10 -->
+				</div>
+				<!-- /.row -->
+			</div>
+			<!-- /.container -->
+		</div>
+		<!-- /.directions-wrap -->
+	</section>
+
+</div>
+<!-- Site content -->
+
+<!-- Footer -->
+<a class="anchor" id="footer"></a>
+<footer class="footer" style="background-image: url(img/footer-bg.jpg); background-position:center; background-size: cover; background-repeat:no-repeat;">
+	<div class="footer-wrap">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="footer-title">
+						<h2>www.intercloudzone.com</h2>
+						<ul class="footer-icons">
+						<script src="//platform.linkedin.com/in.js" type="text/javascript"> lang: en_US</script>
+						<script type="IN/Share" data-url="http://www.intercloudzone.com/ipc.html"></script>
+						</ul>
+						<p> </p>
+					</div>
+					<!-- /.footer-title -->
+				</div>
+				<!-- /.col-md-12 -->
+			</div>
+			<!-- /.row -->
+		</div>
+		<!-- /.container -->
+	</div>
+	<!-- /.directions-wrap -->
+</footer>
+<!-- Footer -->
+
+
+
+<!-- links -->
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?key=AIzaSyDDuC8pr6YqiBr9wqfhNIJ56AqwzWKhiQo"></script>
+<!-- build:js -->
+
+ 
+
+<script src="js/libs/jquery.min.js"></script>
+<script type="text/javascript" src="js/libs/bootstrap.min.js"></script>
+<script type="text/javascript" src="js/libs/waypoints.min.js"></script>
+<script type="text/javascript" src="js/libs/slick.min.js"></script>
+<script type="text/javascript" src="js/libs/magnific-popup.min.js"></script>
+
+<script type="text/javascript" src="js/common.js"></script>
+<!-- endbuild -->
+<!-- links -->
+</body>
+</html>

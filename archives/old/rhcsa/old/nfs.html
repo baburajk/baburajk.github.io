@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="Generator" content="EditPlus®">
+  <meta name="Author" content="">
+  <meta name="Keywords" content="">
+  <meta name="Description" content="">
+  <title>Notes</title>
+ <link rel="stylesheet" href="css/stylesheet1.css">
+ <link rel="stylesheet" href="css/stylesheet2.css">
+ <link rel="stylesheet" href="css/w3.css">
+
+ <style type="text/css" >
+	  
+ </style>
+<script Language="Javascript">
+function toggle() {
+    var x = document.getElementById('contents');
+    if (x.style.display === 'none') {
+		document.getElementById("togglelink").text = "hide"
+        x.style.display = 'block';
+    } else {
+        x.style.display = 'none';
+		document.getElementById("togglelink").text = "show"
+    }
+}
+</script>
+
+
+ </head>
+	<body> 
+		<div id="nav">
+			<div id="jumplinks"> Reference Notes/Hints </div>
+		</div>
+    
+		<div id="body">
+			<div id="content" class="mw-body" role="main">
+ 				<div id="toc" class="toc"><div id="toctitle"><h2>Contents</h2><span class="toctoggle">&nbsp;[<a href="javascript:toggle()" id="togglelink">hide</a>]&nbsp;</span></div>
+					<div id="contents">
+						<ul>
+							<li> <a href="#nfsconfig">	 <span class="tocnumber">	1 </span> <span class="toctext"> NFS Configuration 	</span></a> </li>
+							<li> <a href="#nfsshares">  <span class="tocnumber">	2 </span> <span class="toctext"> NFS Shares 	</span></a> </li>
+							<li> <a href="#Denmark"> <span class="tocnumber">	3 </span> <span class="toctext"> Denmark 	</span></a> </li>
+							<li> <a href="#India"> 	 <span class="tocnumber">	4 </span> <span class="toctext"> India  	</span></a> </li>
+						</ul>
+					</div>
+				</div>
+
+				<style>
+					html,body,h1,h2,h3,h4,h5,h6 { font-family: "Comic Sans MS", cursive, sans-serif; }
+				</style>
+ 
+
+
+<div class="w3-container">
+	<h1><span class="mw-headline" id="nfsconfig"> NFS Configuration </h1>	
+<p>
+
+</p>
+
+<pre> 
+
+firewall-cmd add-service nfs --add-service mountd --add-service rpc-bind
+
+DEbug NFS
+automountd -f d
+
+
+nfsd server process runs on port 2049
+rpcbind runs on both server & client.
+rpc.quotad runs on both the server and client. 
+
+
+--Difference between resize2fs vs xfs_grow is former uses the device and later uses the mountpoint.
+
+
+=> On Server...
+
+--Space on the /etc/exports
+
+/home bob.example.com(rw)
+/home bob.example.com (rw)
+
+The first line allows only users from bob.example.com read/write access to the /home directory. The second line allows users from bob.example.com to mount the directory as read-only (the default), while the rest of the world can mount it read/write.
+
+
+yum install nfs-utils
+systemctl start rpcbind nfs nfs-server
+
+[root@lab125a ~]# cat /etc/exports
+[root@lab125a ~]# cat /var/lib/nfs/etab
+[root@lab125a ~]# cat /proc/fs/nfs/exports
+# Version 1.1
+# Path Client(Flags) # IPs
+/etc/sysconfig/nfs
+
+
+[root@lab125a ~]# cat /etc/exports
+/nfsro	lab125a(r,no_root_squash)
+/nfsrw  lab125a(rw,all_squash)
+
+
+
+[root@lab125a ~]# exportfs -avr
+exporting lab125a:/nfsrw
+exporting lab125a:/nfsro
+
+
+[root@lab125a ~]# vi /etc/exports.d/nfsdummy0.exports
+[root@lab125a ~]# exportfs -avr
+exporting lab125a:/nfsdummy0
+exporting lab125a:/nfsrw
+exporting lab125a:/nfsro
+[root@lab125a ~]# cat /etc/exports.d/nfsdummy0.exports
+/nfsdummy0  lab125a(rw,no_root_squash)
+
+=> Unmount all
+
+[root@lab125a ~]# exportfs -vau
+[root@lab125a ~]# cat /var/lib/nfs/etab
+
+=> Turn selinux context off.
+
+[root@lab125a ~]# setsebool nfs_export_all_ro=0
+[root@lab125a ~]# set -o vi
+[root@lab125a ~]# setsebool nfs_export_all_rw=0
+[root@lab125a ~]# getsebool -a | egrep '^nfs|nfs_use'
+nfs_export_all_ro --> off
+nfs_export_all_rw --> off
+nfsd_anon_write --> off
+
+
+On Client
+systemctl enable rpcbind
+
+=> Test-1
+
+[root@lab125a network-scripts]# cat /var/lib/nfs/etab
+/nfsdummy0	lab125a(rw,sync,wdelay,hide,nocrossmnt,secure,no_root_squash,no_all_squash,
+no_subtree_check,secure_locks,acl,no_pnfs,anonuid=65534,anongid=65534,sec=sys,rw,secure,no_root_squash,no_all_squash)
+/nfsrw	lab125a(rw,sync,wdelay,hide,nocrossmnt,secure,
+root_squash,all_squash,no_subtree_check,secure_locks,acl,no_pnfs,anonuid=65534,anongid=65534,sec=sys,rw,secure,root_squash,all_squash)
+/nfsro	lab125a(ro,sync,wdelay,hide,nocrossmnt,secure,no_root_squash,
+no_all_squash,no_subtree_check,secure_locks,acl,no_pnfs,anonuid=65534,anongid=65534,sec=sys,ro,secure,no_root_squash,no_all_squash)
+
+[root@lab130a network-scripts]# mount -v -t nfs -o rw 192.168.2.50:/nfsro /dataro
+mount.nfs: timeout set for Mon Aug 21 14:45:53 2017
+mount.nfs: trying text-based options 'vers=4,addr=192.168.2.50,clientaddr=192.168.2.53'
+mount.nfs: mount(2): Permission denied
+mount.nfs: access denied by server while mounting 192.168.2.50:/nfsro
+
+
+[root@lab125a network-scripts]# vi /etc/exports
+
+[root@lab125a network-scripts]# exportfs -vr
+exporting lab125a:/nfsdummy0
+exporting lab125a:/nfsrw
+exporting *:/nfsro
+
+[root@lab125a network-scripts]# touch afile /nfsr
+nfsro/ nfsrw/
+[root@lab125a network-scripts]# touch afile /nfsro/^C
+[root@lab125a network-scripts]# cd /nfsro/
+[root@lab125a nfsro]# touch lab125a-file1
+[root@lab125a nfsro]# cat /etc/exports
+/nfsro	*(ro,no_root_squash)
+/nfsrw  lab125a(rw,all_squash)
+
+[root@lab130a network-scripts]# mount -v -t nfs -o rw 192.168.2.50:/nfsro /dataro
+mount.nfs: timeout set for Mon Aug 21 15:36:10 2017
+mount.nfs: trying text-based options 'vers=4,addr=192.168.2.50,clientaddr=192.168.2.53'
+[root@lab130a network-scripts]# ls -ltr /dataro/
+total 0
+-rw-r--r--. 1 root root 0 Aug 21 15:34 lab125a-file1
+
+[root@lab130a network-scripts]# mount -v -t nfs -o rw 192.168.2.50:/nfsro /dataro
+mount.nfs: timeout set for Mon Aug 21 15:40:07 2017
+mount.nfs: trying text-based options 'vers=4,addr=192.168.2.50,clientaddr=192.168.2.53'
+[root@lab130a network-scripts]# ls -ltr /dataro/
+total 0
+-rw-r--r--. 1 root root 0 Aug 21 15:34 lab125a-file1
+
+The format of the /etc/exports file is very precise, particularly in regards to use of the space character. Remember to always separate exported file systems from hosts and hosts from one another with a space character. However, there should be no other space characters in the file except on comment lines.
+For example, the following two lines do not mean the same thing:
+/home bob.example.com(rw) 
+The first line allows only users from bob.example.com read/write access to the /home directory. 
+
+
+/home bob.example.com (rw)
+The second line allows users from bob.example.com to mount the directory as read-only (the default), while the rest of the world can mount it read/write.
+
+
+Be careful when using wildcards with fully qualified domain names, as they tend to be more exact than expected. For example, the use of *.example.com as a wildcard allows sales.example.com to access an exported file system, but not bob.sales.example.com. To match both possibilities both *.example.com and *.*.example.com must be specified.
+
+
+[root@lab130a data]# cat /proc/fs/nfsfs/servers
+NV SERVER   PORT USE HOSTNAME
+v4 c0a80232  801   1 192.168.2.50
+
+</pre>
+
+</div>
+
+ 	
+	
+<div class="w3-container">
+	<h1><span class="mw-headline" id="nfsshares"> NFS Shares </h1>	
+<p>
+
+</p>
+
+<pre> 
+
+[root@lab125a ~]# groupadd nfsgroup -g 7777
+[root@lab125a ~]# grep 7777 /etc/group
+nfsgroup:x:7777:
+[root@lab125a ~]# usermod user1 -G nfsgroup
+usermod: user 'user1' does not exist
+[root@lab125a ~]# useradd user1 -G nfsgroup
+[root@lab125a ~]# useradd user2 -G nfsgroup
+[root@lab125a ~]# useradd user3 -G nfsgroup
+[root@lab125a ~]# cat /etc/passwd | grep user
+tss:x:59:59:Account used by the trousers package to sandbox the tcsd daemon:/dev/null:/sbin/nologin
+rpcuser:x:29:29:RPC Service User:/var/lib/nfs:/sbin/nologin
+user1:x:1001:1001::/home/user1:/bin/bash
+user2:x:1002:1002::/home/user2:/bin/bash
+user3:x:1003:1003::/home/user3:/bin/bash
+[root@lab125a ~]# cat /etc/gr
+groff/     group      group-     grub2.cfg  grub.d/
+[root@lab125a ~]# cat /etc/group | grep nfs
+nfsnobody:x:65534:
+nfsgroup:x:7777:user1,user2,user3
+
+[root@lab125a ~]# chown nfsnobody:nfsgroup /nfsexports/data -R
+
+#Enable set gid bit
+
+[root@lab125a ~]# chmod g+s /nfsexports/data/ -v
+mode of ‘/nfsexports/data/’ changed from 0755 (rwxr-xr-x) to 2755 (rwxr-sr-x)
+
+#On Client
+
+[root@lab130a ~]# groupadd -g 7777 nfsgroup
+[root@lab130a ~]# useradd user1; useradd user2; useradd user3
+[root@lab130a ~]# echo oracle | passwd user1 --stdin
+Changing password for user user1.
+
+#Setting ACL's
+
+[root@lab125a nfsexports]# getfacl data/
+# file: data/
+# owner: nfsnobody
+# group: nfsgroup
+# flags: -s-
+user::rwx
+group::rwx
+group:nfsgroup:r--
+mask::rwx
+other::r-x
+
+Client was still able to touch file
+
+[root@lab125a nfsexports]# setfacl -x g:nfsgroup  data
+
+# 2nd try..
+
+[root@lab125a nfsexports]# setfacl -m m:r data/
+[root@lab125a nfsexports]# getfacl -c data/
+user::rwx
+group::rwx			#effective:r--
+mask::r--
+other::r-x
+
+
+[user1@lab130a ~]$ cd /nfsmount/
+-bash: cd: /nfsmount/: Permission denied
+
+
+[root@lab125a nfsexports]# setfacl -x m data
+[root@lab125a nfsexports]# getfacl -c data/
+user::rwx
+group::rwx
+other::r-x
+
+[user1@lab130a ~]$ cd /nfsmount/
+[user1@lab130a nfsmount]$ touch dfile
+touch: cannot touch ‘dfile’: Permission denied
+
+#Autofs mounting
+
+[root@lab130a etc]# tail -2 auto.master
++auto.master
+/-	/etc/auto.direct
+
+[root@lab130a etc]# cat auto.direct
+/autodir 192.168.2.50:/nfsexports/data
+
+
+[root@lab130a etc]# df -hT
+Filesystem              Type      Size  Used Avail Use% Mounted on
+/dev/mapper/vgos-lvroot xfs       5.0G  1.1G  4.0G  22% /
+devtmpfs                devtmpfs  487M     0  487M   0% /dev
+tmpfs                   tmpfs     497M     0  497M   0% /dev/shm
+tmpfs                   tmpfs     497M  6.7M  490M   2% /run
+tmpfs                   tmpfs     497M     0  497M   0% /sys/fs/cgroup
+/dev/mapper/vgos-lvhome xfs       3.0G   33M  3.0G   2% /home
+/dev/vda1               xfs       509M  125M  384M  25% /boot
+tmpfs                   tmpfs     100M     0  100M   0% /run/user/0
+
+
+[root@lab130a etc]# cd /autodir/
+[root@lab130a autodir]# ls -ltr
+total 116
+-rw-rw-r--. 1 user2 nfsgroup      0 Aug 22 15:50 bfile
+-rw-rw-r--. 1 user2 nfsgroup      0 Aug 22 16:06 cfile
+-rw-rw-r--. 1 user4 nfsgroup      0 Aug 22 16:20 user4
+-rw-r--r--. 1 root  nfsgroup      0 Aug 22 19:04 dfile
+-rwxr-xr-x. 1 root  root     117616 Aug 22 20:26 ls
+-rw-rw-r--. 1 user1 nfsgroup      0 Aug 22 20:35 afile
+-rw-r--r--. 1 root  nfsgroup      0 Aug 22 20:35 test
+[root@lab130a autodir]# df -hT
+Filesystem                    Type      Size  Used Avail Use% Mounted on
+/dev/mapper/vgos-lvroot       xfs       5.0G  1.1G  4.0G  22% /
+devtmpfs                      devtmpfs  487M     0  487M   0% /dev
+tmpfs                         tmpfs     497M     0  497M   0% /dev/shm
+tmpfs                         tmpfs     497M  6.7M  490M   2% /run
+tmpfs                         tmpfs     497M     0  497M   0% /sys/fs/cgroup
+/dev/mapper/vgos-lvhome       xfs       3.0G   33M  3.0G   2% /home
+/dev/vda1                     xfs       509M  125M  384M  25% /boot
+tmpfs                         tmpfs     100M     0  100M   0% /run/user/0
+192.168.2.50:/nfsexports/data nfs4      5.0G  1.1G  4.0G  22% /autodir
+
+#Error on server for direct map
+
+Aug 23 20:58:28 lab125a setroubleshoot: failed to retrieve rpm info for /dev/hugepages
+Aug 23 20:58:28 lab125a setroubleshoot: SELinux is preventing /usr/sbin/rpc.mountd from read access on the directory /dev/hugepages. For complete SELinux messages. run sealert -l 1dc88cd4-dadc-4f1d-b124-5c850b707e95
+Aug 23 20:58:28 lab125a python: SELinux is preventing /usr/sbin/rpc.mountd from read access on the directory /dev/hugepages.#012#012*****  Plugin catchall_boolean (89.3 confidence) suggests   ******************#012#012If you want to allow nfs to export all ro#012Then you must tell SELinux about this by enabling the 'nfs_export_all_ro' boolean.#012You can read 'None' man page for more details.#012Do#012setsebool -P nfs_export_all_ro 1#012#012*****  Plugin catchall (11.6 confidence) suggests   **************************#012#012If you believe that rpc.mountd should be allowed read access on the hugepages directory by default.#012Then you should report this as a bug.#012You can generate a local policy module to allow this access.#012Do#012allow this access for now by executing:#012# ausearch -c 'rpc.mountd' --raw | audit2allow -M my-rpcmountd#012# semodule -i my-rpcmountd.pp#012
+Aug 23 21:00:01 lab125a systemd: Started Session 76 of user root.
+Aug 23 21:00:01 lab125a systemd: Starting Session 76 of user root.
+
+[root@lab125a ~]# sealert -l 1dc88cd4-dadc-4f1d-b124-5c850b707e95
+SELinux is preventing /usr/sbin/rpc.mountd from read access on the directory /dev/hugepages.
+
+*****  Plugin catchall_boolean (89.3 confidence) suggests   ******************
+
+If you want to allow nfs to export all ro
+Then you must tell SELinux about this by enabling the 'nfs_export_all_ro' boolean.
+You can read 'None' man page for more details.
+Do
+setsebool -P nfs_export_all_ro 1
+
+*****  Plugin catchall (11.6 confidence) suggests   **************************
+
+If you believe that rpc.mountd should be allowed read access on the hugepages directory by default.
+Then you should report this as a bug.
+You can generate a local policy module to allow this access.
+Do
+allow this access for now by executing:
+# ausearch -c 'rpc.mountd' --raw | audit2allow -M my-rpcmountd
+# semodule -i my-rpcmountd.pp
+
+
+Additional Information:
+Source Context                system_u:system_r:nfsd_t:s0
+Target Context                system_u:object_r:hugetlbfs_t:s0
+Target Objects                /dev/hugepages [ dir ]
+Source                        rpc.mountd
+Source Path                   /usr/sbin/rpc.mountd
+Port                          <Unknown>
+Host                          lab125a
+Source RPM Packages
+Target RPM Packages
+Policy RPM                    selinux-policy-3.13.1-102.el7_3.16.noarch
+Selinux Enabled               True
+Policy Type                   targeted
+Enforcing Mode                Enforcing
+Host Name                     lab125a
+Platform                      Linux lab125a 3.10.0-327.el7.x86_64 #1 SMP Thu Nov
+                              19 22:10:57 UTC 2015 x86_64 x86_64
+Alert Count                   31
+First Seen                    2017-08-22 15:46:57 CDT
+Last Seen                     2017-08-23 20:57:39 CDT
+Local ID                      1dc88cd4-dadc-4f1d-b124-5c850b707e95
+
+Raw Audit Messages
+type=AVC msg=audit(1503539859.586:959): avc:  denied  { read } for  pid=1514 comm="rpc.mountd" name="/" dev="hugetlbfs" ino=11655 scontext=system_u:system_r:nfsd_t:s0 tcontext=system_u:object_r:hugetlbfs_t:s0 tclass=dir
+
+
+Hash: rpc.mountd,nfsd_t,hugetlbfs_t,dir,read
+
+
+=> Auto fs home directory mounting.
+[root@lab125a ~]# exportfs -avr
+exporting 192.168.2.53:/home
+exporting 192.168.2.53:/nfsexports/data
+[root@lab125a ~]# showmount -e
+Export list for lab125a:
+/home            192.168.2.53
+/nfsexports/data 192.168.2.53
+
+
+=>On Client
+[root@lab130a etc]# tail -2 auto.master
+/netfs  auto.home
+
+
+
+=> /etc/mtab
+-hosts /net autofs rw,relatime,fd=13,pgrp=2605,timeout=300,minproto=5,maxproto=5,indirect 0 0
+auto.home /netfs autofs rw,relatime,fd=19,pgrp=2605,timeout=300,minproto=5,maxproto=5,indirect 0 0
+
+
+[root@lab130a kuttu]# pwd
+/netfs/ 
+
+[root@lab130a etc]# cat auto.home
+kuttu	192.168.2.50:/home/kuttu
+kannan	192.168.2.50:/home/kannan
+
+
+[root@lab130a kuttu]# cd kuttu
+
+/var/log/messages 
+
+Aug 24 08:37:37 lab130a automount[2605]: mount_mount: mount(nfs): calling mkdir_path /netfs/kuttu
+Aug 24 08:37:37 lab130a automount[2605]: mount_mount: mount(nfs): calling mount -t nfs 192.168.2.50:/home/kuttu /netfs/kuttu
+Aug 24 08:37:37 lab130a automount[2605]: spawn_mount: mtab link detected, passing -n to mount
+
+
+
+
+</pre>
+
+	
+</body>
+</html>

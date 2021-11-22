@@ -1,0 +1,176 @@
+<html lang="en-GB"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<title>Linux, Security, and Networking</title>
+<style type="text/css">
+img.wp-smiley,
+img.emoji {
+  display: inline !important;
+  border: none !important;
+  box-shadow: none !important;
+  height: 1em !important;
+  width: 1em !important;
+  margin: 0 .07em !important;
+  vertical-align: -0.1em !important;
+  background: none !important;
+  padding: 0 !important;
+}
+</style>
+<link rel="stylesheet" id="style-css" href="./index_files/style.css" type="text/css" media="all">
+<style type="text/css" id="custom-background-css">
+body.custom-background { background-color: #eaeaea; }
+</style>
+<script Language="Javascript">
+function toggle() {
+    var x = document.getElementById('contents');
+    if (x.style.display === 'none') {
+    document.getElementById("togglelink").text = "hide"
+        x.style.display = 'block';
+    } else {
+        x.style.display = 'none';
+    document.getElementById("togglelink").text = "show"
+    }
+}
+</script>
+<body>
+
+<div id="menu">
+  <ul>
+    <li class="first"><a href="http://www.intercloudzone.com" accesskey="1" title="">Home</a></li>
+    <li><a href="http://sourceforge.net/projects/oraclerman/" accesskey="2" title="">OpenSource</a></li>
+    <li><a href="http://padmavyuha.blogspot.com/" accesskey="3" title="">Blogs</a></li>
+    <li><a href="http://www.linkedin.com/in/baburajkallarakkal" accesskey="4" title="">Profile</a></li>
+  </ul>
+</div>
+<hr />
+ 
+ <body class="post-template-default single single-post postid-6607 single-format-standard custom-background">
+
+<div id="wrap">
+
+<div id="page" class="hfeed site">
+  <!--  <header id="masthead" class="site-header" role="banner"> -->
+  <header id="masthead" class="site-header">
+  </header><!-- #masthead .site-header -->
+
+  <div id="main" class="site-main">
+
+    <div id="primary" class="content-area">
+      <div id="content" class="site-content" role="main">
+
+  <div id="body">
+      <div id="content" class="mw-body" role="main">
+        <div id="toc" class="toc"><div id="toctitle"><h2>Contents</h2><span class="toctoggle">&nbsp;[<a href="javascript:toggle()" id="togglelink">hide</a>]&nbsp;</span></div>
+          <div id="contents">
+            <ul>
+
+    
+
+
+
+        <li> <a href="http://intercloudzone.com/block-nfs-hacking-using-ebtables.html" > <span class="tocnumber"> 1 </span> <span class="toctext"> NFS Hacking using NAT (Network-Address-Translation)  [ Redhat/CentOS 7.x    </span></a> </li>
+              <li> <a href="http://intercloudzone.com/commands.html">  <span class="tocnumber"> 2 </span> <span class="toctext"> Quick command reference.    </span></a> </li>
+              <li> <a href="#SAMBA">   <span class="tocnumber"> 3 </span> <span class="toctext"> Samba  </span></a> </li>
+            
+
+            </ul>
+          </div>
+        </div>
+
+
+ 
+ <body class="post-template-default single single-post postid-6607 single-format-standard custom-background">
+
+<div id="wrap">
+
+<div id="page" class="hfeed site">
+  <!--  <header id="masthead" class="site-header" role="banner"> -->
+  <header id="masthead" class="site-header">
+  </header><!-- #masthead .site-header -->
+
+  <div id="main" class="site-main">
+
+    <div id="primary" class="content-area">
+      <div id="content" class="site-content" role="main">
+
+  <div id="body">
+      <div id="content" class="mw-body" role="main">
+        <div id="toc" class="toc"><div id="toctitle"><h2>Contents</h2><span class="toctoggle">&nbsp;[<a href="javascript:toggle()" id="togglelink">hide</a>]&nbsp;</span></div>
+          <div id="contents">
+            <ul>
+              <li> <a href="#DNS">   <span class="tocnumber"> 1 </span> <span class="toctext"> DNS    </span></a> </li>
+              <li> <a href="#SELINUX">   <span class="tocnumber"> 2 </span> <span class="toctext"> SELinux   </span></a> </li>
+              <li> <a href="#SAMBA">   <span class="tocnumber"> 3 </span> <span class="toctext"> Samba  </span></a> </li>
+              <li> <a href="#POSTFIX">   <span class="tocnumber"> 4 </span> <span class="toctext"> Postfix  </span></a> </li>
+              <li> <a href="#NTP">   <span class="tocnumber"> 5 </span> <span class="toctext"> NTP  </span></a> </li>
+              <li> <a href="#KERBEROS">   <span class="tocnumber"> 6 </span> <span class="toctext"> Kerberos  </span></a> </li>
+              <li> <a href="#NETWORKING">   <span class="tocnumber"> 7 </span> <span class="toctext"> Networking  </span></a> </li>
+              <li> <a href="#APACHE">   <span class="tocnumber"> 8 </span> <span class="toctext"> Apache  </span></a> </li>
+              <li> <a href="#MARIADB">   <span class="tocnumber"> 9 </span> <span class="toctext"> MariaDB  </span></a> </li>
+              <li> <a href="#ISCSI">   <span class="tocnumber"> 10 </span> <span class="toctext"> ISCSI  </span></a> </li>
+              <li> <a href="#BOOT">   <span class="tocnumber"> 11 </span> <span class="toctext"> Boot  </span></a> </li>
+              <li> <a href="#LVM">   <span class="tocnumber"> 12 </span> <span class="toctext"> LVM  </span></a> </li>
+              <li> <a href="#NFS">  <span class="tocnumber">  13 </span> <span class="toctext"> NFS   </span></a> </li>
+              <li> <a href="#VIRTUALIZATION">  <span class="tocnumber">  14 </span> <span class="toctext"> Virtualization   </span></a> </li>
+              <li> <a href="#SECURITY">  <span class="tocnumber">  15 </span> <span class="toctext"> Security   </span></a> </li>
+              <li> <a href="#KICKSTART">  <span class="tocnumber">  16 </span> <span class="toctext"> Kickstart   </span></a> </li>
+              <li> <a href="#DHCP">  <span class="tocnumber">  17 </span> <span class="toctext"> DHCP   </span></a> </li>
+              <li> <a href="#INTERFACES">  <span class="tocnumber">  18 </span> <span class="toctext"> Interfaces   </span></a> </li>
+              <li> <a href="#STORAGE">  <span class="tocnumber">  19 </span> <span class="toctext"> Storage   </span></a> </li>
+             <li> <a href="#VNET">  <span class="tocnumber">  20 </span> <span class="toctext"> Virtual Networking   </span></a> </li>
+              <li> <a href="#GENERIC">  <span class="tocnumber">  21 </span> <span class="toctext"> Generic   </span></a> </li>
+              <li> <a href="#QUESTIONS">  <span class="tocnumber">  22 </span> <span class="toctext"> Questions   </span></a> </li>
+              <li> <a href="#LDAP"> <span class="tocnumber">  23 </span> <span class="toctext"> LDAP  </span></a> </li> 
+
+              <li> <a href="#WEB"> <span class="tocnumber">  24 </span> <span class="toctext"> WEB </span></a> </li> 
+
+            </ul>
+          </div>
+        </div>
+<header class="entry-header">
+    <meta name="viewport" content="width=device-width, initial-scale=1" /> 
+
+    <h1 class="entry-title">Notes for self reference </h1>
+</header><!-- .entry-header -->
+
+
+<div>
+  <h1><span id="WEB"> WEB </h1>
+<p>
+
+
+<h3>REST vs Non REST </h3>
+
+/dvlbr-xxxx/certs/updatecert.jsp&action=rename&newname=abc.xyz
+
+There is no Resource here and it's an instruction.
+
+https://restfulapi.net/resource-naming/
+
+
+<p> ReST </p>
+POST  /dvlbr-xxxx/certs -d@payload.json
+Here command points to a resource. 
+
+<p> PUT vs POST, if you use <code> curl -X PUT </code> vs <code> curl -X POST </code> </p>
+
+PUT replaces an existing resource or create a resource it it doesn't exist.
+POST creates a new resource 
+
+PUT is idempotent vs POST is not idempotent.
+
+<code> https://restfulapi.net/rest-put-vs-post/ </code>
+
+<h2> References <h2> 
+<a href="https://restfulapi.net/resource-naming/"> Resource Naming </a>  
+
+
+
+<div id="footer">
+  <p class="legal">Copyright (c) 2015-2020 InterCloudZone.com. All rights reserved.</p>
+</div>
+
+
+
+</body>
+
+</html>

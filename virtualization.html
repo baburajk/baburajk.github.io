@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head> <script data-ad-client="ca-pub-2393111531899119" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script> 
+	<meta charset="utf-8">
+	<title>intercloudzone</title>
+	<meta name="description" content="">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<meta property="og:image" content="path/to/image.jpg">
+<!-- favicon -->
+<link rel="shortcut icon" href="img/favicon/favicon.ico" type="image/x-icon">
+<link rel="apple-touch-icon" href="img/favicon/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="72x72" href="img/favicon/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="114x114" href="img/favicon/apple-touch-icon-114x114.png">
+<!-- favicon -->
+<!-- build:css -->
+<link rel="stylesheet" href="css/libs/bootstrap.min.css">
+<link rel="stylesheet" href="css/libs/font-awesome.min.css">
+<link rel="stylesheet" href="css/libs/animate.min.css">
+<link rel="stylesheet" href="css/libs/slick.css">
+<link rel="stylesheet" href="css/libs/magnific-popup.css">
+
+<link rel="stylesheet" href="css/main.css">
+<link rel="stylesheet" href="css/media.css">
+<!-- endbuild -->
+	<!-- Chrome, Firefox OS and Opera -->
+	<meta name="theme-color" content="#000">
+	<!-- Windows Phone -->
+	<meta name="msapplication-navbutton-color" content="#000">
+	<!-- iOS Safari -->
+	<meta name="apple-mobile-web-app-status-bar-style" content="#000">
+	<!-- <style>body { opacity:s 0; overflow-x: hidden; } html { background-color: #fff; }</style> -->
+</head>
+<body data-spy="scroll" data-target=".navbar" data-offset="50" class="loaded" link="blue">
+<!-- Preloader -->
+<div class="preloader">
+	<div class="cssload-spinner">
+		<div class="cssload-ball cssload-ball-1"></div>
+		<div class="cssload-ball cssload-ball-2"></div>
+		<div class="cssload-ball cssload-ball-3"></div>
+		<div class="cssload-ball cssload-ball-4"></div>
+	</div>
+</div>
+<!-- Preloader -->
+<div class="site-content">
+	<!-- Naviigation -->
+	<div class="navbar-wrap">
+		<div class="navbar">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-12">
+						<nav class="navbar-menu">
+							<div class="navbar-header">
+								<button class="collapsed navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-example-js-navbar-scrollspy">
+									<span class="icon-bar"></span>
+									<span class="icon-bar"></span>
+									<span class="icon-bar"></span>
+								</button>
+							</div>
+							 
+							<div class="navbar-full">
+								<div class="collapse bs-example-js-navbar-scrollspy">
+									<ul class="nav navbar-nav">
+										<li style="display: none;"><a></a></li>
+										<li><a href="http://www.linkedin.com/in/baburajkallarakkal">About Me</a></li>
+										<li><a href="http://padmavyuha.blogspot.com/">Blog</a></li>
+										<li><a href="https://sourceforge.net/projects/oraclerman/">Projects</a></li>
+										<li><a href="https://hub.docker.com/u/baburaj/">Docker</a></li>
+										<li><a href="mailto:raj.anju@gmail.com">Contact Me</a></li>
+										<li>
+										</li>
+									</ul>
+									<!-- btn -->
+									<div class="nav-button main-button">
+										<a href="#" class="btn btn-nav btn-block" role="button">
+											Site is in Beta!
+										</a>
+									</div>
+									<!-- btn -->
+								</div>
+							</div>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Naviigation -->
+<!-- Header -->
+	<div class="menu-sticky"></div>
+
+	 
+
+	<!-- Screen-one -->
+	<div class="screen-one">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="screen-one-title">
+						<h2>Virtualization </h2>
+					</div>
+				</div>
+			</div>
+		</div>
+	 
+		<div class="container">
+					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0s">
+						<span>01.</span>
+						<div class="screen-one-item-container">
+							<h3>Kickstart </h3>
+							<p> Spinning up multiple VM's with kickstart configuration </p>
+							<p> </p>
+<pre>
+
+#How to install a VM via kickstart ( mandatory options.)
+virt-install -n rhce1 --memory 1024 --vcpus 1 --os-variant rhel7 --disk vol=virspd01/rhce1.img --network network=default --location ftp://192.168.2.20/pub/rhel74 --extra-args ks=ftp://192.168.2.20/pub/ksconfig/rhce1.cfg
+
+#Create the disk prior
+virsh # vol-create-as virpool0 server10.img 8G
+Vol server10.img created
+
+
+#Kick start file with all the options.
+root@mayura:/var/ftp/pub/ksconfig\> cat rhce1.cfg | grep -v ^# |grep -v ^$
+auth --enableshadow --passalgo=sha512
+url --url="ftp://192.168.2.21/pub/rhel74"
+firstboot --enable
+ignoredisk --only-use=vda
+keyboard --vckeymap=us --xlayouts='us'
+lang en_US.UTF-8
+reboot
+network  --bootproto=static --device=eth0 --gateway=192.168.122.1 --ip=192.168.122.10 --netmask=255.255.255.0 --ipv6=auto --activate
+network  --hostname=rhce1.intercloudzone.com
+services --enabled="chronyd"
+rootpw --plaintext oracle
+timezone America/Chicago --isUtc
+bootloader --location=mbr --boot-drive=vda --append=" console=ttyS0,115200,tty0"
+clearpart --all --initlabel --drives=vda
+part /boot --fstype="xfs" --ondisk=vda --size=500
+part pv.1 --fstype="lvmpv" --ondisk=vda --size=8000
+volgroup vgos --pesize=4096 pv.1
+logvol /home  --fstype="xfs" --size=1000 --name=home --vgname=vgos
+logvol /  --fstype="xfs" --size=4000 --name=root --vgname=vgos
+logvol swap  --fstype="swap" --size=500 --name=swap --vgname=vgos
+%packages
+@^minimal
+@core
+chrony
+kexec-tools
+%end
+%addon com_redhat_kdump --enable --reserve-mb='auto'
+%end
+%anaconda
+pwpolicy root --minlen=6 --minquality=1 --notstrict --nochanges --notempty
+pwpolicy user --minlen=6 --minquality=1 --notstrict --nochanges --emptyok
+pwpolicy luks --minlen=6 --minquality=1 --notstrict --nochanges --notempty
+%end
+
+
+#Pass in the console tty and other parameters via kick start.
+virt-install --name "server1" --memory=1024 --disk vol=virspd00/server1.img --vcpus=1 --os-variant=rhel7 --os-type=linux --location=ftp://192.168.2.20/pub/rhel7 --network bridge=virbr1 --network bridge=virbr1 -x "ks=ftp://192.168.2.20/pub/ksconfig/server1.cfg console=ttyS0,115200,tty0"
+
+#Sample kickstart configuration with two interfaces auto and two as static.
+
+root@panchajanya:/var/ftp/pub/rhel7\> grep network ks.cfg
+# Use network installation
+network --device=eth0 --bootproto=dhcp --ipv6=auto --activate
+network --device=eth1 --bootproto=dhcp --ipv6=auto --activate
+network --device=eth2 --bootproto=static --ip=192.168.125.10 --netmask=255.255.255.0 --ipv6=auto --activate
+network --device=eth3 --bootproto=static --ip=192.168.130.10 --netmask=255.255.255.0 --ipv6=auto --activate
+network  --hostname=server10
+
+#Editing/viewing XML files via command line using xpath.
+
+yum provides xpath
+yum install perl-XML-XPath
+
+#Retrieve intefaces
+root@panchajanya:~\> xpath server.xml //interface
+Found 4 nodes:
+..
+output trimmed.
+
+
+#Attributes can be obtained via type.
+xpath server.xml //@type
+
+#Mapping interfaces against the network/VM's.
+
+
+virsh # domiflist server
+Interface  Type       Source     Model       MAC
+-------------------------------------------------------
+vnet0      bridge     br_fe      virtio      52:54:00:2c:19:87
+vnet1      network    vnetnat    virtio      52:54:00:4b:a2:98
+vnet2      network    vnetrou    virtio      52:54:00:f1:15:ef
+vnet3      network    vnetnat    virtio      52:54:00:82:2f:44
+
+
+#Detach and attach interface, ensure to pass the "--model virtio"
+virsh # detach-interface --domain server --type network --mac '52:54:00:82:2f:44' --persistent --live
+Interface detached successfully
+
+virsh # attach-interface --domain server --type network --source vnetnat --mac '52:54:00:82:2f:44' --model virtio --persistent --live
+Interface attached successfully
+
+
+</pre>
+						</div>
+				</div>
+
+				   <div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.1s">
+						<span>02.</span>
+						<div class="screen-one-item-container">
+							<h3> Configuring static IP's with persistence. </h3>
+							<p>  Updating VM's with static ip's and keeping the configurations persistent upon reboots/restarts of virtual networks.
+							</p>
+							<p> </p>
+
+<pre>
+
+#Interfaces from within the VM, it's MAC and IP address.
+
+3: eth1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 52:54:00:4b:a2:98 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.134.50/24 brd 192.168.134.255 scope global eth1
+       valid_lft forever preferred_lft forever
+
+
+7: eth3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+    link/ether 52:54:00:82:2f:44 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.134.188/24 brd 192.168.134.255 scope global dynamic eth3
+
+
+# Option-1: Update the associated network and add the IP/MAC mappings, also update the VM interfaces to have a static IP. This ensures a future reboot/restart of network
+  to assign the same IP back to the VM interface.
+
+  root@panchajanya:~\> virsh net-edit vnetnat, append below line
+    <host mac='52:54:00:82:2f:44' ip='192.168.134.51' />
+
+
+# Option-2: Update the network directly using --live and --config options.
+
+root@panchajanya:~\> virsh net-update vnetnat add ip-dhcp-host '<host mac="52:54:00:82:2f:44" ip="192.168.134.51" />' --live --config
+Updated network vnetnat persistent config and live state
+
+
+root@panchajanya:~\> virsh net-dumpxml vnetnat
+..
+dhcp 
+      range start='192.168.134.2' end='192.168.134.254'/>
+       host mac='52:54:00:82:2f:44' ip='192.168.134.51'/>
+  dhcp
+    ...
+
+
+</pre>
+						</div>
+					</div>
+
+					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
+						<span>03.</span>
+						<div class="screen-one-item-container">
+							<h3> Network Management using nmcli and nmtui. </h3>
+							<p> Move interfaces from one network to another by detaching the devices and adding them via nmcli. <br>
+
+							  <br>
+						</p>
+						<p> </p>
+
+<pre>
+
+[root@server ~]# nmcli d show eth3
+GENERAL.DEVICE:                         eth3
+GENERAL.TYPE:                           ethernet
+GENERAL.HWADDR:                         52:54:00:82:2F:44     ==> MAC we are interested in..
+....
+
+virsh # domiflist server
+Interface  Type       Source     Model       MAC
+-------------------------------------------------------
+vnet0      bridge     br_fe      virtio      52:54:00:2c:19:87
+vnet1      network    vnetnat    virtio      52:54:00:4b:a2:98
+vnet2      network    vnetrou    virtio      52:54:00:f1:15:ef
+vnet3      network    vnetiso    virtio      52:54:00:82:2f:44     ==> MAC we are interested in..
+
+
+=> Detach interfaces
+
+virsh # detach-interface --domain server --type network --mac 52:54:00:82:2f:44 --persistent
+Interface detached successfully
+
+
+virsh # detach-interface --domain server --type network --mac 52:54:00:82:2f:44 --persistent
+error: Domain has multiple interfaces matching MAC address 52:54:00:82:2f:44. You must use detach-device and specify the device pci address to remove it.
+
+#If two devices are mapped with same mac, to remove 
+
+root@panchajanya:~\> virsh dumpxml server | egrep -A7  "interface type"
+
+root@panchajanya:~\> virsh detach-device server remove.xml --persistent
+Device detached successfully
+ 
+#Change it to a different network 
+virsh # attach-interface --domain server --type network --source vnetnat --model virtio --mac 52:54:00:82:2f:44 --persistent --live eth3
+Interface attached successfully
+
+
+[root@server network-scripts]# nmcli con show
+NAME                UUID                                  TYPE            DEVICE
+System eth1         dbfe8c4c-abc6-4a98-b953-d8475dd2217d  802-3-ethernet  eth1
+System eth2         260c99eb-2a00-44b5-a3d6-e731d936a3b4  802-3-ethernet  eth2
+Wired connection 1  2463dcd8-dca0-478e-9843-81c23a2de560  802-3-ethernet  eth3
+System eth0         b6870dc4-b183-4bdd-b310-6d789c3e9ce0  802-3-ethernet  eth0
+
+
+[root@server network-scripts]# nmcli dev connect eth3
+Device 'eth3' successfully activated with '2463dcd8-dca0-478e-9843-81c23a2de560'.
+
+
+
+</pre>
+ 
+						</div>
+					</div>
+<!-- Contact -->
+<a class="anchor" id="contact"></a>
+
+<section class="contact">
+		<div class="contact-wrap">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-12 __web-inspector-hide-shortcut__">
+						<div class="contact-title">
+							<h2></h2>
+							<p> 
+								<br class="disable"></p>
+						</div>
+						<!-- /.contact-title -->
+					</div>
+					<!-- /.col-md-12 -->
+					
+					<!-- /.col-md-10 -->
+				</div>
+				<!-- /.row -->
+			</div>
+			<!-- /.container -->
+		</div>
+		<!-- /.directions-wrap -->
+	</section>
+
+</div>
+<!-- Site content -->
+
+<!-- Footer -->
+<a class="anchor" id="footer"></a>
+<footer class="footer" style="background-image: url(img/footer-bg.jpg); background-position:center; background-size: cover; background-repeat:no-repeat;">
+	<div class="footer-wrap">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="footer-title">
+						<h2>www.intercloudzone.com</h2>
+						<ul class="footer-icons">
+						<script src="//platform.linkedin.com/in.js" type="text/javascript"> lang: en_US</script>
+						<script type="IN/Share" data-url="http://www.intercloudzone.com/virtualization.html"></script>
+						</ul>
+						<p> </p>
+					</div>
+					<!-- /.footer-title -->
+				</div>
+				<!-- /.col-md-12 -->
+			</div>
+			<!-- /.row -->
+		</div>
+		<!-- /.container -->
+	</div>
+	<!-- /.directions-wrap -->
+</footer>
+<!-- Footer -->
+
+
+
+<!-- links -->
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?key=AIzaSyDDuC8pr6YqiBr9wqfhNIJ56AqwzWKhiQo"></script>
+<!-- build:js -->
+
+ 
+
+<script src="js/libs/jquery.min.js"></script>
+<script type="text/javascript" src="js/libs/bootstrap.min.js"></script>
+<script type="text/javascript" src="js/libs/waypoints.min.js"></script>
+<script type="text/javascript" src="js/libs/slick.min.js"></script>
+<script type="text/javascript" src="js/libs/magnific-popup.min.js"></script>
+
+<script type="text/javascript" src="js/common.js"></script>
+<!-- endbuild -->
+<!-- links -->
+</body>
+</html>

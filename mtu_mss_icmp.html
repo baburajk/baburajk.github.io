@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head> <script data-ad-client="ca-pub-2393111531899119" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script> 
+	<meta charset="utf-8">
+	<title>intercloudzone</title>
+	<meta name="description" content="">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<meta property="og:image" content="path/to/image.jpg">
+<!-- favicon -->
+<link rel="shortcut icon" href="img/favicon/favicon.ico" type="image/x-icon">
+<link rel="apple-touch-icon" href="img/favicon/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="72x72" href="img/favicon/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="114x114" href="img/favicon/apple-touch-icon-114x114.png">
+<!-- favicon -->
+<!-- build:css -->
+<link rel="stylesheet" href="css/libs/bootstrap.min.css">
+<link rel="stylesheet" href="css/libs/font-awesome.min.css">
+<link rel="stylesheet" href="css/libs/animate.min.css">
+<link rel="stylesheet" href="css/libs/slick.css">
+<link rel="stylesheet" href="css/libs/magnific-popup.css">
+
+<link rel="stylesheet" href="css/main.css">
+<link rel="stylesheet" href="css/media.css">
+<!-- endbuild -->
+	<!-- Chrome, Firefox OS and Opera -->
+	<meta name="theme-color" content="#000">
+	<!-- Windows Phone -->
+	<meta name="msapplication-navbutton-color" content="#000">
+	<!-- iOS Safari -->
+	<meta name="apple-mobile-web-app-status-bar-style" content="#000">
+	<!-- <style>body { opacity:s 0; overflow-x: hidden; } html { background-color: #fff; }</style> -->
+</head>
+<body data-spy="scroll" data-target=".navbar" data-offset="50" class="loaded" link="blue">
+<!-- Preloader -->
+<div class="preloader">
+	<div class="cssload-spinner">
+		<div class="cssload-ball cssload-ball-1"></div>
+		<div class="cssload-ball cssload-ball-2"></div>
+		<div class="cssload-ball cssload-ball-3"></div>
+		<div class="cssload-ball cssload-ball-4"></div>
+	</div>
+</div>
+<!-- Preloader -->
+<div class="site-content">
+	<!-- Naviigation -->
+	<div class="navbar-wrap">
+		<div class="navbar">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-12">
+						<nav class="navbar-menu">
+							<div class="navbar-header">
+								<button class="collapsed navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-example-js-navbar-scrollspy">
+									<span class="icon-bar"></span>
+									<span class="icon-bar"></span>
+									<span class="icon-bar"></span>
+								</button>
+							</div>
+							 
+							<div class="navbar-full">
+								<div class="collapse bs-example-js-navbar-scrollspy">
+									<ul class="nav navbar-nav">
+										<li style="display: none;"><a></a></li>
+										<li><a href="http://www.linkedin.com/in/baburajkallarakkal">About Me</a></li>
+										<li><a href="http://padmavyuha.blogspot.com/">Blog</a></li>
+										<li><a href="https://sourceforge.net/projects/oraclerman/">Projects</a></li>
+										<li><a href="https://hub.docker.com/u/baburaj/">Docker</a></li>
+										<li><a href="mailto:raj.anju@gmail.com">Contact Me</a></li>
+										<li>
+										</li>
+									</ul>
+									<!-- btn -->
+									<div class="nav-button main-button">
+										<a href="#" class="btn btn-nav btn-block" role="button">
+											Site is in Beta!
+										</a>
+									</div>
+									<!-- btn -->
+								</div>
+							</div>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Naviigation -->
+<!-- Header -->
+	<div class="menu-sticky"></div>
+
+	 
+
+	<!-- Screen-one -->
+	<div class="screen-one">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="screen-one-title">
+						<h2>Basics of MTU, MSS, PMTU discovery, MSS and more..</h2>
+					</div>
+				</div>
+			</div>
+		</div>
+	 
+		<div class="container">
+
+					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0s">
+						<span>00.</span>
+						<div class="screen-one-item-container">
+							<h3>  Lab Setup for the ICMP Testing. </h3>
+							<p> <a href="mtu_mss_icmplab.html"> Lab setup for the specific test </a> </p>
+							<p>   </p>
+<pre>
+
+#Choose the subnets for Cloud10 and Cloud20
+
+baburaj@Aurora-4:~\> ipcalc 10.0.0.0/8
+Address:   10.0.0.0             00001010. 00000000.00000000.00000000
+Netmask:   255.0.0.0 = 8        11111111. 00000000.00000000.00000000
+Wildcard:  0.255.255.255        00000000. 11111111.11111111.11111111
+=>
+Network:   10.0.0.0/8           00001010. 00000000.00000000.00000000
+HostMin:   10.0.0.1             00001010. 00000000.00000000.00000001
+HostMax:   10.255.255.254       00001010. 11111111.11111111.11111110
+Broadcast: 10.255.255.255       00001010. 11111111.11111111.11111111
+Hosts/Net: 16777214              Class A, Private Internet
+ 
+baburaj@Aurora-4:~\> ipcalc 10.0.1.0/24
+Address:   10.0.1.0             00001010.00000000.00000001. 00000000
+Netmask:   255.255.255.0 = 24   11111111.11111111.11111111. 00000000
+Wildcard:  0.0.0.255            00000000.00000000.00000000. 11111111
+=>
+Network:   10.0.1.0/24          00001010.00000000.00000001. 00000000
+HostMin:   10.0.1.1             00001010.00000000.00000001. 00000001
+HostMax:   10.0.1.254           00001010.00000000.00000001. 11111110
+Broadcast: 10.0.1.255           00001010.00000000.00000001. 11111111
+Hosts/Net: 254                   Class A, Private Internet
+
+baburaj@Aurora-4:~\> ipcalc 10.0.2.0/24
+Address:   10.0.2.0             00001010.00000000.00000010. 00000000
+Netmask:   255.255.255.0 = 24   11111111.11111111.11111111. 00000000
+Wildcard:  0.0.0.255            00000000.00000000.00000000. 11111111
+=>
+Network:   10.0.2.0/24          00001010.00000000.00000010. 00000000
+HostMin:   10.0.2.1             00001010.00000000.00000010. 00000001
+HostMax:   10.0.2.254           00001010.00000000.00000010. 11111110
+Broadcast: 10.0.2.255           00001010.00000000.00000010. 11111111
+Hosts/Net: 254                   Class A, Private Internet
+ 
+#Tear down the existing VLAN Configuration ( Do for both Cloud10 & Cloud20)
+
+cloud20>enable
+cloud20#configure terminal
+cloud20(config)#vlan 12
+cloud20(config-vlan)#no interface vlan 12
+cloud20(config)#no vlan 12
+end
+
+#Configure the IP address.
+
+cloud20#configure terminal
+Enter configuration commands, one per line.  End with CNTL/Z.
+cloud20(config)#interface fa0/2
+cloud20(config-if)#no switchport
+cloud20(config-if)#ip address 10.0.0.20 255.255.255.0
+cloud20(config-if)#no shutdown
+cloud20(config-if)#end
+
+#Keep existing ip route.
+
+show running-config
+...
+ip classless
+ip route 0.0.0.0 0.0.0.0 10.0.0.1
+..
+
+
+cloud20#show ip interface brief
+Interface              IP-Address      OK? Method Status                Protocol
+Vlan1                  unassigned      YES NVRAM  up                    down
+..
+FastEthernet0/2        10.0.0.20       YES NVRAM  up                    up
+..
+FastEthernet0/12       10.0.2.1        YES manual up                    up
+
+# Verify the upstream connectivity from the source IP 10.0.0.20
+
+cloud20#ping 8.8.8.8 so 10.0.0.20
+
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 8.8.8.8, timeout is 2 seconds:
+Packet sent with a source address of 10.0.0.20
+!!!!!
+Success rate is 100 percent (5/5), round-trip min/avg/max = 8/10/16 ms
+
+
+cloud20#ping 10.0.0.1 so 10.0.2.1
+
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 10.0.0.1, timeout is 2 seconds:
+Packet sent with a source address of 10.0.2.1
+..
+
+cloud20#ping 8.8.8.8 so 10.0.2.1
+
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 8.8.8.8, timeout is 2 seconds:
+Packet sent with a source address of 10.0.2.1
+.....
+Success rate is 0 percent (0/5)
+
+
+#Static Route is required on the GTWY router to enable the communication.
+
+#Unable to circumvent the Nasty bug on the DIR-655 which doesn't allow the static route additions. Replacing with hardware to R6230.
+https://www.hyllander.org/content/d-link-dir-655-how-create-static-route-lan
+
+# Add static route to R6230
+ip route 10.0.1.0 255.255.255.0 10.0.0.10
+ip route 10.0.2.0 255.255.255.0 10.0.0.20
+
+
+# Add static route to R6230
+
+ip route 10.0.1.0 255.255.255.0 10.0.0.10
+ip route 10.0.2.0 255.255.255.0 10.0.0.20
+
+root@mayura:~\> ping 10.0.1.11 -c 1
+PING 10.0.1.11 (10.0.1.11) 56(84) bytes of data.
+64 bytes from 10.0.1.11: icmp_seq=1 ttl=61 time=0.677 ms
+
+--- 10.0.1.11 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 0.677/0.677/0.677/0.000 ms
+
+
+root@panchajanya:~\> ping 10.0.2.21 -c 2
+PING 10.0.2.21 (10.0.2.21) 56(84) bytes of data.
+64 bytes from 10.0.2.21: icmp_seq=1 ttl=61 time=0.714 ms
+64 bytes from 10.0.2.21: icmp_seq=2 ttl=61 time=0.693 ms
+
+--- 10.0.2.21 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1620ms
+rtt min/avg/max/mdev = 0.693/0.703/0.714/0.028 ms
+ 
+</pre>
+						</div>
+				</div>
+
+					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0s">
+						<span>01.</span>
+						<div class="screen-one-item-container">
+							<h3> MTU & MSS </h3>
+							
+							<p> <a href="https://en.wikipedia.org/wiki/Maximum_transmission_unit"> MTU </a> , otherwise Maximum Transmission Unit is the size of the largest protocol data unit that can be transferred in a single network transaction. Below is just some snaps captured during the MTU and DF bits impact on MTU's and fragmentation in general. MSS on the other hand is the Maximum Segment Size which is essentially the size of TCP Payload.  <a href="https://en.wikipedia.org/wiki/Maximum_segment_size">Reference</a>
+  </p>
+<p> </p>
+
+<pre>
+
+#Reset MTU for both routing and system interfaces to 1998 which is the maximum for the Fa 10/100 interfaces.
+
+cloud10#show system mtu
+
+System MTU size is 1998 bytes
+System Jumbo MTU size is 1998 bytes
+Routing MTU size is 1998 bytes
+
+
+#Reset MTU for the src/dest interfaces temporarily, to avoid the local interface defragmentation 
+and observe the ICMP Response packets from routers.
+
+root@panchajanya:~\> ip link set enp7s0 mtu 9000
+root@panchajanya:~\> ip link show enp7s0
+2: enp7s0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 9000 qdisc pfifo_fast state UP mode DEFAULT qlen 1000
+    link/ether 00:1f:bc:02:01:66 brd ff:ff:ff:ff:ff:ff
+
+root@mayura:~\> ip link set enp7s0 mtu 9000
+root@mayura:~\>  ip link show enp7s0
+2: enp7s0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 9000 qdisc pfifo_fast state UP mode DEFAULT qlen 1000
+    link/ether 00:1f:bc:02:6f:10 brd ff:ff:ff:ff:ff:ff
+
+</pre>
+						</div>
+				</div>
+
+				   <div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.1s">
+						<span>02.</span>
+						<div class="screen-one-item-container">
+							<h3> ICMP Packet Header Details. </h3>
+							<p>  With MTU set to jumbo frames on both source and destination, expectation was switch interfaces should limit 
+it to 1998 and anything more should be fragmented.
+							</p>
+							<p> </p>
+
+<pre>
+
+If the max MTU negotiated for the whole route is 1500, the max payload that an ICMP packet can carry is 1472.
+
+IP header	ICMP header	ICMP payload size	  	MTU (1500)
+20 bytes	8 bytes		1472 bytes  (maximum)	20 + 8 + 1472 = 1500
+
+root@mayura:~\> echo " 1998 - 20 - 8 " | bc -l
+1970
+
+</pre>
+						</div>
+					</div>
+
+					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
+						<span>03.</span>
+						<div class="screen-one-item-container">
+							<h3> Ping with max payload size (1472) </h3>
+							<p>  # Ping options of interest which controls the discovery and DF bit.
+
+ -M <hint>: Select Path MTU Discovery strategy. <hint> may be either "do" (prohibit fragmentation, even local one),
+  "want" (do PMTU discovery, fragment locally when packet size is large), or "dont" (do not set DF flag).
+
+						</p>
+						<p> </p>
+
+<pre>
+
+
+# The ping with 1472 size is expected to go through without any fragmentations.
+root@panchajanya:~\> ping -s 1472 10.0.2.21 -c 1
+PING 10.0.2.21 (10.0.2.21) 1472(1500) bytes of data.
+1480 bytes from 10.0.2.21: icmp_seq=1 ttl=61 time=6.00 ms
+
+--- 10.0.2.21 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 6.001/6.001/6.001/0.000 ms
+
+
+</pre>
+ 
+						</div>
+					</div>
+
+					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
+					<span>04.</span>
+					<div class="screen-one-item-container">
+						<h3> Pings with DF bit set. </h3>
+						<p>  Contrary to my expectations, I missed to realize that there's one interface still set at 1500! The R6230 GTWY which routes this packet. Like most home routers,
+							 this is set in stone unfortunately and with no way to manuover or bump it up than the size set at switches I cannot experiment further and rely on the fact
+							that this R6230 is going to initiate the ICMP Type 3 Code 4 Message. Also notice the route cache get's updated via the PMTU discovery and so the next hop MTU is now visible to the system from where the pings are originated.  </p>
+
+						<p> </p>
+
+<pre>
+
+#Obtain the route cache stats prior to initiating the pings.
+
+root@panchajanya:~\> ip route get to 10.0.2.21
+10.0.2.21 dev enp7s0  src 10.0.1.11
+    cache
+
+root@panchajanya:~\> ping -M do -s 1473 10.0.2.21 -c 1
+PING 10.0.2.21 (10.0.2.21) 1473(1501) bytes of data.
+From 10.0.0.1 icmp_seq=1 Frag needed and DF set (mtu = 1500)
+
+--- 10.0.2.21 ping statistics ---
+1 packets transmitted, 0 received, +1 errors, 100% packet loss, time 0ms
+
+root@panchajanya:~\> ip route get to 10.0.2.21
+10.0.2.21 dev enp7s0  src 10.0.1.11
+    cache  expires 560sec mtu 1500
+
+</pre>
+					</div>
+				</div>
+
+
+					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
+					<span>05.</span>
+					<div class="screen-one-item-container" >
+						<h3> Wireshark Packet Capture with DF </h3>
+ 
+						<p> Anywhere in the route if there is a lower MTU set, the network devices like routers are supposed to sent an ICMP Type 3 Code 4 message back. <a href=https://tools.ietf.org/html/rfc792"> RFC792 </a>  </p>
+
+<pre>
+  <img src = "img/icmpdo_pcap.jpg" alt = "Wireshark PCAP with DF bit " />
+
+</pre>
+					</div>
+				</div>
+
+
+
+					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
+					<span>06.</span>
+					<div class="screen-one-item-container" >
+						<h3> ICMP packets sent allowing fragmentation. </h3>
+ 						<p>  With dont or want hints set with ping, the packets are allowed to be fragmented. </p>
+
+<pre>
+
+root@panchajanya:~\> ping -M dont -s 1473 10.0.2.21 -c 1
+PING 10.0.2.21 (10.0.2.21) 1473(1501) bytes of data.
+1481 bytes from 10.0.2.21: icmp_seq=1 ttl=61 time=1.92 ms
+
+--- 10.0.2.21 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 1.928/1.928/1.928/0.000 ms
+
+root@panchajanya:~\> ping -M want -s 1473 10.0.2.21 -c 1
+PING 10.0.2.21 (10.0.2.21) 1473(1501) bytes of data.
+1481 bytes from 10.0.2.21: icmp_seq=1 ttl=61 time=1.90 ms
+
+--- 10.0.2.21 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 1.909/1.909/1.909/0.000 ms
+
+</pre>
+					</div>
+				</div>
+
+					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
+					<span>06.</span>
+					<div class="screen-one-item-container" >
+						<h3> Wireshark Packet Capture without DF </h3>
+ 
+						<p>  With dont or want hints set with ping, the packets are allowed to be fragmented. Total size of the IPv4 payload = 1473 + 8 = 1481 which is split into two; Frame#1 =1480 (So with the IPv4 header (20) it would be within the next hop limit which is 1500) and Frame#2 which is 1 byte. </p>
+						<p> </p>
+
+<pre>
+  <img src = "img/icmpdont_pcap.jpg" alt = "Wireshark PCAP without DF bit " />
+
+</pre>
+					</div>
+				</div>
+
+
+
+<!-- Contact -->
+<a class="anchor" id="contact"></a>
+
+<section class="contact">
+		<div class="contact-wrap">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-12 __web-inspector-hide-shortcut__">
+						<div class="contact-title">
+							<h2></h2>
+							<p> 
+								<br class="disable"></p>
+						</div>
+						<!-- /.contact-title -->
+					</div>
+					<!-- /.col-md-12 -->
+					
+					<!-- /.col-md-10 -->
+				</div>
+				<!-- /.row -->
+			</div>
+			<!-- /.container -->
+		</div>
+		<!-- /.directions-wrap -->
+	</section>
+
+</div>
+<!-- Site content -->
+
+<!-- Footer -->
+<a class="anchor" id="footer"></a>
+<footer class="footer" style="background-image: url(img/footer-bg.jpg); background-position:center; background-size: cover; background-repeat:no-repeat;">
+	<div class="footer-wrap">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="footer-title">
+						<h2>www.intercloudzone.com</h2>
+						<ul class="footer-icons">
+						<script src="//platform.linkedin.com/in.js" type="text/javascript"> lang: en_US</script>
+						<script type="IN/Share" data-url="http://www.intercloudzone.com/mtu_mss_icmp.html"></script>
+						</ul>
+						<p> </p>
+					</div>
+					<!-- /.footer-title -->
+				</div>
+				<!-- /.col-md-12 -->
+			</div>
+			<!-- /.row -->
+		</div>
+		<!-- /.container -->
+	</div>
+	<!-- /.directions-wrap -->
+</footer>
+<!-- Footer -->
+
+
+
+<!-- links -->
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?key=AIzaSyDDuC8pr6YqiBr9wqfhNIJ56AqwzWKhiQo"></script>
+<!-- build:js -->
+
+ 
+
+<script src="js/libs/jquery.min.js"></script>
+<script type="text/javascript" src="js/libs/bootstrap.min.js"></script>
+<script type="text/javascript" src="js/libs/waypoints.min.js"></script>
+<script type="text/javascript" src="js/libs/slick.min.js"></script>
+<script type="text/javascript" src="js/libs/magnific-popup.min.js"></script>
+
+<script type="text/javascript" src="js/common.js"></script>
+<!-- endbuild -->
+<!-- links -->
+</body>
+</html>

