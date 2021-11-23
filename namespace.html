@@ -109,7 +109,7 @@
 						<div class="screen-one-item-container">
 							<h3>Batching  </h3>
  
-							 <img src="./imgs/namespace-v2.svg" width="800" height="auto"  alt="Network Configuration">   
+							 <img src="./imgs/namespace-v2.svg" width="800" height="800"  alt="Network Configuration">   
 							<p> Selinux commands individually ran takes time, so should/can be batched wherever possible. </p>
 							<p> </p>
 <pre>
@@ -124,7 +124,7 @@ _EOF
 				</div>
 
 				   <div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.1s">
-						<span>02.</span>
+						 
 						<div class="screen-one-item-container">
 							<h3> Permissive mode. </h3>
 							<p> Contexts can be changed to permissive mode temporarily for troubleshooting purposes to see if selinux is preventing the services to fail. All these 
@@ -162,8 +162,7 @@ Builtin Permissive Types
 					</div>
 
 					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
-						<span>03.</span>
-						<div class="screen-one-item-container">
+ 						<div class="screen-one-item-container">
 							<h3> sesearch </h3>
 							<p> Sesearch can be used to check the selinux policies, for eg. checking a rule and how the transition works is as below. <br>
 
@@ -187,8 +186,7 @@ Found 16 semantic av rules:
 					</div>
 
 					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
-					<span>04.</span>
-					<div class="screen-one-item-container">
+ 					<div class="screen-one-item-container">
 						<h3> ausearch </h3>
 						<p>  ausearch can be used to dig into the logs. Prior to checking logs, install and run setroubleshootd <br> </p>
 
@@ -216,8 +214,7 @@ SELinux is preventing /usr/sbin/sshd from name_connect access on the tcp_socket 
 
 
 					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
-					<span>05.</span>
-					<div class="screen-one-item-container">
+ 					<div class="screen-one-item-container">
 						<h3> Selinux Docs </h3>
 						<p> Majority of docs/man pages for selinux has to be installed/configured manually, which can be done via sepolicy </p>
 
@@ -238,7 +235,7 @@ man -k _selinux
 
 
 					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
-					<span>06.</span>
+				 
 					<div class="screen-one-item-container">
 						<h3> SELinux Users, Logins and system users. </h3>
 						<p> Mapping linux logins to selinux users. </p>
