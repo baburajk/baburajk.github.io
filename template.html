@@ -1,18 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
-<head> <script data-ad-client="ca-pub-2393111531899119" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script> 
+<head>  
 	<meta charset="utf-8">
-	<title>intercloudzone</title>
-	<meta name="description" content="">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>baburajk.github.io</title>
+ 
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 	<meta property="og:image" content="path/to/image.jpg">
-<!-- favicon -->
-<link rel="shortcut icon" href="img/favicon/favicon.ico" type="image/x-icon">
-<link rel="apple-touch-icon" href="img/favicon/apple-touch-icon.png">
-<link rel="apple-touch-icon" sizes="72x72" href="img/favicon/apple-touch-icon-72x72.png">
-<link rel="apple-touch-icon" sizes="114x114" href="img/favicon/apple-touch-icon-114x114.png">
-<!-- favicon -->
+ 
 <!-- build:css -->
 <link rel="stylesheet" href="css/libs/bootstrap.min.css">
 <link rel="stylesheet" href="css/libs/font-awesome.min.css">
@@ -32,16 +26,8 @@
 	<!-- <style>body { opacity:s 0; overflow-x: hidden; } html { background-color: #fff; }</style> -->
 </head>
 <body data-spy="scroll" data-target=".navbar" data-offset="50" class="loaded" link="blue">
-<!-- Preloader -->
-<div class="preloader">
-	<div class="cssload-spinner">
-		<div class="cssload-ball cssload-ball-1"></div>
-		<div class="cssload-ball cssload-ball-2"></div>
-		<div class="cssload-ball cssload-ball-3"></div>
-		<div class="cssload-ball cssload-ball-4"></div>
-	</div>
-</div>
-<!-- Preloader -->
+
+	
 <div class="site-content">
 	<!-- Naviigation -->
 	<div class="navbar-wrap">
@@ -70,13 +56,7 @@
 										<li>
 										</li>
 									</ul>
-									<!-- btn -->
-									<div class="nav-button main-button">
-										<a href="#" class="btn btn-nav btn-block" role="button">
-											Site is in Beta!
-										</a>
-									</div>
-									<!-- btn -->
+							
 								</div>
 							</div>
 						</nav>
@@ -86,227 +66,121 @@
 		</div>
 	</div>
 	<!-- Naviigation -->
+	
+
 <!-- Header -->
 	<div class="menu-sticky"></div>
-
-	 
-
+ 
 	<!-- Screen-one -->
 	<div class="screen-one">
 		<div class="container">
 			<div class="row">
 				<div class="col-md-12">
 					<div class="screen-one-title">
-						<h2>Reference/Hints</h2>
+
+						<h2> Looking deeper into the Container Namespaces  </h2>
 					</div>
 				</div>
 			</div>
 		</div>
 	 
 		<div class="container">
-					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0s">
-						<span>01.</span>
-						<div class="screen-one-item-container">
-							<h3>Heading1</h3>
-							<p> Content1 </p>
+ 						<div class="screen-one-item-container">
+							<h3>Batching  </h3>
+ 
+							 <img src="./imgs/namespace-v2.svg" width="800" height="800"  alt="Network Configuration">   
+							<p> Selinux commands individually ran takes time, so should/can be batched wherever possible. </p>
 							<p> </p>
 <pre>
-Code1
+	 
 </pre>
 						</div>
-				</div>
-
-				   <div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.1s">
-						<span>02.</span>
+ 
+ 						 
 						<div class="screen-one-item-container">
-							<h3> Heading2 </h3>
-							<p> Content2
+							<h3> Permissive mode. </h3>
+							<p> Contexts can be changed to permissive mode temporarily for troubleshooting purposes to see if selinux is preventing the services to fail. All these 
+								similar customizations can be checked/found under 'customizations'
 							</p>
 							<p> </p>
 
 <pre>
-Code2
+
+[root@rhce5 data]# semanage output -o -
+..
+port -a -t http_port_t -p tcp 81
+fcontext -a -f a -t httpd_sys_content_t '/shared(/.*)?'
+
+ 
+-Examples.
+[root@rhce5 data]# semanage fcontext -lC
+SELinux fcontext                                   type               Context
+
+/shared(/.*)?                                      all files          system_u:object_r:httpd_sys_content_t:s0
+
+[root@rhce5 data]# semanage permissive -a httpd_t
+
+[root@rhce5 data]# semanage permissive --list
+
+Customized Permissive Types
+
+httpd_t
+
+Builtin Permissive Types
+
+
 </pre>
 						</div>
-					</div>
-
-					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
-						<span>03.</span>
-						<div class="screen-one-item-container">
-							<h3> Heading3</h3>
-							<p> Content3 <br>
+ 
+  						<div class="screen-one-item-container">
+							<h3> sesearch </h3>
+							<p> Sesearch can be used to check the selinux policies, for eg. checking a rule and how the transition works is as below. <br>
 
 							  <br>
 						</p>
 						<p> </p>
 
 <pre>
-Code3
+[root@rhce5 data]# sesearch -T -s initrc_t -t httpd_exec_t
+Found 1 semantic te rules:
+   type_transition initrc_t httpd_exec_t : process httpd_t;
+
+
+[root@server1 ~]# sesearch --allow --source httpd_t --target httpd_sys_content_t --class dir
+Found 16 semantic av rules:
+   allow httpd_t httpd_sys_content_t : dir { ioctl read getattr lock search open } ;
+   
 </pre>
  
 						</div>
-					</div>
-
-					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
-					<span>04.</span>
-					<div class="screen-one-item-container">
-						<h3> Heading4</h3>
-						<p>  Content4 <br> </p>
-
-						<p> </p>
-
-<pre>
-Code4
-</pre>
-					</div>
-				</div>
-
-
-					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
-					<span>05.</span>
-					<div class="screen-one-item-container">
-						<h3> Heading5 </h3>
-						<p> Content5</p>
-
-						<p> </p>
-<pre>
-Code5
-</pre>
-					</div>
-				</div>
-
-
-
-					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
-					<span>06.</span>
-					<div class="screen-one-item-container">
-						<h3> Heading6 </h3>
-						<p> Content6 </p>
-						 <p> </p>
-
-<pre>
-Code6
-</pre>
-					</div>
-				</div>
-					
-
-
-					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
-					<span>07.</span>
-					<div class="screen-one-item-container">
-						<h3> Heading7 </h3>
-						<p>  Content7 </p>
-<pre>
-Code7
-</pre>
-					</div>
-
-				</div>
-
-
-					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
-					<span>08.</span>
-					<div class="screen-one-item-container">
-						<h3> Heading8 </h3>
-						<p> Content8
-						 </p>
-						 <p> </p>
-
-<pre>
-Code8
-</pre>
-					</div>
-				</div>
-					
-
-					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
-					<span>09.</span>
-					<div class="screen-one-item-container">
-						<h3> Heading9   </h3>
-						<p> Content9
-						 </p>
-						 <p> </p>
-
-<pre>
-Code9
-</pre>
  
-					</div>
-				</div>
+  	<div class="screen-one-item-container">
+		<h3> ausearch </h3>
+			<p>  ausearch can be used to dig into the logs. Prior to checking logs, install and run setroubleshootd <br> </p>
+			<p> </p>
 
-<!-- Contact -->
-<a class="anchor" id="contact"></a>
+<pre>
 
-<section class="contact">
-		<div class="contact-wrap">
-			<div class="container">
-				<div class="row">
-					<div class="col-md-12 __web-inspector-hide-shortcut__">
-						<div class="contact-title">
-							<h2></h2>
-							<p> 
-								<br class="disable"></p>
-						</div>
-						<!-- /.contact-title -->
-					</div>
-					<!-- /.col-md-12 -->
-					
-					<!-- /.col-md-10 -->
-				</div>
-				<!-- /.row -->
-			</div>
-			<!-- /.container -->
-		</div>
-		<!-- /.directions-wrap -->
-	</section>
+#Start setroubleshoot daemon.
+setroubleshootd
 
-</div>
-<!-- Site content -->
+#ausearch options
 
-<!-- Footer -->
-<a class="anchor" id="footer"></a>
-<footer class="footer" style="background-image: url(img/footer-bg.jpg); background-position:center; background-size: cover; background-repeat:no-repeat;">
-	<div class="footer-wrap">
-		<div class="container">
-			<div class="row">
-				<div class="col-md-12">
-					<div class="footer-title">
-						<h2>www.intercloudzone.com</h2>
-						<ul class="footer-icons">
-						<script src="//platform.linkedin.com/in.js" type="text/javascript"> lang: en_US</script>
-						<script type="IN/Share" data-url="http://www.intercloudzone.com/template.html"></script>
-						</ul>
-						<p> </p>
-					</div>
-					<!-- /.footer-title -->
-				</div>
-				<!-- /.col-md-12 -->
-			</div>
-			<!-- /.row -->
-		</div>
-		<!-- /.container -->
+ausearch -x httpd 
+ausearch -m avc --start today
+
+#Run sealert obtained from the audit.log to obtain additional information on the alert.
+
+[root@lab125a ~]# sealert -l cd9b7da6-cb08-43ae-81e0-dbd7dd928036
+SELinux is preventing /usr/sbin/sshd from name_connect access on the tcp_socket port 113.
+
+
+</pre>
 	</div>
-	<!-- /.directions-wrap -->
-</footer>
-<!-- Footer -->
-
-
-
-<!-- links -->
-<script type="text/javascript" src="http://maps.google.com/maps/api/js?key=AIzaSyDDuC8pr6YqiBr9wqfhNIJ56AqwzWKhiQo"></script>
-<!-- build:js -->
-
+ 
  
 
-<script src="js/libs/jquery.min.js"></script>
-<script type="text/javascript" src="js/libs/bootstrap.min.js"></script>
-<script type="text/javascript" src="js/libs/waypoints.min.js"></script>
-<script type="text/javascript" src="js/libs/slick.min.js"></script>
-<script type="text/javascript" src="js/libs/magnific-popup.min.js"></script>
+	
 
-<script type="text/javascript" src="js/common.js"></script>
-<!-- endbuild -->
-<!-- links -->
 </body>
 </html>
