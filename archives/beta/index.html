@@ -1,0 +1,171 @@
+<html lang="en-GB"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<title>Linux, Security, and Networking by Baburaj</title>
+<style type="text/css">
+img.wp-smiley,
+img.emoji {
+	display: inline !important;
+	border: none !important;
+	box-shadow: none !important;
+	height: 1em !important;
+	width: 1em !important;
+	margin: 0 .07em !important;
+	vertical-align: -0.1em !important;
+	background: none !important;
+	padding: 0 !important;
+}
+</style>
+<link rel="stylesheet" id="style-css" href="./index_files/style.css" type="text/css" media="all">
+<style type="text/css" id="custom-background-css">
+body.custom-background { background-color: #eaeaea; }
+</style>
+
+<body class="post-template-default single single-post postid-6607 single-format-standard custom-background">
+
+<div id="wrap">
+
+<div id="page" class="hfeed site">
+	<!--	<header id="masthead" class="site-header" role="banner"> -->
+	<header id="masthead" class="site-header">
+ 	</header><!-- #masthead .site-header -->
+
+	<div id="main" class="site-main">
+
+		<div id="primary" class="content-area">
+			<div id="content" class="site-content" role="main">
+
+<header class="entry-header">
+		<h1 class="entry-title">Notes for self reference </h1>
+</header><!-- .entry-header -->
+
+
+<h2>NFS Data Hacking using NAT/ARPSPOOF and preventing it using EBTABLES </h2>
+				
+				
+<h3>This is a three phased approach: </h3>
+				
+<p>How can you protect data by establishing security on NFS mounts.</p>
+<p>How can you possibly work around in hacking that data still - a security breach so to speak </p>
+<p>Knowing a security breach occured what methods can be employed to further tighten it.</p>
+
+				<p>
+				So on highlevel -
+
+NFS shared mount access can be restricted to IP address's.
+
+Using NMAP Scans - we can obtain information on the neighbouring hosts on the same subnets.
+
+By spinning up Virtual IP's and arpspoofs/arpings and also using NAT rules the server can still be accessed.
+
+The level of granularity in securing this attack can be blocked by controling/using MAC address association - this can be accomplished using EBTABLES.
+
+I have given a detailed picture of how NFS hacking can be done. i.e Step 1,2,3 described above already on my previous article -'NFS Hacking using NAT (Network-Address-Translation)' I shall still capture the steps here, but focus or goal is to how to accomplish #3.
+
+So the basic setup remains same. RBNETOPS will the NFS Server which is used to spin up the shared mounts RBNETAPP and RBNETLAB are two clients given access to mount their respective shares with access restricted by it's own IP Addressess. RBNETLAB will then be considered as a malicious host - who attempts to do network scan to identify the hosts around - finds and attempts to mount the directory owned by RBNETAPP and successfully mounts it.
+
+System admins at RBNETOPS later realizes that there's a security breach and a gap that need to filled up.This is where EBTABLES will come into play.
+
+We need bridging because ultimately we need to setup ebtable rules which solely works on ETHERNET bridging. Bridge as the name implies acts as a bridge between two ethernets for packet traversal. Usually bridging is done by physical devices but can also be setup within the Linux kernel using bridge modules. So to start with we need to install the bridge utils RPM.
+					
+				</p>
+				
+				
+<pre>
+yum install bridge-utils
+</pre>
+
+				
+<p>By default bridges are not configured and ebtables can only work on ETHERNET bridges. So first - add the bridge. At this point a bridge is created by no interfaces/IP addresses are tied to it.</p>
+
+<pre>
+[root@rbnetops ~]# brctl addbr brnfs
+
+[root@rbnetops ~]# brctl show
+bridge name     bridge id               STP enabled     interfaces
+brnfs           8000.000000000000       no
+
+</pre>
+
+<p>Before proceeding with any further steps, here is a snapshot of network interfaces and IP address associated with each. </p>
+				
+				
+<pre>
+[root@rbnetops network-scripts]# ifconfig
+enp0s3: flags=4163  mtu 1500
+        inet 192.168.56.151  netmask 255.255.255.0  broadcast 192.168.56.255
+        inet6 fe80::a00:27ff:fe98:3854  prefixlen 64  scopeid 0x20
+        ether 08:00:27:98:38:54  txqueuelen 1000  (Ethernet)
+        RX packets 658  bytes 89567 (87.4 KiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 221  bytes 35688 (34.8 KiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+enp0s8: flags=4163  mtu 1500
+        inet 192.168.2.151  netmask 255.255.255.0  broadcast 192.168.2.255
+        inet6 fe80::a00:27ff:fecb:b503  prefixlen 64  scopeid 0x20
+        ether 08:00:27:cb:b5:03  txqueuelen 1000  (Ethernet)
+        RX packets 14904  bytes 1963214 (1.8 MiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 1088  bytes 95241 (93.0 KiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+... 
+
+output trimmed to omit loopback interface..
+</pre>
+
+<h3>Master dhcpd.conf Configuration</h3>
+<p>Open the file <code>/etc/dhcp/dhcpd.conf</code> and configure as per below.</p>
+				
+<p>Note that the parameter <strong>mclt</strong> (Maximum Client Lead Time) must be defined on the master server but must not be defined on the slave server. The parameter <strong>split</strong> is another parameter that should be defined on the primary and omitted from the configuration on the secondary. It is worth noting that the communication between failover nodes is neither encrypted nor authenticated.</p>
+<pre>failover peer "failover-dhcp" {
+  primary; <span style="color: #0000ff;"><em># This defines the master</em></span>
+  address 10.11.1.2;
+  port 647;
+  peer address 10.11.1.3;
+  peer port 647;
+  max-response-delay 60;
+  max-unacked-updates 10;
+  mclt 3600;
+  split 128; <span style="color: #0000ff;"><em># 128 is balanced; use 255 if primary is 100% responsible until failure</em></span>
+  load balance max seconds 3;
+}
+
+</pre>
+<p>Harden file permissions because of the plaintext rndc-key:</p>
+<pre>[admin1]# chmod 0600 /etc/dhcp/dhcpd.conf</pre>
+<p>Test the configuration file:</p>
+<pre>[admin1]# dhcpd -t -cf /etc/dhcp/dhcpd.conf</pre>
+<p>Restart the service:</p>
+<pre>[admin1]# systemctl restart dhcpd</pre>
+<p>Check leases:</p>
+<pre>[admin1]# tail /var/lib/dhcpd/dhcpd.leases</pre>
+<h2>Configure Slave DHCP Server</h2>
+<h3>Installation and Firewall</h3>
+<p>This part is the same as for the master server.</p>
+<p>Install packages and ensure that the service is enabled:</p>
+<pre>[admin2]# yum install dhcp
+[admin2]# systemctl enable dhcpd</pre>
+<p>Configure firewall to allow DHCP traffic (we use iptables):</p>
+<pre>[admin2]# iptables -A INPUT -p udp -m state --state NEW -m udp --dport 67 -j ACCEPT</pre>
+<p>Allow DHCP peer communication from admin1:</p>
+<pre>[admin2]# -A INPUT -s 10.11.1.2/32 -p tcp -m state --state NEW -m tcp --dport 647 -j ACCEPT</pre>
+			</div><!-- .entry-content -->
+	
+				
+
+
+		
+	</div><!-- #main .site-main -->
+
+<!--	<footer id="colophon" class="site-footer" role="contentinfo"> -->
+	<footer id="colophon" class="site-footer">
+		<div class="site-info">
+			Copyright © 2018, All Rights Reserved to Baburaj K
+		</div><!-- .site-info -->
+	</footer><!-- #colophon .site-footer -->
+
+</div><!-- #page .hfeed .site -->
+</div><!-- end of wrapper -->
+
+
+</body></html>
