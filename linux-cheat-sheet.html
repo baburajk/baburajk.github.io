@@ -78,180 +78,52 @@
 				<div class="col-md-12">
 					<div class="screen-one-title">
 
-						<h2> Linux commands/notes for quick reference. </h2>
+						<h2> Looking deeper into the Container Namespaces  </h2>
 					</div>
 				</div>
 			</div>
 		</div>
 	 
 
-<div class="screen-one-item-container">
-    <h3> Bash - Difference between double open paranthesis (), square brackets [], double square paranthesis [[ ]]  </h3>
-        <p>  #(( double open paranthesis )) for arithmetic, [ square brackets for conditionl expression ], [[ double square paranthesis for regular expressions like =~ ]] <br> </p>
-        <p> </p>
-
-    <pre>
-       
-        #Example - (( double open paranthesis )) 
-
-        [root@server1 rpm-gpg]# echo $((1+4))
-        5
         
-        #Example - (( double open paranthesis )) and []
-
-        [root@server1 rpm-gpg]# [ $(date +%d -d -100days) -le 30 ] && echo "Test passed"
-        Test passed
-        
-        #Example - [[ ]]
-
-        [root@server1 rpm-gpg]# if  [[ "xyz" =~ "x" ]]; then echo "True" ; fi
-        True
-        
-        #Note on expressions : == looks for exact string equality vs eq looks for arithmetic equality.
-        
-        [root@rhce4 ~]#  [ " 1 " == 1 ]  && echo equal || echo not
-        not
-        
-        [root@rhce4 ~]#  [ " 1 " -eq 1 ]  && echo equal || echo not
-        equal
-        
-        # Schedule a cron to execute on first sunday of every month.
-        0 2 * * sun  [ $(date +%d) -le 07 ] && /script/script.sh
-        
-        When you specify */5 in minute field means every 5 minutes.
-        When you specify 0-10/2 in minute field mean every 2 minutes in the first 10 minute.
-    </pre>
-    
-</div>
-         
-
-<div class="screen-one-item-container">
-    <h3> Header  </h3>
-        <p> Paragraph/Snippet <br> </p>
-        <p> </p>
-
-    <pre>
-    Code 
-    </pre>
-    
-</div>
- 
-
-<div class="screen-one-item-container">
-    <h3> Header  </h3>
-        <p> Paragraph/Snippet <br> </p>
-        <p> </p>
-
-    <pre>
-    Code 
-    </pre>
-    
-</div>
- 
-
-<div class="screen-one-item-container">
-    <h3> Header  </h3>
-        <p> Paragraph/Snippet <br> </p>
-        <p> </p>
-
-    <pre>
-    Code 
-    </pre>
-    
-</div>
- 
-
-<div class="screen-one-item-container">
-    <h3> Header  </h3>
-        <p> Paragraph/Snippet <br> </p>
-        <p> </p>
-
-    <pre>
-    Code 
-    </pre>
-    
-</div>
- 
-
-<div class="screen-one-item-container">
-    <h3> Header  </h3>
-        <p> Paragraph/Snippet <br> </p>
-        <p> </p>
-
-    <pre>
-    Code 
-    </pre>
-    
-</div>
- 
-
-<div class="screen-one-item-container">
-    <h3> Header  </h3>
-        <p> Paragraph/Snippet <br> </p>
-        <p> </p>
-
-    <pre>
-    Code 
-    </pre>
-    
-</div>
- 
-
-
-<div class="screen-one-item-container">
-    <h3> Header  </h3>
-        <p> Paragraph/Snippet <br> </p>
-        <p> </p>
-
-    <pre>
-    Code 
-    </pre>
-    
-</div>
- 
-
-
-<div class="screen-one-item-container">
-    <h3> Header  </h3>
-        <p> Paragraph/Snippet <br> </p>
-        <p> </p>
-
-    <pre>
-    Code 
-    </pre>
-    
-</div>
- 
-
-
-<div class="screen-one-item-container">
-    <h3> Header  </h3>
-        <p> Paragraph/Snippet <br> </p>
-        <p> </p>
-
-    <pre>
-    Code 
-    </pre>
-    
-</div>
- 
  						 
-						<div class="screen-one-item-container">
-							<h3> Tips on Linux "top" Command </h3>
-							<p>  Key filters to easily sort,highlight.
-							</p>
-							<p> </p>
+<div class="screen-one-item-container">
+<h3> Permissive mode. </h3>
+<p> Contexts can be changed to permissive mode temporarily for troubleshooting purposes to see if selinux is preventing the services to fail. All these 
+    similar customizations can be checked/found under 'customizations'
+</p>
+<p> </p>
 
 <pre>
 
-top - z (Color) , C (Absoulte Path), x (Highlight Sorted column), b (Highlight Sorted Column ), u (User filter),P ( Sort by CPU),M (Sort by Memory),m (Memory bar),
- V (Forest Mode), O (%MEM > 1, %CPU >1 etc.), "=" to clear all filters
+[root@rhce5 data]# semanage output -o -
+..
+port -a -t http_port_t -p tcp 81
+fcontext -a -f a -t httpd_sys_content_t '/shared(/.*)?'
+
+ 
+-Examples.
+[root@rhce5 data]# semanage fcontext -lC
+SELinux fcontext                                   type               Context
+
+/shared(/.*)?                                      all files          system_u:object_r:httpd_sys_content_t:s0
+
+[root@rhce5 data]# semanage permissive -a httpd_t
+
+[root@rhce5 data]# semanage permissive --list
+
+Customized Permissive Types
+
+httpd_t
+
+Builtin Permissive Types
+
 
 </pre>
 						</div>
  
   						<div class="screen-one-item-container">
-							<h3> setuid,setgid,stickybit </h3>
+							<h3> sesearch </h3>
 							<p> Sesearch can be used to check the selinux policies, for eg. checking a rule and how the transition works is as below. <br>
 
 							  <br>
@@ -259,25 +131,42 @@ top - z (Color) , C (Absoulte Path), x (Highlight Sorted column), b (Highlight S
 						<p> </p>
 
 <pre>
-setuid : Set's the users id upon execution, a process is executed with the privileges of the the owner of the process than the user who is executing it. Example is 'su', more can be found using find / -perm -4000. The setuid permission displayed as an “s” in the owner’s execute field and isn't applicable to directories. 
+[root@rhce5 data]# sesearch -T -s initrc_t -t httpd_exec_t
+Found 1 semantic te rules:
+   type_transition initrc_t httpd_exec_t : process httpd_t;
 
-setgid : This is similar to setuid, except that when a script/command with setguid bit set is ran, the privilege is elevated to the groups permissions than the user who is executing it. Example : /usr/bin/wall. This is also used for group collabration. 
 
-stickybit: chmod 1755, which is used in shared directories for eg. /tmp. where only the owner who created the file can delete the file even if the directory has 777 permissions on it, directory permission will have rwxrwxrwt ( T - means execute permissions are off.)
+[root@server1 ~]# sesearch --allow --source httpd_t --target httpd_sys_content_t --class dir
+Found 16 semantic av rules:
+   allow httpd_t httpd_sys_content_t : dir { ioctl read getattr lock search open } ;
+   
 </pre>
  
 						</div>
  
-<div class="screen-one-item-container">
-    <h3> Header  </h3>
-        <p> Paragraph/Snippet <br> </p>
-        <p> </p>
+  	<div class="screen-one-item-container">
+		<h3> ausearch </h3>
+			<p>  ausearch can be used to dig into the logs. Prior to checking logs, install and run setroubleshootd <br> </p>
+			<p> </p>
 
-    <pre>
-    Code 
-    </pre>
+<pre>
 
-</div>
+#Start setroubleshoot daemon.
+setroubleshootd
+
+#ausearch options
+
+ausearch -x httpd 
+ausearch -m avc --start today
+
+#Run sealert obtained from the audit.log to obtain additional information on the alert.
+
+[root@lab125a ~]# sealert -l cd9b7da6-cb08-43ae-81e0-dbd7dd928036
+SELinux is preventing /usr/sbin/sshd from name_connect access on the tcp_socket port 113.
+
+
+</pre>
+	</div>
  
  
 
