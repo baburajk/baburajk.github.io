@@ -88,41 +88,20 @@
         
  						 
 <div class="screen-one-item-container">
-<h3> Permissive mode. </h3>
-<p> Contexts can be changed to permissive mode temporarily for troubleshooting purposes to see if selinux is preventing the services to fail. All these 
-    similar customizations can be checked/found under 'customizations'
-</p>
+<h3> HEADER </h3>
+<p>  DESCRIPTION </p>
 <p> </p>
 
 <pre>
 
-[root@rhce5 data]# semanage output -o -
-..
-port -a -t http_port_t -p tcp 81
-fcontext -a -f a -t httpd_sys_content_t '/shared(/.*)?'
-
- 
--Examples.
-[root@rhce5 data]# semanage fcontext -lC
-SELinux fcontext                                   type               Context
-
-/shared(/.*)?                                      all files          system_u:object_r:httpd_sys_content_t:s0
-
-[root@rhce5 data]# semanage permissive -a httpd_t
-
-[root@rhce5 data]# semanage permissive --list
-
-Customized Permissive Types
-
-httpd_t
-
-Builtin Permissive Types
-
+CODE BLOCK
 
 </pre>
-						</div>
+</div>
  
-  						<div class="screen-one-item-container">
+
+
+<div class="screen-one-item-container">
 							<h3> sesearch </h3>
 							<p> Sesearch can be used to check the selinux policies, for eg. checking a rule and how the transition works is as below. <br>
 
