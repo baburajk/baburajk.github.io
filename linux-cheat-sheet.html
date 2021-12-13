@@ -98,35 +98,42 @@
  
  						 
 						<div class="screen-one-item-container">
-							<h3> Permissive mode. </h3>
-							<p> Contexts can be changed to permissive mode temporarily for troubleshooting purposes to see if selinux is preventing the services to fail. All these 
-								similar customizations can be checked/found under 'customizations'
+							<h3> Bash - Difference between double open paranthesis (), square brackets [], double square paranthesis [[ ]] </h3>
+							<p>  #(( double open paranthesis )) for arithmetic, [ square brackets for conditionl expression ], [[ double square paranthesis for regular expressions like =~ ]]
 							</p>
 							<p> </p>
 
 <pre>
 
-[root@rhce5 data]# semanage output -o -
-..
-port -a -t http_port_t -p tcp 81
-fcontext -a -f a -t httpd_sys_content_t '/shared(/.*)?'
+    #Example - (( double open paranthesis )) 
 
- 
--Examples.
-[root@rhce5 data]# semanage fcontext -lC
-SELinux fcontext                                   type               Context
+	[root@server1 rpm-gpg]# echo $((1+4))
+	5
+	
+	#Example - (( double open paranthesis )) and []
 
-/shared(/.*)?                                      all files          system_u:object_r:httpd_sys_content_t:s0
+	[root@server1 rpm-gpg]# [ $(date +%d -d -100days) -le 30 ] && echo "Test passed"
+	Test passed
+	
+	#Example - [[ ]]
 
-[root@rhce5 data]# semanage permissive -a httpd_t
+	[root@server1 rpm-gpg]# if  [[ "xyz" =~ "x" ]]; then echo "True" ; fi
+	True
+	
+	#Note on expressions : == looks for exact string equality vs eq looks for arithmetic equality.
+	
+	[root@rhce4 ~]#  [ " 1 " == 1 ]  && echo equal || echo not
+	not
+	
+	[root@rhce4 ~]#  [ " 1 " -eq 1 ]  && echo equal || echo not
+	equal
+	
+	# Schedule a cron to execute on first sunday of every month.
+	0 2 * * sun  [ $(date +%d) -le 07 ] && /script/script.sh
+	
+	When you specify */5 in minute field means every 5 minutes.
+	When you specify 0-10/2 in minute field mean every 2 minutes in the first 10 minute.
 
-[root@rhce5 data]# semanage permissive --list
-
-Customized Permissive Types
-
-httpd_t
-
-Builtin Permissive Types
 
 
 </pre>
