@@ -91,8 +91,7 @@
  						 
 						<div class="screen-one-item-container">
 							<h3> Bash Conditionals: Usage (( for arithmetic )),  [  for conditionl expression ] ,  [[ for regular expressions like =~ ]]</h3>
-							<p>     
-							</p>
+							<p> </p>
 							<p> </p>
 
 <pre>
@@ -132,22 +131,40 @@
 						</div>
  
   						<div class="screen-one-item-container">
-							<h3> sesearch </h3>
-							<p> Sesearch can be used to check the selinux policies, for eg. checking a rule and how the transition works is as below. <br>
-
-							  <br>
-						</p>
-						<p> </p>
+							<h3> Quick notes on IPv6 & IPv4 & RFC's  </h3>
+							<p>  </p>
+						    <p> </p>
 
 <pre>
-[root@rhce5 data]# sesearch -T -s initrc_t -t httpd_exec_t
-Found 1 semantic te rules:
-   type_transition initrc_t httpd_exec_t : process httpd_t;
-
-
-[root@server1 ~]# sesearch --allow --source httpd_t --target httpd_sys_content_t --class dir
-Found 16 semantic av rules:
-   allow httpd_t httpd_sys_content_t : dir { ioctl read getattr lock search open } ;
+    :: equals ipv4 0.0.0.0 and ::/0 is equal to 0.0.0.0/0 
+    (Default Route).  2000::/3 is Global Unicast Address, 
+    fc00::/10 is Unique Local Address 
+    
+    (RFC4193, like RFC1918), fe80::/64 - Link-Local 
+    address (Auto configured for every device), 
+    ff00::/8 - Multicast - equivalent to 224.0.0.0/4. 
+    
+    There is no broadcast address in IPv6. 
+    
+    ping6 ff02::1 is a multicast address which will
+    send packet all local-links.
+    
+    ff02::1:2 is all-dhcp-servers link-local 
+    multicast group and ff02::2 is all-routers 
+    link-local multicast group 
+    
+    RFC3927
+    IETF reserved 169.254.0.0/16 as a link
+    local address and fe80::/10 for IPv6. 
+    
+    RFC1918
+    Defines private address space (non-routable)
+    10.0.0.0/8 , 172.16.0.0/12, 192.168.0.0/16.
+    
+    RFC6598
+    Used by IANA to reserve CGN 
+    (Carrier Grade Network Space): 100.64.0.0/10 
+    
    
 </pre>
  
