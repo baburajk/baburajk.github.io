@@ -174,13 +174,16 @@
 
 <!-- container -->		
 <div class="screen-one-item-container">
-	<h3>  SUBTITLE </h3>
+	<h3>  setuid,setgid,stickybit </h3>
 	<p> </p>
 	<p> </p>
 
 <pre>
-CODE BLOCK
-</pre>		
+    setuid : Set's the users id upon execution, a process is executed with the privileges of the the owner of the process than the user who is executing it. Example is 'su', more can be found using find / -perm -4000. The setuid permission displayed as an “s” in the owner’s execute field and isn't applicable to directories. 
+
+    setgid : This is similar to setuid, except that when a script/command with setguid bit set is ran, the privilege is elevated to the groups permissions than the user who is executing it. Example : /usr/bin/wall. This is also used for group collabration. 
+    
+    stickybit: chmod 1755, which is used in shared directories for eg. /tmp. where only the owner who created the file can delete the file even if the directory has 777 permissions on it, directory permission will have rwxrwxrwt ( T - means execute permissions are off.)</pre>		
 
 </div>
 <!-- container -->		
@@ -189,12 +192,16 @@ CODE BLOCK
 
 <!-- container -->		
 <div class="screen-one-item-container">
-	<h3>  SUBTITLE </h3>
+	<h3>  Carriage Return vs Linefeed vs Form Feed. </h3>
 	<p> </p>
 	<p> </p>
 
 <pre>
-CODE BLOCK
+    Carriage return means to return to the beginning of the current line without advancing downward. The name comes from a printer's carriage, as monitors were rare when the name was coined. This is commonly escaped as "\r", abbreviated CR, and has ASCII value 13 or 0x0D. 
+
+    Linefeed means to advance downward to the next line; however, it has been repurposed and renamed. Used as "newline", it terminates lines (commonly confused with separating lines). This is commonly escaped as "\n", abbreviated LF or NL, and has ASCII value 10 or 0x0A. CRLF (but not CRNL) is used for the pair "\r\n". 
+    
+    Form feed means advance downward to the next "page". It was commonly used as page separators, but now is also used as section separators. (It's uncommonly used in source code to divide logically independent functions or groups of functions.) Text editors can use this character when you "insert a page break". This is commonly escaped as "\f", abbreviated FF, and has ASCII value 12 or 0x0C.
 </pre>		
 
 </div>
