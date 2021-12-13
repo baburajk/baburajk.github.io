@@ -87,50 +87,27 @@
 		<div class="container">
  
  						 
-						<div class="screen-one-item-container">
-							<h3> Bash - Difference between double open paranthesis (), square brackets [], double square paranthesis [[ ]]	 	</h3>
-							<p> #(( double open paranthesis )) for arithmetic, [ square brackets for conditionl expression ], [[ double square paranthesis for regular expressions like =~ ]]
-
-							</p>
+		<div class="screen-one-item-container">
+							<h3>  SUBTITLE </h3>
+							<p> </p>
 							<p> </p>
 
 <pre>
-
-   
-	#Example - (( double open paranthesis )) 
-
-	[root@server1 rpm-gpg]# echo $((1+4))
-	5
-	
-	#Example - (( double open paranthesis )) and []
-
-	[root@server1 rpm-gpg]# [ $(date +%d -d -100days) -le 30 ] && echo "Test passed"
-	Test passed
-	
-	#Example - [[ ]]
-
-	[root@server1 rpm-gpg]# if  [[ "xyz" =~ "x" ]]; then echo "True" ; fi
-	True
-	
-	#Note on expressions : == looks for exact string equality vs eq looks for arithmetic equality.
-	
-	[root@rhce4 ~]#  [ " 1 " == 1 ]  && echo equal || echo not
-	not
-	
-	[root@rhce4 ~]#  [ " 1 " -eq 1 ]  && echo equal || echo not
-	equal
-	
-	# Schedule a cron to execute on first sunday of every month.
-	0 2 * * sun  [ $(date +%d) -le 07 ] && /script/script.sh
-	
-	When you specify */5 in minute field means every 5 minutes.
-	When you specify 0-10/2 in minute field mean every 2 minutes in the first 10 minute.
-
-
-
+	CODE BLOCK
 </pre>
-						</div>
+		
+		</div>
  
+		<div class="screen-one-item-container">
+			<h3>  SUBTITLE </h3>
+			<p> </p>
+			<p> </p>
+
+<pre>
+CODE BLOCK
+</pre>
+
+		</div>
   						<div class="screen-one-item-container">
 							<h3> sesearch </h3>
 							<p> Sesearch can be used to check the selinux policies, for eg. checking a rule and how the transition works is as below. <br>
