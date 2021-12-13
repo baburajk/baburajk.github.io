@@ -217,6 +217,151 @@
 </div>
 <!-- container -->		
 
+<!-- container -->		
+<div class="screen-one-item-container">
+    <h3>  Managing network interfaces in virtualization. </h3>
+    <p> Steps taken to attach/detach network interfaces from the KVM host and also within the guest VM <br>
+        using nmcli/nmtui and virsh.
+    </p>
+    <p> </p>
+
+<pre>
+
+    [root@server ~]# nmcli d show eth3
+    GENERAL.DEVICE:                         eth3
+    GENERAL.TYPE:                           ethernet
+    GENERAL.HWADDR:                         52:54:00:82:2F:44     ==> MAC we are interested in..
+    ....
+    
+    virsh # domiflist server
+    Interface  Type       Source     Model       MAC
+    -------------------------------------------------------
+    vnet0      bridge     br_fe      virtio      52:54:00:2c:19:87
+    vnet1      network    vnetnat    virtio      52:54:00:4b:a2:98
+    vnet2      network    vnetrou    virtio      52:54:00:f1:15:ef
+    vnet3      network    vnetiso    virtio      52:54:00:82:2f:44     ==> MAC we are interested in..
+    
+    
+    => Detach interfaces
+    
+    virsh # detach-interface --domain server --type network --mac 52:54:00:82:2f:44 --persistent
+    Interface detached successfully
+    
+    
+    virsh # detach-interface --domain server --type network --mac 52:54:00:82:2f:44 --persistent
+    error: Domain has multiple interfaces matching MAC address 52:54:00:82:2f:44. You must use detach-device and specify the device pci address to remove it.
+    
+    #If two devices are mapped with same mac, to remove 
+    
+    root@panchajanya:~\> virsh dumpxml server | egrep -A7  "interface type"
+    
+    root@panchajanya:~\> virsh detach-device server remove.xml --persistent
+    Device detached successfully
+     
+    #Change it to a different network 
+    virsh # attach-interface --domain server --type network --source vnetnat --model virtio --mac 52:54:00:82:2f:44 --persistent --live eth3
+    Interface attached successfully
+    
+    
+    [root@server network-scripts]# nmcli con show
+    NAME                UUID                                  TYPE            DEVICE
+    System eth1         dbfe8c4c-abc6-4a98-b953-d8475dd2217d  802-3-ethernet  eth1
+    System eth2         260c99eb-2a00-44b5-a3d6-e731d936a3b4  802-3-ethernet  eth2
+    Wired connection 1  2463dcd8-dca0-478e-9843-81c23a2de560  802-3-ethernet  eth3
+    System eth0         b6870dc4-b183-4bdd-b310-6d789c3e9ce0  802-3-ethernet  eth0
+    
+    
+    [root@server network-scripts]# nmcli dev connect eth3
+    Device 'eth3' successfully activated with '2463dcd8-dca0-478e-9843-81c23a2de560'.
+    
+</pre>		
+
+</div>
+<!-- container -->		
+
+<!-- container -->		
+<div class="screen-one-item-container">
+    <h3>  SUBTITLE </h3>
+    <p> </p>
+    <p> </p>
+
+<pre>
+CODE BLOCK
+</pre>		
+
+</div>
+<!-- container -->		
+
+
+<!-- container -->		
+<div class="screen-one-item-container">
+    <h3>  Linux Kickstart Configuration. </h3>
+    <p> Kickstart configuration provides an easy way to spin VM's with virsh commands, much faster and better than admin console UI.
+        Commands include the kickstart configuration file template and steps to spin the VMs  </p>
+    <p> </p>
+
+<pre>
+    #How to install a VM via kickstart ( mandatory options.)
+    virt-install -n rhce1 --memory 1024 --vcpus 1 --os-variant rhel7 --disk vol=virspd01/rhce1.img --network network=default --location ftp://192.168.2.20/pub/rhel74 --extra-args ks=ftp://192.168.2.20/pub/ksconfig/rhce1.cfg
+    
+    #Create the disk prior
+    virsh # vol-create-as virpool0 server10.img 8G
+    Vol server10.img created
+    
+    
+    #Kick start file with all the options.
+    root@mayura:/var/ftp/pub/ksconfig\> cat rhce1.cfg | grep -v ^# |grep -v ^$
+    auth --enableshadow --passalgo=sha512
+    url --url="ftp://192.168.2.21/pub/rhel74"
+    firstboot --enable
+    ignoredisk --only-use=vda
+    keyboard --vckeymap=us --xlayouts='us'
+    lang en_US.UTF-8
+    reboot
+    network  --bootproto=static --device=eth0 --gateway=192.168.122.1 --ip=192.168.122.10 --netmask=255.255.255.0 --ipv6=auto --activate
+    network  --hostname=rhce1.intercloudzone.com
+    services --enabled="chronyd"
+    rootpw --plaintext oracle
+    timezone America/Chicago --isUtc
+    bootloader --location=mbr --boot-drive=vda --append=" console=ttyS0,115200,tty0"
+    clearpart --all --initlabel --drives=vda
+    part /boot --fstype="xfs" --ondisk=vda --size=500
+    part pv.1 --fstype="lvmpv" --ondisk=vda --size=8000
+    volgroup vgos --pesize=4096 pv.1
+    logvol /home  --fstype="xfs" --size=1000 --name=home --vgname=vgos
+    logvol /  --fstype="xfs" --size=4000 --name=root --vgname=vgos
+    logvol swap  --fstype="swap" --size=500 --name=swap --vgname=vgos
+    %packages
+    @^minimal
+    @core
+    chrony
+    kexec-tools
+    %end
+    %addon com_redhat_kdump --enable --reserve-mb='auto'
+    %end
+    %anaconda
+    pwpolicy root --minlen=6 --minquality=1 --notstrict --nochanges --notempty
+    pwpolicy user --minlen=6 --minquality=1 --notstrict --nochanges --emptyok
+    pwpolicy luks --minlen=6 --minquality=1 --notstrict --nochanges --notempty
+    %end
+    
+    
+    #Pass in the console tty and other parameters via kick start.
+    virt-install --name "server1" --memory=1024 --disk vol=virspd00/server1.img --vcpus=1 --os-variant=rhel7 --os-type=linux --location=ftp://192.168.2.20/pub/rhel7 --network bridge=virbr1 --network bridge=virbr1 -x "ks=ftp://192.168.2.20/pub/ksconfig/server1.cfg console=ttyS0,115200,tty0"
+    
+    #Sample kickstart configuration with two interfaces auto and two as static.
+    
+    root@panchajanya:/var/ftp/pub/rhel7\> grep network ks.cfg
+    # Use network installation
+    network --device=eth0 --bootproto=dhcp --ipv6=auto --activate
+    network --device=eth1 --bootproto=dhcp --ipv6=auto --activate
+    network --device=eth2 --bootproto=static --ip=192.168.125.10 --netmask=255.255.255.0 --ipv6=auto --activate
+    network --device=eth3 --bootproto=static --ip=192.168.130.10 --netmask=255.255.255.0 --ipv6=auto --activate
+    network  --hostname=server10
+    </pre>		
+
+</div>
+<!-- container -->		
 
 
 
