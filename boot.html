@@ -1,18 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
-<head> <script data-ad-client="ca-pub-2393111531899119" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script> 
+<head>  
 	<meta charset="utf-8">
-	<title>intercloudzone</title>
-	<meta name="description" content="">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>TEMPLATE</title>
+ 
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 	<meta property="og:image" content="path/to/image.jpg">
-<!-- favicon -->
-<link rel="shortcut icon" href="img/favicon/favicon.ico" type="image/x-icon">
-<link rel="apple-touch-icon" href="img/favicon/apple-touch-icon.png">
-<link rel="apple-touch-icon" sizes="72x72" href="img/favicon/apple-touch-icon-72x72.png">
-<link rel="apple-touch-icon" sizes="114x114" href="img/favicon/apple-touch-icon-114x114.png">
-<!-- favicon -->
+ 
 <!-- build:css -->
 <link rel="stylesheet" href="css/libs/bootstrap.min.css">
 <link rel="stylesheet" href="css/libs/font-awesome.min.css">
@@ -31,17 +25,9 @@
 	<meta name="apple-mobile-web-app-status-bar-style" content="#000">
 	<!-- <style>body { opacity:s 0; overflow-x: hidden; } html { background-color: #fff; }</style> -->
 </head>
-<body data-spy="scroll" data-target=".navbar" data-offset="50" class="loaded">
-<!-- Preloader -->
-<div class="preloader">
-	<div class="cssload-spinner">
-		<div class="cssload-ball cssload-ball-1"></div>
-		<div class="cssload-ball cssload-ball-2"></div>
-		<div class="cssload-ball cssload-ball-3"></div>
-		<div class="cssload-ball cssload-ball-4"></div>
-	</div>
-</div>
-<!-- Preloader -->
+<body data-spy="scroll" data-target=".navbar" data-offset="50" class="loaded" link="blue">
+
+	
 <div class="site-content">
 	<!-- Naviigation -->
 	<div class="navbar-wrap">
@@ -66,18 +52,11 @@
 										<li><a href="http://padmavyuha.blogspot.com/">Blog</a></li>
 										<li><a href="https://sourceforge.net/projects/oraclerman/">Projects</a></li>
 										<li><a href="https://hub.docker.com/u/baburaj/">Docker</a></li>
-										<!-- <li><a href="#subscribe">Subscribe</a></li> -->
 										<li><a href="mailto:raj.anju@gmail.com">Contact Me</a></li>
 										<li>
 										</li>
 									</ul>
-									<!-- btn -->
-									<div class="nav-button main-button">
-										<a href="#" class="btn btn-nav btn-block" role="button">
-											Site is in Beta!
-										</a>
-									</div>
-									<!-- btn -->
+							
 								</div>
 							</div>
 						</nav>
@@ -88,384 +67,197 @@
 	</div>
 	<!-- Naviigation -->
 	
-	<!-- Header -->
+
+<!-- Header -->
 	<div class="menu-sticky"></div>
-
-	 
-
+ 
 	<!-- Screen-one -->
 	<div class="screen-one">
 		<div class="container">
 			<div class="row">
 				<div class="col-md-12">
 					<div class="screen-one-title">
-						<h2>Different ways to restrict logins on the linux.</h2>
+
+						<h2>  Resolving boot errors caused by lost root password, corrupt initramfs, corrupt grub using tools like grubcmd, kpartx etc.  </h2>
 					</div>
 				</div>
 			</div>
 		</div>
-	
-			<div class="container">
-					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0s">
-						<span>01.</span>
-						<div class="screen-one-item-container">
-							<h3> What if the root password is lost!</h3>
-							<p> Perform grub edits to login to superuser mode to recover a lost password. </p>
-							<p> </p>
-<pre>
-
-#Press 'esc' while system is booting to enter into the grub edit mode and press 'e' and move to the 'linux16' line and append.
-
-rd.break or init=/sysroot/bin/sh
-mount -o remount,rw /sysroot
-chroot /sysroot
-passwd 
-touch /.autorelabel
-exit (twice)
-
-</pre>
-						</div>
-				</div>
-
-
+	 
 		<div class="container">
-					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0s">
-						<span>02.</span>
-						<div class="screen-one-item-container">
-							<h3>Boot failure!</h3>
-							<p> Boot manually using insmod via grubcmd.</p>
-							<p> </p>
-<pre>
-
-#Grub2 Command Line.
-
-grub> 
-insmod lvm
-search.file /etc/fstab 
-  lvm/vgos-root
-set root=(lvm/vgos-root)
-linux16 (hd0,msdos1)/vmlinuz -tab root=/dev/mapper/vgos-root
-initrd (hd0,msdos1)/initramfs* 
-
-#System boot issues 
-Early debug shell can be activated by
-
-systemctl enable debug-shell # A root shell will be spanned on TTY9, CTRL+ALT+F9)
-
  
-</pre>
-						</div>
-				</div>
-
-
- 					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0s">
-						<span>03.</span>
-						<div class="screen-one-item-container">
-							<h3> Corrupt initramfs </h3>
-							<p> Recreating initramfs using dracut. </p>
+<!-- container -->		
+		<div class="screen-one-item-container">
+							<h3>  Steps to perform when a root password is lost </h3>
 							<p> </p>
-<pre>
-#Corruption in grub.cfg
-Mount the DVD, boot - choose the resuce media
-
-
-#If vmlinuz is missing
-Boot into rescue mode
-chroot /mnt/sysimage
-mount /dev/cdrom /tmp/mnt 
-cp /tmp/mnt/isolinux/vmlinuz /boot/vmlinuz-$(uname -r) or grub2-install /dev/vda1 --skip-fs-probe --force -v
-cd /boot ; dracut initramfs-$(uname -r).img $(uname -r)
-
-#Configure virtual terminals
-/etc/systemd/logind.conf
-
-#NOTE: (*IMPORTANT*) 
-Iff console doesn't come up even with rd.break or init=/sysroot/bin/sh add below to overide the console terminals.
-rd.break console=tty1 or rd.break console=tty0 (or ttyS0) or enforcing=0
- 
-</pre>
-						</div>
-				</div>
-
-
-
-					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0s">
-						<span>04.</span>
-						<div class="screen-one-item-container">
-							<h3> Corruption in grub.cfg/grub2-tools files missing! </h3>
-							<p>  </p>
-							<p> </p>
-<pre>
-
-#Corruption in grub.cfg
-Mount the DVD, boot - choose the resuce media
-
-chroot /mnt/sysimage
-grub2-install /dev/vda
-yum reinstall grub2-tools
-grub2-mkconfig -o /boot/grub2/grub.cfg
-or 
-grub2-mkconfig -o /boot/grub2/efi/EFI/redhat/grub.cfg
-
--Example.
-[root@lab11 default]# grub2-mkconfig -o /boot/grub2/grub.cfg
-Generating grub configuration file ...
-Found linux image: /boot/vmlinuz-3.10.0-327.el7.x86_64
-Found initrd image: /boot/initramfs-3.10.0-327.el7.x86_64.img
-Found linux image: /boot/vmlinuz-0-rescue-d88dc0e9818b405383649087000b224a
-Found initrd image: /boot/initramfs-0-rescue-d88dc0e9818b405383649087000b224a.img
-done
-
-</pre>
-						</div>
-				</div>
-
-
-				   <div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.1s">
-						<span>05.</span>
-						<div class="screen-one-item-container">
-							<h3> Updating boot targets/kernel options </h3>
-							<p> Updaing kernel options using systemctl/grubby.
-							</p>
 							<p> </p>
 
 <pre>
+    #Perform grub edits to login to superuser mode to recover a lost password.
+    #Press 'esc' while system is booting to enter into the grub edit mode and press 'e' and move to the 'linux16' line and append.
+    
+    rd.break or init=/sysroot/bin/sh
+    mount -o remount,rw /sysroot
+    chroot /sysroot
+    passwd 
+    touch /.autorelabel
+    exit (twice)
+</pre>		
 
-
-#Systemctl command options to change the default boot kernel
- [root@rhce boot]# systemctl --help |grep default
-  get-default                     Get the name of the default target
-  set-default NAME                Set the default target
-  default                         Enter system default mode
-
-[root@rhce boot]# systemctl get-default
-multi-user.target
-
-[root@rhce boot]# systemctl set-default rescue.target
-Removed symlink /etc/systemd/system/default.target.
-Created symlink from /etc/systemd/system/default.target to /usr/lib/systemd/system/rescue.target.
-
-[root@rhce boot]# ls -ltr /etc/systemd/system/default.target
-lrwxrwxrwx. 1 root root 37 Jul 18 12:47 /etc/systemd/system/default.target -> /usr/lib/systemd/system/rescue.target
-
-#Default is controlled by 
-[root@rhce grub2]# grep GRUB_DEFAULT /etc/default/grub
-GRUB_DEFAULT=saved
-
-Since it's saved - the detail will be in /boot/grub2/grubenv 
-
-This can be seen as 
-[root@rhce grub2]# grub2-editenv list
-saved_entry=CentOS Linux (3.10.0-514.26.2.el7.x86_64) 7 (Core)
-
-[root@rhce grub2]# grep "^menuentry" /boot/grub2/grub.cfg | cut -d "'" -f2
-CentOS Linux (3.10.0-514.26.2.el7.x86_64) 7 (Core)
-CentOS Linux (3.10.0-327.el7.x86_64) 7 (Core)
-CentOS Linux (0-rescue-d458f1266e944ac49077920032339122) 7 (Core)
-
-[root@rhce grub2]# grub2-set-default 0
-
-[root@rhce grub2]# grub2-editenv list
-saved_entry=0
-
-#Boot-time parameters.
-
-[root@lab125a sysctl.d]# cat /proc/cmdline
-BOOT_IMAGE=/vmlinuz-3.10.0-327.el7.x86_64 root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet LANG=en_US.UTF-8
-
-[root@lab125a ~]# grep CMD /etc/default/grub
-GRUB_CMDLINE_LINUX="crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet console=tty0 console=ttyS0 console=ttyS0,115200"
-grub2-mkconfig -o /boot/grub2/grub.cfg
-
-Option 2, once logged into the server
-
---Example-1: Update all kernels with same arguments
-grubby --update-kernel=ALL --args=console=ttyS0,115200
-
---Example-2: Remove args,add args - update kernel
-grubby --remove-args="rhgb quiet" --args=console=ttyS0,115200 --update-kernel /boot/vmlinuz-4.2.0-1.fc23.x86_64
-
-[root@lab11 ~]# grubby --help |grep kernel |grep update
-                                      new arguments for kernel being updated
-                                      kernel being updated
- --update-kernel=kernel-path         updated information for the specified
-
-[root@lab11 ~]# grubby --default-kernel
-/boot/vmlinuz-3.10.0-327.el7.x86_64
-
-[root@lab11 ~]# grubby --default-index
-0
-
-[root@lab11 ~]# grubby --info=ALL
-index=0
-kernel=/boot/vmlinuz-3.10.0-327.el7.x86_64
-args="ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet LANG=en_US.UTF-8 console=ttyS0"
-root=/dev/mapper/vgos-lvroot
-initrd=/boot/initramfs-3.10.0-327.el7.x86_64.img
-title=CentOS Linux (3.10.0-327.el7.x86_64) 7 (Core)
-index=1
-kernel=/boot/vmlinuz-0-rescue-d88dc0e9818b405383649087000b224a
-args="ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet"
-root=/dev/mapper/vgos-lvroot
-initrd=/boot/initramfs-0-rescue-d88dc0e9818b405383649087000b224a.img
-title=CentOS Linux (0-rescue-d88dc0e9818b405383649087000b224a) 7 (Core)
-index=2
-non linux entry
-
-[root@lab11 ~]# grep linux16 /etc/grub2.cfg
-  linux16 /vmlinuz-3.10.0-327.el7.x86_64 root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet LANG=en_US.UTF-8 console=ttyS0
-  linux16 /vmlinuz-0-rescue-d88dc0e9818b405383649087000b224a root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet
-
-[root@lab11 ~]# grubby --remove-args="console=ttys0" --update-kernel=/boot/vmlinuz-3.10.0-327.el7.x86_64
-[root@lab11 ~]# grep linux16 /etc/grub2.cfg
-  linux16 /vmlinuz-3.10.0-327.el7.x86_64 root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet LANG=en_US.UTF-8
-  linux16 /vmlinuz-0-rescue-d88dc0e9818b405383649087000b224a root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet
-
-[root@lab11 ~]# grubby --update-kernel=/boot/vmlinuz-3.10.0-327.el7.x86_64 --args="console=ttyS0 console=tty0 console=ttyS0,115200"
-[root@lab11 ~]# grep linux16 /boot/grub2/grub.cfg
-  linux16 /vmlinuz-3.10.0-327.el7.x86_64 root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet LANG=en_US.UTF-8 console=ttyS0 console=tty0 console=ttyS0,115200
-  linux16 /vmlinuz-0-rescue-d88dc0e9818b405383649087000b224a root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet
-
-
-</pre>
-						</div>
-					</div>
-
-					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
-						<span>06.</span>
-						<div class="screen-one-item-container">
-							<h3> kpartx </h3>
-							<p>  Updating grub/image properties by editing the image file and mounting it via kpartx <br>
-
-							  <br>
-						</p>
-						<p> </p>
-
-<pre>
-
-[root@lab130a ~]# grep linux16 /boot/grub2/grub.cfg
-  linux16 /vmlinuz-3.10.0-327.el7.x86_64 root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet LANG=en_US.UTF-8
-  linux16 /vmlinuz-0-rescue-6e490d5089bd459881a69cee25bb2294 root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet
-
-[root@lab130a ~]# grubby --update-kernel /boot/vmlinuz-3.10.0-327.el7.x86_64 --args="console=tty0,ttyS0,115200"
-
-[root@lab130a ~]# grep linux16 /boot/grub2/grub.cfg
-  linux16 /vmlinuz-3.10.0-327.el7.x86_64 root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet LANG=en_US.UTF-8 console=tty0 console=ttyS0 console=ttyS0,115200
-  linux16 /vmlinuz-0-rescue-6e490d5089bd459881
-
-# Try to get access to console 
-virsh console lab11 
-
-#Doesn't work until the console access is enabled. Enable via kpartx
-
-root@panchajanya:~\> virsh domblklist lab11
-Target     Source
-------------------------------------------------
-vda        /data/sdd01/vspd1/lab11.img
-
-root@panchajanya:~\> kpartx -av /data/sdd01/vspd1/lab11.img
-add map loop0p1 (253:14): 0 1048576 linear /dev/loop0 2048
-add map loop0p2 (253:15): 0 20971520 linear /dev/loop0 1050624
-add map loop0p3 (253:16): 0 1048576 linear /dev/loop0 22022144
-
-root@panchajanya:~\> mount /dev/mapper/loop0p1 /mnt/
-root@panchajanya:~\> cd /mnt/
-root@panchajanya:/mnt\> ls
-config-3.10.0-327.el7.x86_64                             initrd-plymouth.img
-grub                                                     symvers-3.10.0-327.el7.x86_64.gz
-grub2                                                    System.map-3.10.0-327.el7.x86_64
-initramfs-0-rescue-d88dc0e9818b405383649087000b224a.img  vmlinuz-0-rescue-d88dc0e9818b405383649087000b224a
-initramfs-3.10.0-327.el7.x86_64.img                      vmlinuz-3.10.0-327.el7.x86_64
-initramfs-3.10.0-327.el7.x86_64kdump.img
-
-root@panchajanya:/mnt\> vi grub2/grub.cfg
-
-root@panchajanya:/mnt\> grep console grub2/grub.cfg
-terminal_output console
-  linux16 /vmlinuz-3.10.0-327.el7.x86_64 root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet LANG=en_US.UTF-8 console=ttyS0
-
-umount /dev/mapper/loop0p1
-kpartx -dv /data/sdd01/vspd1/lab11.img
-
-
-
-</pre>
-					</div>
-				</div>
-					
-
-	<!-- Contact -->
-<a class="anchor" id="contact"></a>
-
-<section class="contact">
-		<div class="contact-wrap">
-			<div class="container">
-				<div class="row">
-					<div class="col-md-12 __web-inspector-hide-shortcut__">
-						<div class="contact-title">
-							<h2></h2>
-							<p> 
-								<br class="disable"></p>
-						</div>
-						<!-- /.contact-title -->
-					</div>
-					<!-- /.col-md-12 -->
-					
-					<!-- /.col-md-10 -->
-				</div>
-				<!-- /.row -->
-			</div>
-			<!-- /.container -->
 		</div>
-		<!-- /.directions-wrap -->
-	</section>
+<!-- container -->		
+
+
+<!-- container -->		
+<div class="screen-one-item-container">
+	<h3>  Linux boot failure due to failed initramfs load </h3>
+	<p> Using insmod and grubcmd manage initramfs </p>
+	<p> </p>
+
+<pre>
+    #Grub2 Command Line.
+
+    grub> 
+    insmod lvm
+    search.file /etc/fstab 
+      lvm/vgos-root
+    set root=(lvm/vgos-root)
+    linux16 (hd0,msdos1)/vmlinuz -tab root=/dev/mapper/vgos-root
+    initrd (hd0,msdos1)/initramfs* 
+    
+    #System boot issues 
+    Early debug shell can be activated by
+    
+    systemctl enable debug-shell # A root shell will be spanned on TTY9, CTRL+ALT+F9)
+</pre>		
 
 </div>
-<!-- Site content -->
-
-<!-- Footer -->
-<a class="anchor" id="footer"></a>
-<footer class="footer" style="background-image: url(img/footer-bg.jpg); background-position:center; background-size: cover; background-repeat:no-repeat;">
-	<div class="footer-wrap">
-		<div class="container">
-			<div class="row">
-				<div class="col-md-12">
-					<div class="footer-title">
-						<h2>www.intercloudzone.com</h2>
-						<ul class="footer-icons">
-						<script src="//platform.linkedin.com/in.js" type="text/javascript"> lang: en_US</script>
-						<script type="IN/Share" data-url="http://www.intercloudzone.com/boot.html"></script>
-						</ul>
-						<p> </p>
-					</div>
-					<!-- /.footer-title -->
-				</div>
-				<!-- /.col-md-12 -->
-			</div>
-			<!-- /.row -->
-		</div>
-		<!-- /.container -->
-	</div>
-	<!-- /.directions-wrap -->
-</footer>
-<!-- Footer -->
+<!-- container -->		
 
 
+<!-- container -->		
+<div class="screen-one-item-container">
+	<h3>  What if the initramfs file is corrupted. </h3>
+	<p> </p>
+	<p> </p>
 
-<!-- links -->
-<script type="text/javascript" src="http://maps.google.com/maps/api/js?key=AIzaSyDDuC8pr6YqiBr9wqfhNIJ56AqwzWKhiQo"></script>
-<!-- build:js -->
+<pre>
+    #Corruption in grub.cfg
+    Mount the DVD, boot - choose the resuce media
+    
+    
+    #If vmlinuz is missing
+    Boot into rescue mode
+    chroot /mnt/sysimage
+    mount /dev/cdrom /tmp/mnt 
+    cp /tmp/mnt/isolinux/vmlinuz /boot/vmlinuz-$(uname -r) or grub2-install /dev/vda1 --skip-fs-probe --force -v
+    cd /boot ; dracut initramfs-$(uname -r).img $(uname -r)
+    
+    #Configure virtual terminals
+    /etc/systemd/logind.conf
+    
+    #NOTE: (*IMPORTANT*) 
+    Iff console doesn't come up even with rd.break or init=/sysroot/bin/sh add below to overide the console terminals.
+    rd.break console=tty1 or rd.break console=tty0 (or ttyS0) or enforcing=0
+</pre>		
 
- 
+</div>
+<!-- container -->		
 
-<script src="js/libs/jquery.min.js"></script>
-<script type="text/javascript" src="js/libs/bootstrap.min.js"></script>
-<script type="text/javascript" src="js/libs/waypoints.min.js"></script>
-<script type="text/javascript" src="js/libs/slick.min.js"></script>
-<script type="text/javascript" src="js/libs/magnific-popup.min.js"></script>
 
-<script type="text/javascript" src="js/common.js"></script>
-<!-- endbuild -->
-<!-- links -->
+
+<!-- container -->		
+<div class="screen-one-item-container">
+	<h3>  File System corruption in grub.cfg/grub2-tools files missing! </h3>
+	<p> </p>
+	<p> </p>
+
+<pre>
+    #Corruption in grub.cfg
+    Mount the DVD, boot - choose the resuce media
+    
+    chroot /mnt/sysimage
+    grub2-install /dev/vda
+    yum reinstall grub2-tools
+    grub2-mkconfig -o /boot/grub2/grub.cfg
+    or 
+    grub2-mkconfig -o /boot/grub2/efi/EFI/redhat/grub.cfg
+    
+    -Example.
+    [root@lab11 default]# grub2-mkconfig -o /boot/grub2/grub.cfg
+    Generating grub configuration file ...
+    Found linux image: /boot/vmlinuz-3.10.0-327.el7.x86_64
+    Found initrd image: /boot/initramfs-3.10.0-327.el7.x86_64.img
+    Found linux image: /boot/vmlinuz-0-rescue-d88dc0e9818b405383649087000b224a
+    Found initrd image: /boot/initramfs-0-rescue-d88dc0e9818b405383649087000b224a.img
+    done
+</pre>		
+
+</div>
+<!-- container -->		
+
+
+<!-- container -->		
+<div class="screen-one-item-container">
+	<h3>  Image Edits using - kpartx   </h3>
+	<p> Using kpartx , mount the image FS using /dev/loop and re-mount </p>
+	<p> </p>
+
+<pre>
+    [root@lab130a ~]# grep linux16 /boot/grub2/grub.cfg
+    linux16 /vmlinuz-3.10.0-327.el7.x86_64 root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet LANG=en_US.UTF-8
+    linux16 /vmlinuz-0-rescue-6e490d5089bd459881a69cee25bb2294 root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet
+  
+  [root@lab130a ~]# grubby --update-kernel /boot/vmlinuz-3.10.0-327.el7.x86_64 --args="console=tty0,ttyS0,115200"
+  
+  [root@lab130a ~]# grep linux16 /boot/grub2/grub.cfg
+    linux16 /vmlinuz-3.10.0-327.el7.x86_64 root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet LANG=en_US.UTF-8 console=tty0 console=ttyS0 console=ttyS0,115200
+    linux16 /vmlinuz-0-rescue-6e490d5089bd459881
+  
+  # Try to get access to console 
+  virsh console lab11 
+  
+  #Doesn't work until the console access is enabled. Enable via kpartx
+  
+  root@panchajanya:~\> virsh domblklist lab11
+  Target     Source
+  ------------------------------------------------
+  vda        /data/sdd01/vspd1/lab11.img
+  
+  root@panchajanya:~\> kpartx -av /data/sdd01/vspd1/lab11.img
+  add map loop0p1 (253:14): 0 1048576 linear /dev/loop0 2048
+  add map loop0p2 (253:15): 0 20971520 linear /dev/loop0 1050624
+  add map loop0p3 (253:16): 0 1048576 linear /dev/loop0 22022144
+  
+  root@panchajanya:~\> mount /dev/mapper/loop0p1 /mnt/
+  root@panchajanya:~\> cd /mnt/
+  root@panchajanya:/mnt\> ls
+  config-3.10.0-327.el7.x86_64                             initrd-plymouth.img
+  grub                                                     symvers-3.10.0-327.el7.x86_64.gz
+  grub2                                                    System.map-3.10.0-327.el7.x86_64
+  initramfs-0-rescue-d88dc0e9818b405383649087000b224a.img  vmlinuz-0-rescue-d88dc0e9818b405383649087000b224a
+  initramfs-3.10.0-327.el7.x86_64.img                      vmlinuz-3.10.0-327.el7.x86_64
+  initramfs-3.10.0-327.el7.x86_64kdump.img
+  
+  root@panchajanya:/mnt\> vi grub2/grub.cfg
+  
+  root@panchajanya:/mnt\> grep console grub2/grub.cfg
+  terminal_output console
+    linux16 /vmlinuz-3.10.0-327.el7.x86_64 root=/dev/mapper/vgos-lvroot ro crashkernel=auto rd.lvm.lv=vgos/lvroot rhgb quiet LANG=en_US.UTF-8 console=ttyS0
+  
+  umount /dev/mapper/loop0p1
+  kpartx -dv /data/sdd01/vspd1/lab11.img
+  
+  
+</pre>		
+
+</div>
+<!-- container -->		
+
+
+
+
+	
+
 </body>
 </html>
