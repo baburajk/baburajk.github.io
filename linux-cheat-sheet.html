@@ -2,7 +2,7 @@
 <html lang="en">
 <head>  
 	<meta charset="utf-8">
-	<title>baburajk.github.io</title>
+	<title>TEMPLATE</title>
  
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 	<meta property="og:image" content="path/to/image.jpg">
@@ -78,25 +78,22 @@
 				<div class="col-md-12">
 					<div class="screen-one-title">
 
-						<h2> Notes on simple linux tips & tricks/commands.  </h2>
+						<h2> LNX-NOTES   </h2>
 					</div>
 				</div>
 			</div>
 		</div>
 	 
 		<div class="container">
-     
-            
  
- 						 
-						<div class="screen-one-item-container">
-							<h3> Bash Conditionals: Usage (( for arithmetic )),  [  for conditionl expression ] ,  [[ for regular expressions like =~ ]]</h3>
+<!-- container -->		
+		<div class="screen-one-item-container">
+							<h3>   Bash Conditionals: Usage (( for arithmetic )),  [  for conditionl expression ] ,  [[ for regular expressions like =~ ]] </h3>
 							<p> </p>
 							<p> </p>
 
 <pre>
-
-    #Example - (( double open paranthesis )) 
+#Example - (( double open paranthesis )) 
 
 	[root@server1 rpm-gpg]# echo $((1+4))
 	5
@@ -125,26 +122,30 @@
 	When you specify */5 in minute field means every 5 minutes.
 	When you specify 0-10/2 in minute field mean every 2 minutes in the first 10 minute.
 
+</pre>		
+
+		</div>
+<!-- container -->		
 
 
-</pre>
-						</div>
- 
-  						<div class="screen-one-item-container">
-							<h3> Quick notes on IPv6 & IPv4 & RFC's  </h3>
-							<p>  </p>
-						    <p> </p>
+<!-- container -->		
+<div class="screen-one-item-container">
+	<h3>  IPV6 & IPv4 Quick Notes </h3>
+	<p> </p>
+	<p> </p>
 
 <pre>
-    :: equals ipv4 0.0.0.0 and ::/0 is equal to 0.0.0.0/0 
+  :: equals ipv4 0.0.0.0 and ::/0 is equal to 0.0.0.0/0 
+   
     (Default Route).  2000::/3 is Global Unicast Address, 
+   
     fc00::/10 is Unique Local Address 
     
     (RFC4193, like RFC1918), fe80::/64 - Link-Local 
     address (Auto configured for every device), 
     ff00::/8 - Multicast - equivalent to 224.0.0.0/4. 
     
-    There is no broadcast address in IPv6. 
+    No broadcast address in IPv6. 
     
     ping6 ff02::1 is a multicast address which will
     send packet all local-links.
@@ -165,36 +166,56 @@
     Used by IANA to reserve CGN 
     (Carrier Grade Network Space): 100.64.0.0/10 
     
-   
-</pre>
- 
-						</div>
- 
-  	<div class="screen-one-item-container">
-		<h3> ausearch </h3>
-			<p>  ausearch can be used to dig into the logs. Prior to checking logs, install and run setroubleshootd <br> </p>
-			<p> </p>
+</pre>		
+
+</div>
+<!-- container -->		
+
+
+<!-- container -->		
+<div class="screen-one-item-container">
+	<h3>  SUBTITLE </h3>
+	<p> </p>
+	<p> </p>
 
 <pre>
+CODE BLOCK
+</pre>		
 
-#Start setroubleshoot daemon.
-setroubleshootd
-
-#ausearch options
-
-ausearch -x httpd 
-ausearch -m avc --start today
-
-#Run sealert obtained from the audit.log to obtain additional information on the alert.
-
-[root@lab125a ~]# sealert -l cd9b7da6-cb08-43ae-81e0-dbd7dd928036
-SELinux is preventing /usr/sbin/sshd from name_connect access on the tcp_socket port 113.
+</div>
+<!-- container -->		
 
 
-</pre>
-	</div>
- 
- 
+
+<!-- container -->		
+<div class="screen-one-item-container">
+	<h3>  SUBTITLE </h3>
+	<p> </p>
+	<p> </p>
+
+<pre>
+CODE BLOCK
+</pre>		
+
+</div>
+<!-- container -->		
+
+
+<!-- container -->		
+<div class="screen-one-item-container">
+	<h3>  SUBTITLE </h3>
+	<p> </p>
+	<p> </p>
+
+<pre>
+CODE BLOCK
+</pre>		
+
+</div>
+<!-- container -->		
+
+
+
 
 	
 
