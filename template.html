@@ -86,75 +86,78 @@
 	 
 		<div class="container">
  
- 						 
+<!-- container -->		
 		<div class="screen-one-item-container">
 							<h3>  SUBTITLE </h3>
 							<p> </p>
 							<p> </p>
 
 <pre>
-	CODE BLOCK
-</pre>
-		
+CODE BLOCK
+</pre>		
+
 		</div>
- 
-		<div class="screen-one-item-container">
-			<h3>  SUBTITLE </h3>
-			<p> </p>
-			<p> </p>
+<!-- container -->		
+
+
+<!-- container -->		
+<div class="screen-one-item-container">
+	<h3>  SUBTITLE </h3>
+	<p> </p>
+	<p> </p>
 
 <pre>
 CODE BLOCK
-</pre>
+</pre>		
 
-		</div>
-  						<div class="screen-one-item-container">
-							<h3> sesearch </h3>
-							<p> Sesearch can be used to check the selinux policies, for eg. checking a rule and how the transition works is as below. <br>
-
-							  <br>
-						</p>
-						<p> </p>
-
-<pre>
-[root@rhce5 data]# sesearch -T -s initrc_t -t httpd_exec_t
-Found 1 semantic te rules:
-   type_transition initrc_t httpd_exec_t : process httpd_t;
+</div>
+<!-- container -->		
 
 
-[root@server1 ~]# sesearch --allow --source httpd_t --target httpd_sys_content_t --class dir
-Found 16 semantic av rules:
-   allow httpd_t httpd_sys_content_t : dir { ioctl read getattr lock search open } ;
-   
-</pre>
- 
-						</div>
- 
-  	<div class="screen-one-item-container">
-		<h3> ausearch </h3>
-			<p>  ausearch can be used to dig into the logs. Prior to checking logs, install and run setroubleshootd <br> </p>
-			<p> </p>
+<!-- container -->		
+<div class="screen-one-item-container">
+	<h3>  SUBTITLE </h3>
+	<p> </p>
+	<p> </p>
 
 <pre>
+CODE BLOCK
+</pre>		
 
-#Start setroubleshoot daemon.
-setroubleshootd
-
-#ausearch options
-
-ausearch -x httpd 
-ausearch -m avc --start today
-
-#Run sealert obtained from the audit.log to obtain additional information on the alert.
-
-[root@lab125a ~]# sealert -l cd9b7da6-cb08-43ae-81e0-dbd7dd928036
-SELinux is preventing /usr/sbin/sshd from name_connect access on the tcp_socket port 113.
+</div>
+<!-- container -->		
 
 
-</pre>
-	</div>
- 
- 
+
+<!-- container -->		
+<div class="screen-one-item-container">
+	<h3>  SUBTITLE </h3>
+	<p> </p>
+	<p> </p>
+
+<pre>
+CODE BLOCK
+</pre>		
+
+</div>
+<!-- container -->		
+
+
+<!-- container -->		
+<div class="screen-one-item-container">
+	<h3>  SUBTITLE </h3>
+	<p> </p>
+	<p> </p>
+
+<pre>
+CODE BLOCK
+</pre>		
+
+</div>
+<!-- container -->		
+
+
+
 
 	
 
