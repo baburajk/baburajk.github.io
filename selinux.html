@@ -1,18 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
-<head> <script data-ad-client="ca-pub-2393111531899119" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script> 
+<head>  
 	<meta charset="utf-8">
-	<title>intercloudzone</title>
-	<meta name="description" content="">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>Linux Generic Commands</title>
+ 
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 	<meta property="og:image" content="path/to/image.jpg">
-<!-- favicon -->
-<link rel="shortcut icon" href="img/favicon/favicon.ico" type="image/x-icon">
-<link rel="apple-touch-icon" href="img/favicon/apple-touch-icon.png">
-<link rel="apple-touch-icon" sizes="72x72" href="img/favicon/apple-touch-icon-72x72.png">
-<link rel="apple-touch-icon" sizes="114x114" href="img/favicon/apple-touch-icon-114x114.png">
-<!-- favicon -->
+ 
 <!-- build:css -->
 <link rel="stylesheet" href="css/libs/bootstrap.min.css">
 <link rel="stylesheet" href="css/libs/font-awesome.min.css">
@@ -32,16 +26,8 @@
 	<!-- <style>body { opacity:s 0; overflow-x: hidden; } html { background-color: #fff; }</style> -->
 </head>
 <body data-spy="scroll" data-target=".navbar" data-offset="50" class="loaded" link="blue">
-<!-- Preloader -->
-<div class="preloader">
-	<div class="cssload-spinner">
-		<div class="cssload-ball cssload-ball-1"></div>
-		<div class="cssload-ball cssload-ball-2"></div>
-		<div class="cssload-ball cssload-ball-3"></div>
-		<div class="cssload-ball cssload-ball-4"></div>
-	</div>
-</div>
-<!-- Preloader -->
+
+	
 <div class="site-content">
 	<!-- Naviigation -->
 	<div class="navbar-wrap">
@@ -70,13 +56,7 @@
 										<li>
 										</li>
 									</ul>
-									<!-- btn -->
-									<div class="nav-button main-button">
-										<a href="#" class="btn btn-nav btn-block" role="button">
-											Site is in Beta!
-										</a>
-									</div>
-									<!-- btn -->
+							
 								</div>
 							</div>
 						</nav>
@@ -97,458 +77,384 @@
 			<div class="row">
 				<div class="col-md-12">
 					<div class="screen-one-title">
-						<h2>Security Linux configurations, ausearch, sesearch, sepolicy, setroubleshootd, contexts and logins. </h2>
+
+						<h2>  Resolving boot errors caused by lost root password, corrupt initramfs, corrupt grub using tools like grubcmd, kpartx etc.  </h2>
 					</div>
 				</div>
 			</div>
 		</div>
 	 
 		<div class="container">
-					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0s">
-						<span>01.</span>
-						<div class="screen-one-item-container">
-							<h3>Batching  </h3>
-							<p> Selinux commands individually ran takes time, so should/can be batched wherever possible. </p>
-							<p> </p>
-<pre>
-	
-[root@rhce5 data]# semanage -i -<<_EOF
-port -a -t http_port_t -p tcp 81
-fcontext -a -t httpd_sys_content_t "/shared(/.*)?"
-_EOF
-
-</pre>
-						</div>
-				</div>
-
-				   <div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.1s">
-						<span>02.</span>
-						<div class="screen-one-item-container">
-							<h3> Permissive mode. </h3>
-							<p> Contexts can be changed to permissive mode temporarily for troubleshooting purposes to see if selinux is preventing the services to fail. All these 
-								similar customizations can be checked/found under 'customizations'
-							</p>
+ 
+<!-- container -->		
+		<div class="screen-one-item-container">
+							<h3> Recommended way to run SELinux commands is to batch them. </h3>
+							<p> Selinux commands individually ran takes time, so should/can be batched wherever possible.              </p>
 							<p> </p>
 
 <pre>
+    [root@rhce5 data]# semanage -i -<<_EOF
+    port -a -t http_port_t -p tcp 81
+    fcontext -a -t httpd_sys_content_t "/shared(/.*)?"
+    _EOF
+</pre>		
 
-[root@rhce5 data]# semanage output -o -
-..
-port -a -t http_port_t -p tcp 81
-fcontext -a -f a -t httpd_sys_content_t '/shared(/.*)?'
-
- 
--Examples.
-[root@rhce5 data]# semanage fcontext -lC
-SELinux fcontext                                   type               Context
-
-/shared(/.*)?                                      all files          system_u:object_r:httpd_sys_content_t:s0
-
-[root@rhce5 data]# semanage permissive -a httpd_t
-
-[root@rhce5 data]# semanage permissive --list
-
-Customized Permissive Types
-
-httpd_t
-
-Builtin Permissive Types
-
-
-</pre>
-						</div>
-					</div>
-
-					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
-						<span>03.</span>
-						<div class="screen-one-item-container">
-							<h3> sesearch </h3>
-							<p> Sesearch can be used to check the selinux policies, for eg. checking a rule and how the transition works is as below. <br>
-
-							  <br>
-						</p>
-						<p> </p>
-
-<pre>
-[root@rhce5 data]# sesearch -T -s initrc_t -t httpd_exec_t
-Found 1 semantic te rules:
-   type_transition initrc_t httpd_exec_t : process httpd_t;
-
-
-[root@server1 ~]# sesearch --allow --source httpd_t --target httpd_sys_content_t --class dir
-Found 16 semantic av rules:
-   allow httpd_t httpd_sys_content_t : dir { ioctl read getattr lock search open } ;
-   
-</pre>
- 
-						</div>
-					</div>
-
-					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
-					<span>04.</span>
-					<div class="screen-one-item-container">
-						<h3> ausearch </h3>
-						<p>  ausearch can be used to dig into the logs. Prior to checking logs, install and run setroubleshootd <br> </p>
-
-						<p> </p>
-
-<pre>
-
-#Start setroubleshoot daemon.
-setroubleshootd
-
-#ausearch options
-
-ausearch -x httpd 
-ausearch -m avc --start today
-
-#Run sealert obtained from the audit.log to obtain additional information on the alert.
-
-[root@lab125a ~]# sealert -l cd9b7da6-cb08-43ae-81e0-dbd7dd928036
-SELinux is preventing /usr/sbin/sshd from name_connect access on the tcp_socket port 113.
-
-
-</pre>
-					</div>
-				</div>
-
-
-					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
-					<span>05.</span>
-					<div class="screen-one-item-container">
-						<h3> Selinux Docs </h3>
-						<p> Majority of docs/man pages for selinux has to be installed/configured manually, which can be done via sepolicy </p>
-
-						<p> </p>
-<pre>
-
-
-yum install selinux-policy-devel -y
-sepolicy manpage -a -p /usr/share/man/man8
-mandb
-man httpd_selinux
-yum install -y httpd-manual
-man -k _selinux 
-</pre>
-					</div>
-				</div>
-
-
-
-					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
-					<span>06.</span>
-					<div class="screen-one-item-container">
-						<h3> SELinux Users, Logins and system users. </h3>
-						<p> Mapping linux logins to selinux users. </p>
-						 <p> </p>
-
-<pre>
-
-
-#Adding a user
-[root@server bin]# semanage login -a -s user_u user4
-[root@server bin]# semanage login -l
-
-Login Name           SELinux User         MLS/MCS Range        Service
-
-__default__          unconfined_u         s0-s0:c0.c1023       *
-root                 unconfined_u         s0-s0:c0.c1023       *
-system_u             system_u             s0-s0:c0.c1023       *
-user4                user_u               s0                   *
-user5                staff_u              s0-s0:c0.c1023       *
-
-#change default selinux login context
- 
-[root@server bin]# semanage login -m -S targeted -s staff_u __default__
-[root@server bin]# semanage login -l
-
-Login Name           SELinux User         MLS/MCS Range        Service
-
-__default__          staff_u              s0-s0:c0.c1023       *
-root                 unconfined_u         s0-s0:c0.c1023       *
-system_u             system_u             s0-s0:c0.c1023       *
-user4                user_u               s0                   *
-user5                staff_u              s0-s0:c0.c1023       *
-
-[root@server bin]# semanage login -m -S targeted -r s0:c0 -s staff_u __default__
-
-
-[root@server bin]# semanage login -l
-
-Login Name           SELinux User         MLS/MCS Range        Service$
-se$
-
-
-__default__          staff_u              s0:c0                *
-root                 unconfined_u         s0-s0:c0.c1023       *
-system_u             system_u             s0-s0:c0.c1023       *
-user4                user_u               s0                   *
-user5                staff_u              s0-s0:c0.c1023       *
-
---Quick Reference
-https://wiki.centos.org/HowTos/SELinux
-https://wiki.gentoo.org/wiki/SELinux/Users_and_logins
- 
-
---Add User/login example.
-semanage user --add -r s0:c0 -R "auditadm_r sysadm_r" auditor_u
-semanage login --add -s auditor_u phil
-    
-
-</pre>
-					</div>
-				</div>
-					
-
-
-					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
-					<span>07.</span>
-					<div class="screen-one-item-container">
-						<h3> SELinux fcontext,boolean,port and sealerts </h3>
-						<p>  semanage fcontext, port and boolean examples. </p>
-<pre>
-
-
---Add persistent context for a file
-[root@server ~]# semanage fcontext -a  -S targeted -s user_u -t public_content_t /root/afile
-
-[root@server ~]# cat /etc/selinux/targeted/contexts/files/file_contexts.local | grep afile
-/root/afile    user_u:object_r:public_content_t:s0
-
-[root@server ~]# ls -Zd /root/
-dr-xr-x---. root root system_u:object_r:admin_home_t:s0 /root/
-[root@server ~]# chcon -u user_u -t var_run_t /root
-[root@server ~]# ls -Zd /root/
-dr-xr-x---. root root user_u:object_r:var_run_t:s0     /root/
-
-[root@server ~]# restorecon -Fv /root/
-restorecon reset /root context user_u:object_r:var_run_t:s0->system_u:object_r:admin_home_t:s0
-[root@server ~]# ls -Zd /root/
-dr-xr-x---. root root system_u:object_r:admin_home_t:s0 /root/
-
--Add port
-[root@server ~]# semanage port -a -t http_port_t -p tcp 8010
-
-[root@server ~]# semanage port -l |grep http_port_t
-http_port_t                    tcp      8010, 80, 81, 443, 488, 8008, 8009, 8443, 9000
-pegasus_http_port_t            tcp      5988
-
--Delete port
-[root@server ~]# semanage port -d -t http_Port_t -p tcp 8010
-[root@server ~]# semanage port -l |grep http_port_t
-http_port_t                    tcp      80, 81, 443, 488, 8008, 8009, 8443, 9000
-pegasus_http_port_t            tcp      5988
-
--Check the context to permissive to see if selinux is the root case of a problem.
-
-[root@server phil]# semanage permissive -a httpd_t
-[root@server phil]# seinfo --permissive
-
-Permissive Types: 7
-   httpd_t
-   blkmapd_t
-   hsqldb_t
-   ipmievd_t
-   sanlk_resetd_t
-   systemd_hwdb_t
-   targetd_t
-
-#Triaging a SEALERT
-
--Error message.
-type=AVC msg=audit(1218128130.653:334): avc:  denied  { connectto } for  pid=9111 comm="smtpd" path="/var/spool/postfix/postgrey/socket"
-scontext=system_u:system_r:postfix_smtpd_t:s0 tcontext=system_u:system_r:initrc_t:s0 tclass=unix_stream_socket
-
---Check the scontext, which is postfix_smtpd_t
-semanage permissive -a postfix_smtpd_t
-
-Watch the audit logs to see what postfix_smtpd_t needs to be allowed to do in order to succesfully operate. Once we're finished we can put that type back into enforcing mode:
-
-
---Allow apache to listen on port 81
-semanage port -a -t http_port_t -p tcp 81 
-    
-semanage permissive -d postfix_smtpd_t
-This approach doesn't suffer from the heavy-handedness of setenforce 0 and allows all other services on the system to keep benefiting from the access controls of SELinux.
-
-
-[root@server1 html]# chcon -t var_t index.html
-[root@server1 html]# ls -lZ index.html
--rw-r--r--. root root unconfined_u:object_r:var_t:s0   index.html
-
-[root@server1 ~]# curl -s http://localhost/index.html
-..
- You don't have permission to access /index.html
-..
-
--In audit log
-type=AVC msg=audit(1508807842.331:542): avc:  denied  { getattr } for  pid=4270 comm="httpd" path="/var/www/html/index.html" dev="dm-0" ino=137566 
-scontext=system_u:system_r:httpd_t:s0 tcontext=unconfined_u:object_r:var_t:s0 tclass=file
-type=SYSCALL msg=audit(1508807842.331:542): arch=c000003e syscall=6 success=no exit=-13 
-a0=7fc5ba752c08 a1=7ffffad80a30 a2=7ffffad80a30 a3=ffffffe0 items=0 ppid=4266 pid=4270 auid=4294967295 uid=48 gid=48 euid=48 
-suid=48 fsuid=48 egid=48 sgid=48 fsgid=48 tty=(none) ses=4294967295 comm="httpd" exe="/usr/sbin/httpd" subj=system_u:system_r:httpd_t:s0 key=(null)
-
--Temporarily reset to permissive for triaging
-[root@server1 ~]# semanage permissive -a httpd_t
-[root@server1 ~]# semanage permissive -l
-
-Customized Permissive Types
-
-httpd_t
-
-Builtin Permissive Types
-
-sanlk_resetd_t
-hsqldb_t
-systemd_hwdb_t
-blkmapd_t
-ipmievd_t
-targetd_t
-
-#Sample selinux alerting.
-
-[root@server1 ~]# curl -s http://localhost/index.html
-Hello this is from server1.intercloudzone.com
-
-#Scan the audit.log
-sealert -a /var/log/audit/audit.log
-
-...
-If you want to fix the label.
-/var/www/html/index.html default label should be httpd_sys_content_t.
-Then you can run restorecon.
-Do
-
-# /sbin/restorecon -v /var/www/html/index.html
-  
-...
-
-[root@server1 html]# restorecon -vR index.html
-restorecon reset /var/www/html/index.html context unconfined_u:object_r:var_t:s0->unconfined_u:object_r:httpd_sys_content_t:s0
-
-#Another way to verify.
-[root@server1 ~]# matchpathcon -V /www/html/index.html
-/www/html/index.html verified.
-
-[root@server1 ~]# ausearch -m avc -c httpd
-
-time->Tue Oct 24 17:35:24 2017
-type=SYSCALL msg=audit(1508884524.050:482): arch=c000003e syscall=6 success=no exit=-13 a0=7f248c01fbf0 a1=7ffd21904f00 a2=7ffd21904f00 a3=7ffd21904c80 items=0 ppid=3385 pid=3391 auid=4294967295 uid=48 gid=48 euid=48 suid=48 fsuid=48 egid=48 sgid=48 fsgid=48 tty=(none) ses=4294967295 comm="httpd" exe="/usr/sbin/httpd" subj=system_u:system_r:httpd_t:s0 key=(null)
-type=AVC msg=audit(1508884524.050:482): avc:  denied  { getattr } for  pid=3391 comm="httpd" path="/www/html/index.html" dev="dm-0" ino=136145 scontext=system_u:system_r:httpd_t:s0 tcontext=unconfined_u:object_r:default_t:s0 tclass=file
-
-
-</pre>
-					</div>
-
-				</div>
-
-
-		
-					<div class="screen-one-item os-animation" data-os-animation="fadeInUp" data-os-animation-delay="0.2s">
-					<span>08.</span>
-					<div class="screen-one-item-container">
-						<h3> NFS Mounts with SELinux Contexts  </h3>
-						<p>  NFS Mounts won't explort the selinux contexts unless explicity enabled.
-						 </p>
-						 <p> </p>
-
-<pre>
-#Install and configure docs.
-sepolicy manpage -a -p /usr/share/man/man8
-mandb
-
-#Install essential packages
-yum install setroubleshoot-server policycoreutils-python libselinux-utils selinux-policy-devel setools-console
- 
-#By default the NFS mounts has nfs_t if selinux is not used in the mount but can be explicitly used.
-mount -o context="system_u:object_r:public_content_rw_t:s0" server:/myshare /mnt/nfsexport
-
-#To explicity export the SELinux context, the NFS version 4.2 should be explicity turned on in /etc/sysconfig/nfs
-RPCNFSDARGS="-V 4.2"
-
-mount -o v4.2 must be specified as mount option.
-mount -o sec=krb5p,v4.2 server:/myshare /mnt/nfsexport
-
-
-
-</pre>
- 
-					</div>
-				</div>
-
-
-	<!-- Contact -->
-<a class="anchor" id="contact"></a>
-
-<section class="contact">
-		<div class="contact-wrap">
-			<div class="container">
-				<div class="row">
-					<div class="col-md-12 __web-inspector-hide-shortcut__">
-						<div class="contact-title">
-							<h2></h2>
-							<p> 
-								<br class="disable"></p>
-						</div>
-						<!-- /.contact-title -->
-					</div>
-					<!-- /.col-md-12 -->
-					
-					<!-- /.col-md-10 -->
-				</div>
-				<!-- /.row -->
-			</div>
-			<!-- /.container -->
 		</div>
-		<!-- /.directions-wrap -->
-	</section>
+<!-- container -->		
+
+
+<!-- container -->		
+<div class="screen-one-item-container">
+	<h3> Permissive mode and advantages.  </h3>
+	<p> Contexts can be changed to permissive mode temporarily for troubleshooting purposes to see if selinux is preventing the services to fail. 
+    All these similar customizations can be checked/found under 'customizations'
+  </p>
+	<p> </p>
+
+<pre>
+    [root@rhce5 data]# semanage output -o -
+    ..
+    port -a -t http_port_t -p tcp 81
+    fcontext -a -f a -t httpd_sys_content_t '/shared(/.*)?'
+
+    
+    -Examples.
+    [root@rhce5 data]# semanage fcontext -lC
+    SELinux fcontext                                   type               Context
+
+    /shared(/.*)?                                      all files          system_u:object_r:httpd_sys_content_t:s0
+
+    [root@rhce5 data]# semanage permissive -a httpd_t
+
+    [root@rhce5 data]# semanage permissive --list
+
+    Customized Permissive Types
+
+    httpd_t
+
+    Builtin Permissive Types
+</pre>		
 
 </div>
-<!-- Site content -->
+<!-- container -->		
 
-<!-- Footer -->
-<a class="anchor" id="footer"></a>
-<footer class="footer" style="background-image: url(img/footer-bg.jpg); background-position:center; background-size: cover; background-repeat:no-repeat;">
-	<div class="footer-wrap">
-		<div class="container">
-			<div class="row">
-				<div class="col-md-12">
-					<div class="footer-title">
-						<h2>www.intercloudzone.com</h2>
-						<ul class="footer-icons">
-						<script src="//platform.linkedin.com/in.js" type="text/javascript"> lang: en_US</script>
-						<script type="IN/Share" data-url="http://www.intercloudzone.com/selinux.html"></script>
-						</ul>
-						<p> </p>
-					</div>
-					<!-- /.footer-title -->
-				</div>
-				<!-- /.col-md-12 -->
-			</div>
-			<!-- /.row -->
-		</div>
-		<!-- /.container -->
-	</div>
-	<!-- /.directions-wrap -->
-</footer>
-<!-- Footer -->
+
+<!-- container -->		
+<div class="screen-one-item-container">
+	<h3>  sesearch and it's usages </h3>
+	<p> Sesearch can be used to check the selinux policies, for eg. checking a rule and how the transition works is as below.
+  </p>
+	<p> </p>
+
+<pre>
+    [root@rhce5 data]# sesearch -T -s initrc_t -t httpd_exec_t
+    Found 1 semantic te rules:
+      type_transition initrc_t httpd_exec_t : process httpd_t;
+    
+    
+    [root@server1 ~]# sesearch --allow --source httpd_t --target httpd_sys_content_t --class dir
+    
+    Found 16 semantic av rules:
+      allow httpd_t httpd_sys_content_t : dir { ioctl read getattr lock search open } ;
+     
+</pre>		
+
+</div>
+<!-- container -->		
 
 
 
-<!-- links -->
-<script type="text/javascript" src="http://maps.google.com/maps/api/js?key=AIzaSyDDuC8pr6YqiBr9wqfhNIJ56AqwzWKhiQo"></script>
-<!-- build:js -->
+<!-- container -->		
+<div class="screen-one-item-container">
+	<h3>  ausearch and usages. </h3>
+	<p> ausearch can be used to dig into the logs. Prior to checking logs, install and run setroubleshootd
+  </p>
+	<p> </p>
 
+<pre>
+
+  #Start setroubleshoot daemon.
+  setroubleshootd
+  
+  #ausearch options
+  
+  ausearch -x httpd 
+  ausearch -m avc --start today
+  
+  #Run sealert obtained from the audit.log to obtain additional information on the alert.
+  
+  [root@lab125a ~]# sealert -l cd9b7da6-cb08-43ae-81e0-dbd7dd928036
+  SELinux is preventing /usr/sbin/sshd from name_connect access on the tcp_socket port 113.
+  
+</pre>		
+
+</div>
+<!-- container -->		
+
+
+<!-- container -->		
+<div class="screen-one-item-container">
+	<h3> Selinux Docs  </h3>
+	<p> Majority of docs/man pages for selinux has to be installed/configured manually, which can be done via sepolicy
+
+  </p>
+	<p> </p>
+
+<pre>
  
+  yum install selinux-policy-devel -y
+  sepolicy manpage -a -p /usr/share/man/man8
+  mandb
+  man httpd_selinux
+  yum install -y httpd-manual
+  man -k _selinux 
+    
+  
+</pre>		
 
-<script src="js/libs/jquery.min.js"></script>
-<script type="text/javascript" src="js/libs/bootstrap.min.js"></script>
-<script type="text/javascript" src="js/libs/waypoints.min.js"></script>
-<script type="text/javascript" src="js/libs/slick.min.js"></script>
-<script type="text/javascript" src="js/libs/magnific-popup.min.js"></script>
+</div>
+<!-- container -->		
 
-<script type="text/javascript" src="js/common.js"></script>
-<!-- endbuild -->
-<!-- links -->
+
+<!-- container -->		
+<div class="screen-one-item-container">
+	<h3> SELinux Users, Logins and system users. </h3>
+	<p> Mapping linux logins to selinux users. </p>
+	<p> </p>
+
+<pre>
+ 
+    #Adding a user
+    [root@server bin]# semanage login -a -s user_u user4
+    [root@server bin]# semanage login -l
+    
+    Login Name           SELinux User         MLS/MCS Range        Service
+    
+    __default__          unconfined_u         s0-s0:c0.c1023       *
+    root                 unconfined_u         s0-s0:c0.c1023       *
+    system_u             system_u             s0-s0:c0.c1023       *
+    user4                user_u               s0                   *
+    user5                staff_u              s0-s0:c0.c1023       *
+    
+    #change default selinux login context
+    
+    [root@server bin]# semanage login -m -S targeted -s staff_u __default__
+    [root@server bin]# semanage login -l
+    
+    Login Name           SELinux User         MLS/MCS Range        Service
+    
+    __default__          staff_u              s0-s0:c0.c1023       *
+    root                 unconfined_u         s0-s0:c0.c1023       *
+    system_u             system_u             s0-s0:c0.c1023       *
+    user4                user_u               s0                   *
+    user5                staff_u              s0-s0:c0.c1023       *
+    
+    [root@server bin]# semanage login -m -S targeted -r s0:c0 -s staff_u __default__
+    
+    
+    [root@server bin]# semanage login -l
+    
+    Login Name           SELinux User         MLS/MCS Range        Service$
+    se$
+    
+    
+    __default__          staff_u              s0:c0                *
+    root                 unconfined_u         s0-s0:c0.c1023       *
+    system_u             system_u             s0-s0:c0.c1023       *
+    user4                user_u               s0                   *
+    user5                staff_u              s0-s0:c0.c1023       *
+    
+    --Quick Reference
+    https://wiki.centos.org/HowTos/SELinux
+    https://wiki.gentoo.org/wiki/SELinux/Users_and_logins
+    
+    
+    --Add User/login example.
+    semanage user --add -r s0:c0 -R "auditadm_r sysadm_r" auditor_u
+    semanage login --add -s auditor_u phil
+      
+    
+  
+</pre>		
+
+</div>
+<!-- container -->		
+
+
+<!-- container -->		
+<div class="screen-one-item-container">
+	<h3> SELinux fcontext,boolean,port and sealerts  </h3>
+	<p>  semanage fcontext, port and boolean examples. </p>
+	<p> </p>
+
+<pre>
+ 
+    --Add persistent context for a file
+  [root@server ~]# semanage fcontext -a  -S targeted -s user_u -t public_content_t /root/afile
+
+  [root@server ~]# cat /etc/selinux/targeted/contexts/files/file_contexts.local | grep afile
+  /root/afile    user_u:object_r:public_content_t:s0
+
+  [root@server ~]# ls -Zd /root/
+  dr-xr-x---. root root system_u:object_r:admin_home_t:s0 /root/
+  [root@server ~]# chcon -u user_u -t var_run_t /root
+  [root@server ~]# ls -Zd /root/
+  dr-xr-x---. root root user_u:object_r:var_run_t:s0     /root/
+
+  [root@server ~]# restorecon -Fv /root/
+  restorecon reset /root context user_u:object_r:var_run_t:s0->system_u:object_r:admin_home_t:s0
+  [root@server ~]# ls -Zd /root/
+  dr-xr-x---. root root system_u:object_r:admin_home_t:s0 /root/
+
+  -Add port
+  [root@server ~]# semanage port -a -t http_port_t -p tcp 8010
+
+  [root@server ~]# semanage port -l |grep http_port_t
+  http_port_t                    tcp      8010, 80, 81, 443, 488, 8008, 8009, 8443, 9000
+  pegasus_http_port_t            tcp      5988
+
+  -Delete port
+  [root@server ~]# semanage port -d -t http_Port_t -p tcp 8010
+  [root@server ~]# semanage port -l |grep http_port_t
+  http_port_t                    tcp      80, 81, 443, 488, 8008, 8009, 8443, 9000
+  pegasus_http_port_t            tcp      5988
+
+  -Check the context to permissive to see if selinux is the root case of a problem.
+
+  [root@server phil]# semanage permissive -a httpd_t
+  [root@server phil]# seinfo --permissive
+
+  Permissive Types: 7
+    httpd_t
+    blkmapd_t
+    hsqldb_t
+    ipmievd_t
+    sanlk_resetd_t
+    systemd_hwdb_t
+    targetd_t
+
+  #Triaging a SEALERT
+
+  -Error message.
+  type=AVC msg=audit(1218128130.653:334): avc:  denied  { connectto } for  pid=9111 comm="smtpd" path="/var/spool/postfix/postgrey/socket"
+  scontext=system_u:system_r:postfix_smtpd_t:s0 tcontext=system_u:system_r:initrc_t:s0 tclass=unix_stream_socket
+
+  --Check the scontext, which is postfix_smtpd_t
+  semanage permissive -a postfix_smtpd_t
+
+  Watch the audit logs to see what postfix_smtpd_t needs to be allowed to do in order to succesfully operate. Once we're finished we can put that type back into enforcing mode:
+
+
+  --Allow apache to listen on port 81
+  semanage port -a -t http_port_t -p tcp 81 
+      
+  semanage permissive -d postfix_smtpd_t
+  This approach doesn't suffer from the heavy-handedness of setenforce 0 and allows all other services on the system to keep benefiting from the access controls of SELinux.
+
+
+  [root@server1 html]# chcon -t var_t index.html
+  [root@server1 html]# ls -lZ index.html
+  -rw-r--r--. root root unconfined_u:object_r:var_t:s0   index.html
+
+  [root@server1 ~]# curl -s http://localhost/index.html
+  ..
+  You don't have permission to access /index.html
+  ..
+
+  -In audit log
+  type=AVC msg=audit(1508807842.331:542): avc:  denied  { getattr } for  pid=4270 comm="httpd" path="/var/www/html/index.html" dev="dm-0" ino=137566 
+  scontext=system_u:system_r:httpd_t:s0 tcontext=unconfined_u:object_r:var_t:s0 tclass=file
+  type=SYSCALL msg=audit(1508807842.331:542): arch=c000003e syscall=6 success=no exit=-13 
+  a0=7fc5ba752c08 a1=7ffffad80a30 a2=7ffffad80a30 a3=ffffffe0 items=0 ppid=4266 pid=4270 auid=4294967295 uid=48 gid=48 euid=48 
+  suid=48 fsuid=48 egid=48 sgid=48 fsgid=48 tty=(none) ses=4294967295 comm="httpd" exe="/usr/sbin/httpd" subj=system_u:system_r:httpd_t:s0 key=(null)
+
+  -Temporarily reset to permissive for triaging
+  [root@server1 ~]# semanage permissive -a httpd_t
+  [root@server1 ~]# semanage permissive -l
+
+  Customized Permissive Types
+
+  httpd_t
+
+  Builtin Permissive Types
+
+  sanlk_resetd_t
+  hsqldb_t
+  systemd_hwdb_t
+  blkmapd_t
+  ipmievd_t
+  targetd_t
+
+  #Sample selinux alerting.
+
+  [root@server1 ~]# curl -s http://localhost/index.html
+  Hello this is from server1.intercloudzone.com
+
+  #Scan the audit.log
+  sealert -a /var/log/audit/audit.log
+
+  ...
+  If you want to fix the label.
+  /var/www/html/index.html default label should be httpd_sys_content_t.
+  Then you can run restorecon.
+  Do
+
+  # /sbin/restorecon -v /var/www/html/index.html
+    
+  ...
+
+  [root@server1 html]# restorecon -vR index.html
+  restorecon reset /var/www/html/index.html context unconfined_u:object_r:var_t:s0->unconfined_u:object_r:httpd_sys_content_t:s0
+
+  #Another way to verify.
+  [root@server1 ~]# matchpathcon -V /www/html/index.html
+  /www/html/index.html verified.
+
+  [root@server1 ~]# ausearch -m avc -c httpd
+
+  time->Tue Oct 24 17:35:24 2017
+  type=SYSCALL msg=audit(1508884524.050:482): arch=c000003e syscall=6 success=no exit=-13 a0=7f248c01fbf0 a1=7ffd21904f00 a2=7ffd21904f00 a3=7ffd21904c80 items=0 ppid=3385 pid=3391 auid=4294967295 uid=48 gid=48 euid=48 suid=48 fsuid=48 egid=48 sgid=48 fsgid=48 tty=(none) ses=4294967295 comm="httpd" exe="/usr/sbin/httpd" subj=system_u:system_r:httpd_t:s0 key=(null)
+  type=AVC msg=audit(1508884524.050:482): avc:  denied  { getattr } for  pid=3391 comm="httpd" path="/www/html/index.html" dev="dm-0" ino=136145 scontext=system_u:system_r:httpd_t:s0 tcontext=unconfined_u:object_r:default_t:s0 tclass=file
+
+    
+  
+</pre>		
+
+</div>
+<!-- container -->		
+
+
+<!-- container -->		
+<div class="screen-one-item-container">
+	<h3> NFS Mounts with SELinux Contexts </h3>
+	<p> NFS Mounts won't explort the selinux contexts unless explicity enabled.
+
+  </p>
+	<p> </p>
+
+<pre>
+ 
+  #Install and configure docs.
+  sepolicy manpage -a -p /usr/share/man/man8
+  mandb
+  
+  #Install essential packages
+  yum install setroubleshoot-server policycoreutils-python libselinux-utils selinux-policy-devel setools-console
+   
+  #By default the NFS mounts has nfs_t if selinux is not used in the mount but can be explicitly used.
+  mount -o context="system_u:object_r:public_content_rw_t:s0" server:/myshare /mnt/nfsexport
+  
+  #To explicity export the SELinux context, the NFS version 4.2 should be explicity turned on in /etc/sysconfig/nfs
+  RPCNFSDARGS="-V 4.2"
+  
+  mount -o v4.2 must be specified as mount option.
+  mount -o sec=krb5p,v4.2 server:/myshare /mnt/nfsexport
+    
+  
+</pre>		
+
+</div>
+<!-- container -->		
+
 </body>
 </html>
