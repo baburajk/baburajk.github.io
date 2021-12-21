@@ -94,6 +94,7 @@
 							<p> </p>
 
 <pre>
+
 </pre>		
 
 		</div>
@@ -175,14 +176,14 @@
 
         How do we know the peer name for a veth network interface? 
         The interface ID of veth0 is “5” and the peer name for that veth is ceth0@if5 . 
-        So it’s veth<Interface ID> == ceth0@if<Interface ID>
+        So it’s veth&lt;Interface ID&gt; == ceth0@if&lt;Interface ID&gt;
     </p>
 	<p> </p>
 
 <pre>
 
     [root@rhel8b netns]# ip link set dev ceth0 netns cnetns0
-    [root@rhel8b netns]#  ip link set dev ceth1 netns cnetns1
+    [root@rhel8b netns]# ip link set dev ceth1 netns cnetns1
     
     
     [root@rhel8b netns]#  ip netns exec cnetns0 ip link show
@@ -214,7 +215,8 @@
 
 <pre>
 
-
+    [root@rhel8b netns]# nsenter --net=/var/run/netns/cnetns0 bash
+    
     [root@rhel8b netns]# ip link show
     1: lo: <LOOPBACK> mtu 65536 qdisc noop state DOWN mode DEFAULT group default qlen 1000
         link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
@@ -226,7 +228,6 @@
         link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
     4: ceth0@if5: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN group default qlen 1000
         link/ether 3a:9c:07:b7:10:bd brd ff:ff:ff:ff:ff:ff link-netnsid 0
-  
         
     [root@rhel8b netns]# ip addr add 172.20.0.50/16 dev ceth0
 
@@ -249,12 +250,125 @@
 
 <!-- container -->		
 <div class="screen-one-item-container">
-	<h3>  SUBTITLE </h3>
-	<p> </p>
+	<h3>  Routing and IP Address Configuration - Contd. </h3>
+	<p> At this point IP address is added, but no routes has been set and this is because the physical links are down still and has not been brought up yet.
+
+    </p>
 	<p> </p>
 
 <pre>
-CODE BLOCK
+    [root@rhel8b netns]# ip link set ceth0 up
+    [root@rhel8b netns]# ip link set lo up
+    
+    [root@rhel8b netns]# ip link show
+    1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
+        link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    4: ceth0@if5: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc noqueue state LOWERLAYERDOWN mode DEFAULT group default qlen 1000
+        link/ether 3a:9c:07:b7:10:bd brd ff:ff:ff:ff:ff:ff link-netnsid 0
+    
+    [root@rhel8b netns]# ip addr show
+    1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+        link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+        inet 127.0.0.1/8 scope host lo
+           valid_lft forever preferred_lft forever
+        inet6 ::1/128 scope host
+           valid_lft forever preferred_lft forever
+    4: ceth0@if5: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc noqueue state LOWERLAYERDOWN group default qlen 1000
+        link/ether 3a:9c:07:b7:10:bd brd ff:ff:ff:ff:ff:ff link-netnsid 0
+        inet 172.20.0.50/16 scope global ceth0
+           valid_lft forever preferred_lft forever
+
+           Note: The state of ceth0 is showing “LOWERLAYERDOWN”, though the interface itself is "<UP>" since the other end of the veth pair was only
+            added and has not been brought up. Also by bringing this up the routes are also plugged into the 
+            routing table which in the previous output was empty.
+
+
+    [root@rhel8b netns]# ip route show
+    172.20.0.0/16 dev ceth0 proto kernel scope link src 172.20.0.50 linkdown
+
+    #Open another terminal and run similar commands on the cnetns1 to complete the configuration.
+
+        nsenter --net=/var/run/netns/cnetns1 bash
+        ip link set lo up
+        ip link set ceth1 up
+        ip addr add 172.20.0.60/16 dev ceth1
+        ip add show
+
+
+</pre>		
+
+</div>
+<!-- container -->		
+
+
+<!-- container -->		
+<div class="screen-one-item-container">
+	<h3> Root Namespace - VETH setup.   </h3>
+	<p> The interface links on the root namespace is still down which needs to be brought up. 
+    </p>
+	<p> </p>
+
+<pre>
+
+    [root@rhel8b ~]# ip link show veth0
+    5: veth0@if4: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+        link/ether 32:e4:7c:d5:bd:8f brd ff:ff:ff:ff:ff:ff link-netns cnetns0
+    
+    [root@rhel8b ~]# ip link show veth1
+    7: veth1@if6: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+        link/ether ea:c9:3d:5b:64:59 brd ff:ff:ff:ff:ff:ff link-netns cnetns1 
+    
+    
+    ip link set dev veth0 up
+    ip link set dev veth1 up
+    
+    
+    [root@rhel8b ~]# ip link show veth0
+    5: veth0@if4: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP mode DEFAULT group default qlen 1000
+        link/ether 32:e4:7c:d5:bd:8f brd ff:ff:ff:ff:ff:ff link-netns cnetns0
+    [root@rhel8b ~]#
+    [root@rhel8b ~]# ip link show veth1
+    7: veth1@if6: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP mode DEFAULT group default qlen 1000
+        link/ether ea:c9:3d:5b:64:59 brd ff:ff:ff:ff:ff:ff link-netns cnetns1
+    
+    After the peer has been brought up, the interface status of ceth0 and ceth1 within the network namespaces are 
+    changed from “LOWERLAYERDOWN” to  “LOWER_UP” as seen below.
+    
+    [root@rhel8b-cnetns0 ~ # ip link show ceth0
+    4: ceth0@if5: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP mode DEFAULT group default qlen 1000
+        link/ether 3a:9c:07:b7:10:bd brd ff:ff:ff:ff:ff:ff link-netnsid 0
+    
+    [root@rhel8b-cnetns1 ~ # ip link show ceth1
+    6: ceth1@if7: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP mode DEFAULT group default qlen 1000
+        link/ether f6:0e:f5:ee:d1:7e brd ff:ff:ff:ff:ff:ff link-netnsid 0
+    
+</pre>		
+
+</div>
+<!-- container -->		
+
+
+
+<!-- container -->		
+<div class="screen-one-item-container">
+	<h3> Reachability Tests. </h3>
+	<p> The basic setups are done, it's about time to do the simple reachability tests. </p>
+	<p> 
+        # Provides the inode number associated with the process.
+        [root@rhel8b ~]# lsns -o NS,PATH,USER,NETNSID | grep $(echo $$)
+        4026532414 /proc/2093/ns/net root   unassigned
+        
+        The basic 3 use-cases that I want to test it out are as follows.
+     
+        a) Can one cnetns0/IP reach the IP defined on cnetns1
+        b) Can any of these IP’s reach internet.
+        c) Can the VM reach the IP’s defined on these NS - cnetns0/1
+    </p>
+
+<pre>
+
+
+
 </pre>		
 
 </div>
@@ -268,21 +382,17 @@ CODE BLOCK
 	<p> </p>
 
 <pre>
-CODE BLOCK
-</pre>		
+    Since there are two terminals/sessions opened to two different network NS, to identify the sessions, change
+    the PS1 (prompt) so it's easier.
 
-</div>
-<!-- container -->		
+    [root@rhel8b ~]# ip netns identify $(echo $$)
+    cnetns0
+    
+    Some additional commands for reference.
+    
+    # Sets the bash prompt
+    export PS1="[\u@\h-$(ip netns identify $(echo $$)) \w # "
 
-
-<!-- container -->		
-<div class="screen-one-item-container">
-	<h3>  SUBTITLE </h3>
-	<p> </p>
-	<p> </p>
-
-<pre>
-CODE BLOCK
 </pre>		
 
 </div>
