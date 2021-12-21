@@ -89,7 +89,7 @@
 <!-- container -->		
 		<div class="screen-one-item-container">
                             <h3>  </h3>
-                            <img src="./imgs/namespace-v2.svg" width="800" height="800"  alt="Network Configuration">   
+                            <img src="./imgs/namespace-v3.svg" width="800" height="800"  alt="Network Configuration">   
 							<p>  </p>
 							<p> </p>
  
@@ -105,6 +105,8 @@
         for inter pod communications. For the purpose of the experiment two network namespaces was created on a KVM Guest VM manually to understand
         the routing aspects and as well the IP Table rules required to enable the communication between the POD's, egress from POD to outside world and also
         ingress to the POD's.
+
+      
         
     </p>
 	<p> </p>
@@ -335,6 +337,23 @@
     6: ceth1@if7: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP mode DEFAULT group default qlen 1000
         link/ether f6:0e:f5:ee:d1:7e brd ff:ff:ff:ff:ff:ff link-netnsid 0
     
+
+    [root@rhel8b ~]# ip route show
+    default via 192.168.122.1 dev enp1s0 proto dhcp metric 100
+    172.17.0.0/16 dev docker0 proto kernel scope link src 172.17.0.1 linkdown
+    192.168.122.0/24 dev enp1s0 proto kernel scope link src 192.168.122.130 metric 100
+
+    [root@rhel8b ~]# ip addr add 172.20.0.5/16 dev veth0
+    [root@rhel8b ~]# ip addr add 172.20.0.6/16 dev veth1
+
+    [root@rhel8b ~]# ip route show
+    default via 192.168.122.1 dev enp1s0 proto dhcp metric 100
+    172.17.0.0/16 dev docker0 proto kernel scope link src 172.17.0.1 linkdown
+    172.20.0.0/16 dev veth0 proto kernel scope link src 172.20.0.5
+    172.20.0.0/16 dev veth1 proto kernel scope link src 172.20.0.6
+    192.168.122.0/24 dev enp1s0 proto kernel scope link src 192.168.122.130 metric 100
+ 
+
 </pre>		
 
 </div>
@@ -356,6 +375,19 @@
         a) Can one cnetns0/IP reach the IP defined on cnetns1
         b) Can any of these IP’s reach internet.
         c) Can the VM reach the IP’s defined on these NS - cnetns0/1
+
+        #Additional notes
+        Since there are two terminals/sessions opened to two different network NS, to identify the sessions, change
+        the PS1 (prompt) so it's easier.
+    
+        [root@rhel8b ~]# ip netns identify $(echo $$)
+        cnetns0
+        
+        Some additional commands for reference.
+        
+        # Sets the bash prompt
+        export PS1="[\u@\h-$(ip netns identify $(echo $$)) \w # "
+
     </p>
 
 <pre>
@@ -370,21 +402,58 @@
 
 <!-- container -->		
 <div class="screen-one-item-container">
-	<h3>  SUBTITLE </h3>
+	<h3> Reachability Tests - Contd. </h3>
 	<p> </p>
 	<p> </p>
 
 <pre>
-    Since there are two terminals/sessions opened to two different network NS, to identify the sessions, change
-    the PS1 (prompt) so it's easier.
+    Still there are no routes to the ceth* pairs from guest VM network.
 
-    [root@rhel8b ~]# ip netns identify $(echo $$)
-    cnetns0
-    
-    Some additional commands for reference.
-    
-    # Sets the bash prompt
-    export PS1="[\u@\h-$(ip netns identify $(echo $$)) \w # "
+
+    #From rootns, both the cnetns0 and cnetns1 interfaces are reachable.
+
+    [root@rhel8b ~]# tracepath 172.20.0.50
+    1?: [LOCALHOST]                      pmtu 1500
+    1:  172.20.0.50                                           0.057ms reached
+    1:  172.20.0.50                                           0.038ms reached
+        Resume: pmtu 1500 hops 1 back 1
+    [root@rhel8b ~]# tracepath 172.20.0.60
+    1?: [LOCALHOST]                      pmtu 1500
+    1:  rhel8b                                              3083.079ms !H
+        Resume: pmtu 1500
+
+    #From cnentns0 to veth0
+
+    [root@rhel8b-cnetns0 ~ # tracepath 172.20.0.5
+    1?: [LOCALHOST]                      pmtu 1500
+    1:  172.20.0.5                                            0.068ms !H
+    1:  172.20.0.5                                            0.048ms !H
+        Resume: pmtu 1500
+
+    #From cnentns1 to veth1
+
+    [root@rhel8b-cnetns1 ~ # tracepath 172.20.0.6
+    1?: [LOCALHOST]                      pmtu 1500
+    1:  rhel8b                                              3064.865ms !H
+        Resume: pmtu 1500
+
+
+    From cnetns0 to cnetns1 and vice-versa
+
+    [root@rhel8b-cnetns0 ~ # tracepath 172.20.0.6
+    1?: [LOCALHOST]                      pmtu 1500
+    1:  172.20.0.6                                            0.056ms !H
+    1:  172.20.0.6                                            0.042ms !H
+        Resume: pmtu 1500
+
+    [root@rhel8b-cnetns1 ~ # tracepath 172.20.0.5
+    1?: [LOCALHOST]                      pmtu 1500
+    1:  rhel8b                                              3051.551ms !H
+        Resume: pmtu 1500
+
+    Strange the connectivity against cnetns1 and veth1 is taking over > 3000ms , which isn’t good. So somewhere there’s an issue which 
+    I will have to look further
+
 
 </pre>		
 
