@@ -88,31 +88,24 @@
  
 <!-- container -->		
 		<div class="screen-one-item-container">
-                            <h3>  Network Diagram </h3>
+                            <h3>  </h3>
                             <img src="./imgs/namespace-v2.svg" width="800" height="800"  alt="Network Configuration">   
 							<p>  </p>
 							<p> </p>
-
-<pre>
-
-</pre>		
-
+ 
 		</div>
 <!-- container -->		
 
 
 <!-- container -->		
 <div class="screen-one-item-container">
-	<h3>  Goal - Simulate docker interpod communication using network namespaces. </h3>
-	<p>  There are lot of nice articles explaining how the Network Namespaces works and how Docker Containerization makes use of the network namespaces   
-        for inter pod communications. To get a practical sense of how this works, two network namespaces was created on a KVM Guest VM. The VM used already has a docker daemon
+	<h3> Simulate docker interpod communication using network namespaces. </h3>
+	<p> A quick recap from the web, a network namespace is logically another copy of the network stack, with its  own routes, firewall rules, and network devices. 
+        There are lot of nice articles explaining how the Network Namespaces works and how Docker Containerization makes use of the network namespaces   
+        for inter pod communications. For the purpose of the experiment two network namespaces was created on a KVM Guest VM manually to understand
+        the routing aspects and as well the IP Table rules required to enable the communication between the POD's, egress from POD to outside world and also
+        ingress to the POD's.
         
-        Running and instead of cleaning those up, I decided to use the same to see if those IP Table rules created by docker would create any issue, if so how and also to learn and use those rules
-        as a reference point while setting these up.
-        
-        Logical diagram represents a quick high level over view of the overall configuration.
-        
-        A quick recap from the web, a network namespace is logically another copy of the network stack, with its  own routes, firewall rules, and network devices. y default a process inherits its network namespace from its parent. Initially all the processes share the same default network namespace from the init process.
     </p>
 	<p> </p>
 
