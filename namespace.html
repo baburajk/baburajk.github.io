@@ -696,12 +696,60 @@
 
 <!-- container -->		
 <div class="screen-one-item-container">
-	<h3>  HEADER  </h3>
-	<p> </p>
+	<h3>  Why IP’s between cnetns are not reachable between each other?  </h3>
+	<p> This took me a while to figure out! So first the basics, whether the configuration is correct or not.
+
+        So gateway/br00 is reachable yet the IP on cnetns1 is not reachable (172.20.0.60). I can see the requests reaching the br00 (tcpdump) and also ceth1 (cnetns1) and it’s a ARP request and ARP response, yet it never reaches back.
+        
+        IP neigh output also stresses the fact that there’s no issue on the L2 layer, MAC’s on  br00 and as well the respective interfaces - ceth0 and ceth1 are learned.
+        
+        This means bridge/L2 layer is completely in tact, yet  on the L3 there’s some issue! 
+        </p>
 	<p> </p>
 
 <pre>
-CODE BLOCK
+
+
+    [root@rhel8b-cnetns0 ~ # ping -c1 172.20.0.60
+    PING 172.20.0.60 (172.20.0.60) 56(84) bytes of data.
+    
+    --- 172.20.0.60 ping statistics ---
+    1 packets transmitted, 0 received, 100% packet loss, time 0ms
+    
+    [root@rhel8b-cnetns0 ~ # ping -c1 172.20.0.60
+    PING 172.20.0.60 (172.20.0.60) 56(84) bytes of data.
+    
+    --- 172.20.0.60 ping statistics ---
+    1 packets transmitted, 0 received, 100% packet loss, time 0ms
+    
+    
+    [root@rhel8b ~]# tcpdump -nni br00 net 172.20.0.0/16
+    dropped privs to tcpdump
+    tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+    listening on br00, link-type EN10MB (Ethernet), capture size 262144 bytes
+    14:53:33.614918 IP 172.20.0.50 > 172.20.0.60: ICMP echo request, id 6900, seq 1, length 64
+    14:53:38.758399 ARP, Request who-has 172.20.0.60 tell 172.20.0.50, length 28
+    14:53:38.758479 ARP, Reply 172.20.0.60 is-at f6:0e:f5:ee:d1:7e, length 28
+    
+    [root@rhel8b-cnetns1 ~ # tcpdump -nni ceth1 net 172.20.0.0/16
+    dropped privs to tcpdump
+    tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+    listening on ceth1, link-type EN10MB (Ethernet), capture size 262144 bytes
+    14:53:38.758447 ARP, Request who-has 172.20.0.60 tell 172.20.0.50, length 28
+    14:53:38.758477 ARP, Reply 172.20.0.60 is-at f6:0e:f5:ee:d1:7e, length 28
+    
+    
+    MAC Address’s learned by ceth0 and ceth1 
+    
+    [root@rhel8b-cnetns0 ~ # ip neigh
+    172.20.0.60 dev ceth0 lladdr f6:0e:f5:ee:d1:7e STALE
+    172.20.0.1 dev ceth0 lladdr 32:e4:7c:d5:bd:8f STALE
+    
+    [root@rhel8b-cnetns1 ~ # ip neigh
+    172.20.0.1 dev ceth1 lladdr 32:e4:7c:d5:bd:8f STALE
+    172.20.0.50 dev ceth1 lladdr 3a:9c:07:b7:10:bd STALE
+    
+Everything seems to be perfectly file on the L2 layer, so focus the investigation on the L3 layer!    
 </pre>		
 
 </div>
@@ -711,12 +759,61 @@ CODE BLOCK
 
 <!-- container -->		
 <div class="screen-one-item-container">
-	<h3>  HEADER  </h3>
-	<p> </p>
+	<h3>  Issue-2: What's happening on L3, where/how are packets being dropped?  </h3>
+	<p> This is the one where I spent most of the time. 
+        Based on the ARP reply/response and as well the L2 checks being done, it’s clear that there’s some issue on the L3 and that too on the rootns. One of the suspicion is the IPTABLE rules/Firewall though I haven’t injected any explicit rules - all the VM’s that I carved out for experiments had docker daemon pre-configured for experimentation.
+        
+        Docker injects lot of rules, but unsure if that’s the one playing a rule here - so to find out more I decided to review the rules.
+        
+        Lot’s of good articles on the IPTables, but need a recap of the same to understand how it’s working. I picked one of this blog here (https://www.teldat.com/blog/nftables-and-netfilter-hooks-via-linux-kernel/) 
+        “When a network packet is received on a network device, it first passes through the Prerouting hook. This is where the routing decision takes place. The kernel decides whether the packet is destined for a local process (e.g., a listening socket on a server in this system) or whether to forward it (system operates as a router). In the first case, the packet passes the Input hook and is then handed over to the local process.  If the packet is destined to be forwarded, it traverses the Forward hook and then a final Postrouting hook before being sent out on a network device. For packets that are generated locally (e.g., by a client or server process that likes sending things out), they must first pass the Output hook and then the  Postrouting hook before being sent out on a network device.”
+        
+        
+        So this means, I should definitely check the “FORWARDING” rule of the iptables, and probably the “PRE-ROUTING” and “POST-ROUTING” as well! Later is not something I’m not too clear, but while doing the experiments I am hoping to get a better picture.
+        
+        The best of my understanding is I can focus only on the “FILTER” table, since I’m not using any natting , NAT table shouldn’t come into play. Same for “MANGLE” as there’s nothing involved in modifying IP headers. RAW is used for connection tracking as per the documentation and SECURITY is for security purposes. SO I can now focus on the “FILTER”
+        
+        Within the “FILTER”, since it’s a packet that must be forwarded on the bridge from cnetns0 to cnetns1 (a packet destined to another interface ) on a separate namespace and it’s likely that if any of the rules is affecting this it must be “FORWARD”.
+        
+         </p>
 	<p> </p>
 
 <pre>
-CODE BLOCK
+    [root@rhel8b ~]#  iptables -t filter -L -n -v
+    Chain INPUT (policy ACCEPT 32352 packets, 27M bytes)
+     pkts bytes target     prot opt in     out     source               destination
+    
+    Chain FORWARD (policy DROP 15 packets, 1260 bytes)
+     pkts bytes target     prot opt in     out     source               destination
+       15  1260 DOCKER-USER  all  --  *      *       0.0.0.0/0            0.0.0.0/0
+       15  1260 DOCKER-ISOLATION-STAGE-1  all  --  *      *       0.0.0.0/0            0.0.0.0/0
+        0     0 ACCEPT     all  --  *      docker0  0.0.0.0/0            0.0.0.0/0            ctstate RELATED,ESTABLISHED
+        0     0 DOCKER     all  --  *      docker0  0.0.0.0/0            0.0.0.0/0
+        0     0 ACCEPT     all  --  docker0 !docker0  0.0.0.0/0            0.0.0.0/0
+        0     0 ACCEPT     all  --  docker0 docker0  0.0.0.0/0            0.0.0.0/0
+    
+    Chain OUTPUT (policy ACCEPT 21299 packets, 1896K bytes)
+     pkts bytes target     prot opt in     out     source               destination
+    
+    Chain DOCKER (1 references)
+     pkts bytes target     prot opt in     out     source               destination
+    
+    Chain DOCKER-ISOLATION-STAGE-1 (1 references)
+     pkts bytes target     prot opt in     out     source               destination
+        0     0 DOCKER-ISOLATION-STAGE-2  all  --  docker0 !docker0  0.0.0.0/0            0.0.0.0/0
+       15  1260 RETURN     all  --  *      *       0.0.0.0/0            0.0.0.0/0
+    
+    Chain DOCKER-ISOLATION-STAGE-2 (1 references)
+     pkts bytes target     prot opt in     out     source               destination
+        0     0 DROP       all  --  *      docker0  0.0.0.0/0            0.0.0.0/0
+        0     0 RETURN     all  --  *      *       0.0.0.0/0            0.0.0.0/0
+    
+    Chain DOCKER-USER (1 references)
+     pkts bytes target     prot opt in     out     source               destination
+       15  1260 RETURN     all  --  *      *       0.0.0.0/0            0.0.0.0/0
+    
+    
+    If my interpretation is right, the default policy is “DROP”, drop any packets if no RULES are matched as listed! 
 </pre>		
 
 </div>
@@ -726,7 +823,184 @@ CODE BLOCK
 
 <!-- container -->		
 <div class="screen-one-item-container">
-	<h3>  HEADER  </h3>
+    <h3> Are packets getting dropped by iptables? Contd.   </h3>
+    <p> So in-order for me to evaluate whether these rules are really affecting the packets, thought of taking a difference before and after the ping and look at the difference.
+    </p>
+    <img src="./img/iptables-diff-output.png" width="800" height="800"  alt="IPTables Output">   
+						
+	<p> </p>
+
+<pre>
+
+
+    [root@rhel8b ~]# iptables -L -v -n > /tmp/before_ping_from_cnetns0_to_cnetns1.dat
+
+    [root@rhel8b-cnetns0 ~ # ping -c1 172.20.0.60
+    PING 172.20.0.60 (172.20.0.60) 56(84) bytes of data.
+    
+    --- 172.20.0.60 ping statistics ---
+    1 packets transmitted, 0 received, 100% packet loss, time 0ms
+    
+    [root@rhel8b ~]# iptables -L -v -n > /tmp/after_ping_from_cnetns0_to_cnetns1.dat
+    
+    
+    [root@rhel8b ~]# diff --color /tmp/before_ping_from_cnetns0_to_cnetns1.dat /tmp/after_ping_from_cnetns0_to_cnetns1.dat
+    1c1
+    < Chain INPUT (policy ACCEPT 32513 packets, 27M bytes)
+    ---
+    > Chain INPUT (policy ACCEPT 32613 packets, 27M bytes)
+    4c4
+    < Chain FORWARD (policy DROP 16 packets, 1344 bytes)
+    ---
+    > Chain FORWARD (policy DROP 17 packets, 1428 bytes)
+    6,7c6,7
+    <    16  1344 DOCKER-USER  all  --  *      *       0.0.0.0/0            0.0.0.0/0
+    <    16  1344 DOCKER-ISOLATION-STAGE-1  all  --  *      *       0.0.0.0/0            0.0.0.0/0
+    ---
+    >    17  1428 DOCKER-USER  all  --  *      *       0.0.0.0/0            0.0.0.0/0
+    >    17  1428 DOCKER-ISOLATION-STAGE-1  all  --  *      *       0.0.0.0/0            0.0.0.0/0
+    13c13
+    < Chain OUTPUT (policy ACCEPT 21387 packets, 1914K bytes)
+    ---
+    > Chain OUTPUT (policy ACCEPT 21439 packets, 1920K bytes)
+    22c22
+    <    16  1344 RETURN     all  --  *      *       0.0.0.0/0            0.0.0.0/0
+    ---
+    >    17  1428 RETURN     all  --  *      *       0.0.0.0/0            0.0.0.0/0
+    31c31
+    <    16  1344 RETURN     all  --  *      *       0.0.0.0/0            0.0.0.0/0
+    ---
+    >    17  1428 RETURN     all  --  *      *       0.0.0.0/0            0.0.0.0/0
+    
+    
+    What’s interesting here is there’s a packet that’s DROPPED in the “FORWARD” policy.
+    
+    < Chain FORWARD (policy DROP 16 packets, 1344 bytes)
+    ---
+    > Chain FORWARD (policy DROP 17 packets, 1428 bytes)
+    
+    
+</pre>		
+
+</div>
+<!-- container -->		
+
+
+
+<!-- container -->		
+<div class="screen-one-item-container">
+	<h3> IPTable Rules and Solution to packet drops! </h3>
+	<p> I want to inject some logging to see the packets that are getting dropped as part of these rules. 
+        So take a backup of the iptables and then add some additional rules to log all the packets getting 
+        into this chain. So create a new chain called br00 and creating rules with a policy of "ACCEPT" for any packets
+        that are destined to 172.20.0.0/16.
+
+        So glad that I didn't delete/shutdown the docker daemon to have a cleaner system! This took me an entirely different
+        and an interesting learning experience.
+    </p>
+	<p> </p>
+
+<pre>
+
+    iptables-save > /root/iptables.original
+
+    iptables -N br00
+    iptables -A br00 -m limit --limit 2/min -j LOG --log-prefix "DEBUG: Packets on wire - br00 " --log-level 4
+    iptables -A br00  -j ACCEPT
+    iptables -I FORWARD 1 -s 172.20.0.0/16 -o br00 -j br00
+    iptables -I FORWARD 2 -s 172.20.0.0/16 -i br00 -j br00
+
+    
+    And let’s check if the LOGGING chain has been added
+    
+    
+    [root@rhel8b ~]# iptables -L -v -n --line-numbers
+    Chain INPUT (policy ACCEPT 68 packets, 5164 bytes)
+    num   pkts bytes target     prot opt in     out     source               destination
+
+    Chain FORWARD (policy DROP 1 packets, 84 bytes)
+    num   pkts bytes target     prot opt in     out     source               destination
+    1        0     0 br00       all  --  *      br00    172.20.0.0/16        0.0.0.0/0
+    2        0     0 br00       all  --  br00   *       172.20.0.0/16        0.0.0.0/0
+    3        1    84 DOCKER-USER  all  --  *      *       0.0.0.0/0            0.0.0.0/0
+    4        1    84 DOCKER-ISOLATION-STAGE-1  all  --  *      *       0.0.0.0/0            0.0.0.0/0
+    5        0     0 ACCEPT     all  --  *      docker0  0.0.0.0/0            0.0.0.0/0            ctstate RELATED,ESTABLISHED
+    6        0     0 DOCKER     all  --  *      docker0  0.0.0.0/0            0.0.0.0/0
+    7        0     0 ACCEPT     all  --  docker0 !docker0  0.0.0.0/0            0.0.0.0/0
+    8        0     0 ACCEPT     all  --  docker0 docker0  0.0.0.0/0            0.0.0.0/0
+
+    Chain OUTPUT (policy ACCEPT 47 packets, 8140 bytes)
+    num   pkts bytes target     prot opt in     out     source               destination
+
+    Chain DOCKER (1 references)
+    num   pkts bytes target     prot opt in     out     source               destination
+
+    Chain DOCKER-ISOLATION-STAGE-1 (1 references)
+    num   pkts bytes target     prot opt in     out     source               destination
+    1        0     0 DOCKER-ISOLATION-STAGE-2  all  --  docker0 !docker0  0.0.0.0/0            0.0.0.0/0
+    2        1    84 RETURN     all  --  *      *       0.0.0.0/0            0.0.0.0/0
+
+    Chain DOCKER-ISOLATION-STAGE-2 (1 references)
+    num   pkts bytes target     prot opt in     out     source               destination
+    1        0     0 DROP       all  --  *      docker0  0.0.0.0/0            0.0.0.0/0
+    2        0     0 RETURN     all  --  *      *       0.0.0.0/0            0.0.0.0/0
+
+    Chain DOCKER-USER (1 references)
+    num   pkts bytes target     prot opt in     out     source               destination
+    1        1    84 RETURN     all  --  *      *       0.0.0.0/0            0.0.0.0/0
+
+    Chain br00 (2 references)
+    num   pkts bytes target     prot opt in     out     source               destination
+    1        0     0 LOG        all  --  *      *       0.0.0.0/0            0.0.0.0/0            limit: avg 2/min burst 5 LOG flags 0 level 4 prefix "DEBUG: Packets on wire - br00"
+    2        0     0 ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0
+
+
+        # Do a ping to see and see what get’s into the /var/log/messages ( the rules pushed by IPTABLES ) logging chain.
+        
+    [root@rhel8b-cnetns0 ~ # ping -c1 172.20.0.60
+    PING 172.20.0.60 (172.20.0.60) 56(84) bytes of data.
+    64 bytes from 172.20.0.60: icmp_seq=1 ttl=64 time=0.094 ms
+
+    --- 172.20.0.60 ping statistics ---
+    1 packets transmitted, 1 received, 0% packet loss, time 0ms
+    rtt min/avg/max/mdev = 0.094/0.094/0.094/0.000 ms
+
+
+    [root@rhel8b ~]# tail -2f /var/log/messages
+    Dec 22 17:07:14 rhel8b systemd[1]: Started Network Manager Script Dispatcher Service.
+    Dec 22 17:07:25 rhel8b systemd[1]: NetworkManager-dispatcher.service: Succeeded.
+    Dec 22 17:16:10 rhel8b kernel: DEBUG: Packets on wire - br00IN=br00 OUT=br00 PHYSIN=veth0 PHYSOUT=veth1 MAC=f6:0e:f5:ee:d1:7e:3a:9c:07:b7:10:bd:08:00 SRC=172.20.0.50 DST=172.20.0.60 LEN=84 TOS=0x00 PREC=0x00 TTL=64 ID=35184 DF PROTO=ICMP TYPE=8 CODE=0 ID=7316 SEQ=1
+    Dec 22 17:16:10 rhel8b kernel: DEBUG: Packets on wire - br00IN=br00 OUT=br00 PHYSIN=veth1 PHYSOUT=veth0 MAC=3a:9c:07:b7:10:bd:f6:0e:f5:ee:d1:7e:08:00 SRC=172.20.0.60 DST=172.20.0.50 LEN=84 TOS=0x00 PREC=0x00 TTL=64 ID=21476 PROTO=ICMP TYPE=0 CODE=0 ID=7316 SEQ=1
+
+
+    [root@rhel8b-cnetns1 ~ # ping -c1 172.20.0.50
+    PING 172.20.0.50 (172.20.0.50) 56(84) bytes of data.
+    64 bytes from 172.20.0.50: icmp_seq=1 ttl=64 time=0.106 ms
+
+    --- 172.20.0.50 ping statistics ---
+    1 packets transmitted, 1 received, 0% packet loss, time 0ms
+    rtt min/avg/max/mdev = 0.106/0.106/0.106/0.000 ms
+
+
+    [root@rhel8b ~]# tail -2f /var/log/messages
+    …output trimmed…
+    ====
+    Dec 22 17:17:21 rhel8b kernel: DEBUG: Packets on wire - br00IN=br00 OUT=br00 PHYSIN=veth1 PHYSOUT=veth0 MAC=3a:9c:07:b7:10:bd:f6:0e:f5:ee:d1:7e:08:00 SRC=172.20.0.60 DST=172.20.0.50 LEN=84 TOS=0x00 PREC=0x00 TTL=64 ID=24247 DF PROTO=ICMP TYPE=8 CODE=0 ID=7317 SEQ=1
+    Dec 22 17:17:21 rhel8b kernel: DEBUG: Packets on wire - br00IN=br00 OUT=br00 PHYSIN=veth0 PHYSOUT=veth1 MAC=f6:0e:f5:ee:d1:7e:3a:9c:07:b7:10:bd:08:00 SRC=172.20.0.50 DST=172.20.0.60 LEN=84 TOS=0x00 PREC=0x00 TTL=64 ID=12916 PROTO=ICMP TYPE=0 CODE=0 ID=7317 SEQ=1    
+
+
+    
+</pre>		
+
+</div>
+<!-- container -->		
+
+
+
+
+<!-- container -->		
+<div class="screen-one-item-container">
+	<h3>    </h3>
 	<p> </p>
 	<p> </p>
 
@@ -737,6 +1011,54 @@ CODE BLOCK
 </div>
 <!-- container -->		
 
+
+
+
+
+<!-- container -->		
+<div class="screen-one-item-container">
+	<h3>  SUBTITLE </h3>
+	<p> </p>
+	<p> </p>
+
+<pre>
+CODE BLOCK
+</pre>		
+
+</div>
+<!-- container -->		
+
+
+
+
+<!-- container -->		
+<div class="screen-one-item-container">
+	<h3>  SUBTITLE </h3>
+	<p> </p>
+	<p> </p>
+
+<pre>
+CODE BLOCK
+</pre>		
+
+</div>
+<!-- container -->		
+
+
+
+
+<!-- container -->		
+<div class="screen-one-item-container">
+	<h3>  SUBTITLE </h3>
+	<p> </p>
+	<p> </p>
+
+<pre>
+CODE BLOCK
+</pre>		
+
+</div>
+<!-- container -->		
 
 	
 
