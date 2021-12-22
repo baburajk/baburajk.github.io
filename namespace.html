@@ -366,32 +366,32 @@
 	<h3> Reachability Tests. </h3>
 	<p> The basic setups are done, it's about time to do the simple reachability tests. </p>
 	<p> 
-        # Provides the inode number associated with the process.
-        [root@rhel8b ~]# lsns -o NS,PATH,USER,NETNSID | grep $(echo $$)
-        4026532414 /proc/2093/ns/net root   unassigned
-        
-        The basic 3 use-cases that I want to test it out are as follows.
      
-        a) Can one cnetns0/IP reach the IP defined on cnetns1
-        b) Can any of these IP’s reach internet.
-        c) Can the VM reach the IP’s defined on these NS - cnetns0/1
-
-        #Additional notes
-        Since there are two terminals/sessions opened to two different network NS, to identify the sessions, change
-        the PS1 (prompt) so it's easier.
-    
-        [root@rhel8b ~]# ip netns identify $(echo $$)
-        cnetns0
-        
-        Some additional commands for reference.
-        
-        # Sets the bash prompt
-        export PS1="[\u@\h-$(ip netns identify $(echo $$)) \w # "
-
     </p>
 
 <pre>
 
+    # Provides the inode number associated with the process.
+    [root@rhel8b ~]# lsns -o NS,PATH,USER,NETNSID | grep $(echo $$)
+    4026532414 /proc/2093/ns/net root   unassigned
+    
+    The basic 3 use-cases that I want to test it out are as follows.
+ 
+    a) Can one cnetns0/IP reach the IP defined on cnetns1
+    b) Can any of these IP’s reach internet.
+    c) Can the VM reach the IP’s defined on these NS - cnetns0/1
+
+    #Additional notes
+    Since there are two terminals/sessions opened to two different network NS, to identify the sessions, change
+    the PS1 (prompt) so it's easier.
+
+    [root@rhel8b ~]# ip netns identify $(echo $$)
+    cnetns0
+    
+    Some additional commands for reference.
+    
+    # Sets the bash prompt
+    export PS1="[\u@\h-$(ip netns identify $(echo $$)) \w # "
 
 
 </pre>		
@@ -407,53 +407,61 @@
 	<p> </p>
 
 <pre>
-    Still there are no routes to the ceth* pairs from guest VM network.
+ 
 
+    From rootns to cnetns0 and cnetns1
 
-    #From rootns, both the cnetns0 and cnetns1 interfaces are reachable.
-
-    [root@rhel8b ~]# tracepath 172.20.0.50
-    1?: [LOCALHOST]                      pmtu 1500
-    1:  172.20.0.50                                           0.057ms reached
-    1:  172.20.0.50                                           0.038ms reached
-        Resume: pmtu 1500 hops 1 back 1
-    [root@rhel8b ~]# tracepath 172.20.0.60
-    1?: [LOCALHOST]                      pmtu 1500
-    1:  rhel8b                                              3083.079ms !H
-        Resume: pmtu 1500
-
-    #From cnentns0 to veth0
-
-    [root@rhel8b-cnetns0 ~ # tracepath 172.20.0.5
-    1?: [LOCALHOST]                      pmtu 1500
-    1:  172.20.0.5                                            0.068ms !H
-    1:  172.20.0.5                                            0.048ms !H
-        Resume: pmtu 1500
-
-    #From cnentns1 to veth1
-
-    [root@rhel8b-cnetns1 ~ # tracepath 172.20.0.6
-    1?: [LOCALHOST]                      pmtu 1500
-    1:  rhel8b                                              3064.865ms !H
-        Resume: pmtu 1500
-
-
-    From cnetns0 to cnetns1 and vice-versa
-
-    [root@rhel8b-cnetns0 ~ # tracepath 172.20.0.6
-    1?: [LOCALHOST]                      pmtu 1500
-    1:  172.20.0.6                                            0.056ms !H
-    1:  172.20.0.6                                            0.042ms !H
-        Resume: pmtu 1500
-
-    [root@rhel8b-cnetns1 ~ # tracepath 172.20.0.5
-    1?: [LOCALHOST]                      pmtu 1500
-    1:  rhel8b                                              3051.551ms !H
-        Resume: pmtu 1500
-
-    Strange the connectivity against cnetns1 and veth1 is taking over > 3000ms , which isn’t good. So somewhere there’s an issue which 
-    I will have to look further
-
+    [root@rhel8b ~]# ping -c 1 172.20.0.50
+    PING 172.20.0.50 (172.20.0.50) 56(84) bytes of data.
+    64 bytes from 172.20.0.50: icmp_seq=1 ttl=64 time=0.055 ms
+    
+    --- 172.20.0.50 ping statistics ---
+    1 packets transmitted, 1 received, 0% packet loss, time 0ms
+    rtt min/avg/max/mdev = 0.055/0.055/0.055/0.000 ms
+    
+    [root@rhel8b ~]# ping -c 1 172.20.0.60
+    PING 172.20.0.60 (172.20.0.60) 56(84) bytes of data.
+    From 172.20.0.5 icmp_seq=1 Destination Host Unreachable
+    
+    --- 172.20.0.60 ping statistics ---
+    1 packets transmitted, 0 received, +1 errors, 100% packet loss, time 0ms
+    
+    From cnetns0 to rootns and cnetns1
+    
+    [root@rhel8b-cnetns0 ~ # ping -c 1 172.20.0.5
+    PING 172.20.0.5 (172.20.0.5) 56(84) bytes of data.
+    64 bytes from 172.20.0.5: icmp_seq=1 ttl=64 time=0.060 ms
+    
+    --- 172.20.0.5 ping statistics ---
+    1 packets transmitted, 1 received, 0% packet loss, time 0ms
+    rtt min/avg/max/mdev = 0.060/0.060/0.060/0.000 ms
+    
+    [root@rhel8b-cnetns0 ~ # ping -c1 172.20.0.60
+    PING 172.20.0.60 (172.20.0.60) 56(84) bytes of data.
+    From 172.20.0.50 icmp_seq=1 Destination Host Unreachable
+    
+    --- 172.20.0.60 ping statistics ---
+    1 packets transmitted, 0 received, +1 errors, 100% packet loss, time 0ms
+    
+    From cnetns1 to rootns and cnetns0 
+    
+    [root@rhel8b-cnetns1 ~ # ping -c 1 172.20.0.6
+    PING 172.20.0.6 (172.20.0.6) 56(84) bytes of data.
+    From 172.20.0.60 icmp_seq=1 Destination Host Unreachable
+    
+    --- 172.20.0.6 ping statistics ---
+    1 packets transmitted, 0 received, +1 errors, 100% packet loss, time 0ms
+    
+    [root@rhel8b-cnetns1 ~ # ping -c 1 172.20.0.50
+    PING 172.20.0.50 (172.20.0.50) 56(84) bytes of data.
+    From 172.20.0.60 icmp_seq=1 Destination Host Unreachable
+    
+    --- 172.20.0.50 ping statistics ---
+    1 packets transmitted, 0 received, +1 errors, 100% packet loss, time 0ms
+    
+    So the routes are good from rootns and cnetns0  because of which they are reachable but the pings from cnetns1 resulted in 
+    100% packet loss!
+    
 
 </pre>		
 
@@ -463,13 +471,44 @@
 
 <!-- container -->		
 <div class="screen-one-item-container">
-	<h3>  SUBTITLE </h3>
-	<p> </p>
+	<h3>  Static routes and precedence! </h3>
+	<p> Why would centns0 fail to communicate between either of these namespaces and what are the things
+        that can be looked at? So if we learn the routes that got configured on the rootns - they have two 
+        static routes. </p>
 	<p> </p>
 
 <pre>
-CODE BLOCK
-</pre>		
+
+
+    [root@rhel8b ~]# ip route show
+    default via 192.168.122.1 dev enp1s0 proto dhcp metric 100
+    172.17.0.0/16 dev docker0 proto kernel scope link src 172.17.0.1 linkdown
+    172.20.0.0/16 dev veth0 proto kernel scope link src 172.20.0.5
+    172.20.0.0/16 dev veth1 proto kernel scope link src 172.20.0.6
+    192.168.122.0/24 dev enp1s0 proto kernel scope link src 192.168.122.130 metric 100
+    
+    There are two static routes of interest here , this means any packet originating from the rootns heading toward the subnet 172.20.0.0/16 will be going out of veth0  interface with an IP address of 172.20.0.5.
+    
+    172.20.0.0/16 dev veth0 proto kernel scope link src 172.20.0.5
+    172.20.0.0/16 dev veth1 proto kernel scope link src 172.20.0.6
+    
+    Since 172.20.0.6 falls within the subnet range of 172.20.0.0/16 , packet gets routed through this interface hitting the cnetns0 and will reach back to the cnetns1.
+    
+    Additional way to solidify the theory is to look at the routing cache, which indicates the same that in order to get to 172.20.0.60, the packet goes through the veth0.
+    
+    [root@rhel8b ~]# ip route get 172.20.0.60
+    172.20.0.60 dev veth0 src 172.20.0.5 uid 0
+        cache
+    
+    For additional reference, did tcpdumps on the cnetns0 interface while the ping was fired from the rootns and there was ARP calls indicating the packet reached this interface but unable to find out where to route the packets to.
+    
+    
+    [root@rhel8b-cnetns0 ~ # tcpdump -nni ceth0 -vvv
+    dropped privs to tcpdump
+    tcpdump: listening on ceth0, link-type EN10MB (Ethernet), capture size 262144 bytes
+    21:09:53.808981 ARP, Ethernet (len 6), IPv4 (len 4), Request who-has 172.20.0.60 tell 172.20.0.5, length 28
+    
+    </pre>		
 
 </div>
 <!-- container -->		
@@ -477,12 +516,82 @@ CODE BLOCK
 
 <!-- container -->		
 <div class="screen-one-item-container">
-	<h3>  SUBTITLE </h3>
-	<p> </p>
+	<h3>  Configure the bridge. </h3>
+	<p> The static routes were added when the interface was brought up with valid ip’s. So if one of these routes were to be deleted, it will break the communication to the other network namespace!  It’s natural to have multiple network namespaces ( docker containers) running in one VM - so this is a valid use case that must work!
+
+        172.20.0.0/16 dev veth0 proto kernel scope link src 172.20.0.5
+        172.20.0.0/16 dev veth1 proto kernel scope link src 172.20.0.6 
+        
+        So the solution here is to create a bridge and attach the interfaces to it. Bridge acts on the L2 layer, this means it does the switching but not the routing but any interfaces using the bridge would have it’s MAC address added and on the L2 layer the packets can be 
+        
+        
+         </p>
 	<p> </p>
 
 <pre>
-CODE BLOCK
+
+ 
+    [root@rhel8b ~]# ip link add br00 type bridge
+    [root@rhel8b ~]# ip link set br00 up
+    [root@rhel8b ~]# ip link show br00
+    8: br00: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
+        link/ether 82:5c:78:97:0b:f4 brd ff:ff:ff:ff:ff:ff
+    
+    
+    [root@rhel8b ~]# ip link set veth0 master br00
+    [root@rhel8b ~]# ip link set veth1 master br00
+    
+    
+    Delete the IP addresses associated with the veth0 and veth1
+    
+    [root@rhel8b ~]# ip addr delete 172.20.0.5/16 dev veth0
+    [root@rhel8b ~]# ip addr delete 172.20.0.6/16 dev veth1
+    
+    Flusing these out will also remove the routes that were added.
+    
+    [root@rhel8b ~]# ip route show
+    default via 192.168.122.1 dev enp1s0 proto dhcp metric 100
+    172.17.0.0/16 dev docker0 proto kernel scope link src 172.17.0.1 linkdown
+    192.168.122.0/24 dev enp1s0 proto kernel scope link src 192.168.122.130 metric 100
+    
+    
+    [root@rhel8b ~]# ip link show
+    1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
+        link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    2: enp1s0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+        link/ether 52:54:00:01:1a:b3 brd ff:ff:ff:ff:ff:ff
+    3: docker0: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc noqueue state DOWN mode DEFAULT group default
+        link/ether 02:42:67:e9:9c:2a brd ff:ff:ff:ff:ff:ff
+    5: veth0@if4: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master br00 state UP mode DEFAULT group default qlen 1000
+        link/ether 32:e4:7c:d5:bd:8f brd ff:ff:ff:ff:ff:ff link-netns cnetns0
+    7: veth1@if6: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master br00 state UP mode DEFAULT group default qlen 1000
+        link/ether ea:c9:3d:5b:64:59 brd ff:ff:ff:ff:ff:ff link-netns cnetns1
+    8: br00: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP mode DEFAULT group default qlen 1000
+        link/ether 32:e4:7c:d5:bd:8f brd ff:ff:ff:ff:ff:ff
+    
+    
+    Checking the connectivity on the bridge level, the Mac addresses of both the interfaces are learned in each of these namespaces. 
+    
+    
+    [root@rhel8b-cnetns0 ~ # ip neigh
+    172.20.0.60 dev ceth0 lladdr f6:0e:f5:ee:d1:7e STALE
+    
+    [root@rhel8b-cnetns0 ~ # ip link show
+    1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
+        link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    4: ceth0@if5: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP mode DEFAULT group default qlen 1000
+        link/ether 3a:9c:07:b7:10:bd brd ff:ff:ff:ff:ff:ff link-netnsid 0
+    
+    [root@rhel8b-cnetns1 ~ # ip neigh
+    172.20.0.50 dev ceth1 lladdr 3a:9c:07:b7:10:bd STALE
+    
+    [root@rhel8b-cnetns1 ~ # ip link show
+    1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
+        link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    6: ceth1@if7: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP mode DEFAULT group default qlen 1000
+        link/ether f6:0e:f5:ee:d1:7e brd ff:ff:ff:ff:ff:ff link-netnsid 0
+    
+    
 </pre>		
 
 </div>
