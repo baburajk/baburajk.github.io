@@ -100,11 +100,13 @@
 <!-- container -->		
 <div class="screen-one-item-container">
 	<h3> Simulate docker interpod communication using network namespaces. </h3>
-	<p> A quick recap from the web, a network namespace is logically another copy of the network stack, with its  own routes, firewall rules, and network devices. 
-        There are lot of nice articles explaining how the Network Namespaces works and how Docker Containerization makes use of the network namespaces   
-        for inter pod communications. For the purpose of the experiment two network namespaces was created on a KVM Guest VM manually to understand
-        the routing aspects and as well the IP Table rules required to enable the communication between the POD's, egress from POD to outside world and also
-        ingress to the POD's.
+	<p> A quick recap from the web, a network namespace is logically another copy of the network stack, with its 
+         own routes, firewall rules, and network devices. 
+        There are lot of nice articles explaining how the Network Namespaces works and how Docker Containerization
+         makes use of the network namespaces  for inter pod communications. For the purpose of the experiment two 
+         network namespaces was created on a KVM Guest VM manually to understand  the routing aspects and as well
+          the IP Table rules required to enable the communication between the POD's, egress from POD to outside
+           world and also  ingress to the POD's.
 
       
         
@@ -123,7 +125,11 @@
 <div class="screen-one-item-container">
 	<h3>  Default Configurations. </h3>
 	<p> What does the defaults looks like before any changes were made! The default route to 192.168.122.0/24 is 
-        the one for the Guest VM to communicate to the hypervisor network and 172.17.0.0/16  is the one defined for docker daemon. Docker daemon , corresponding routes etc. was created for all the guest VM’s and for the purpose of this experiment , though I really don’t need them - decided to leave it out for two reasons. a) I can use the “iptable" rules created by docker itself as a reference b) If these rules by any reasons interfere that will result in more of a learning experience and go bit more deeper..
+        the one for the Guest VM to communicate to the hypervisor network and 172.17.0.0/16  is the one
+         defined for docker daemon. Docker daemon , corresponding routes etc. was created for all the guest VM’s 
+         and for the purpose of this experiment , though I really don’t need them - decided to leave it out for 
+         two reasons. a) I can use the “iptable" rules created by docker itself as a reference b) If these rules 
+         by any reasons interfere that will result in more of a learning experience and go bit more deeper..
     </p>
 	<p> </p>
 
@@ -165,9 +171,11 @@
 <!-- container -->		
 <div class="screen-one-item-container">
 	<h3>  Namespaces and VETH Pairs </h3>
-	<p> The veth pairs created would be in the root namespace by default and will not be visible on the cnetns0 and cnetns1 namespaces.
+	<p> The veth pairs created would be in the root namespace by default and will not be visible on the 
+        cnetns0 and cnetns1 namespaces.
 
-        Once we have the veth pairs , move the peer end to the respective namespaces. An easy way to identify the peer name is by looking at the interface ID. 
+        Once we have the veth pairs , move the peer end to the respective namespaces. An easy way to identify 
+        the peer name is by looking at the interface ID. 
 
         How do we know the peer name for a veth network interface? 
         The interface ID of veth0 is “5” and the peer name for that veth is ceth0@if5 . 
@@ -459,8 +467,8 @@
     --- 172.20.0.50 ping statistics ---
     1 packets transmitted, 0 received, +1 errors, 100% packet loss, time 0ms
     
-    So the routes are good from rootns and cnetns0  because of which they are reachable but the pings from cnetns1 resulted in 
-    100% packet loss!
+    So the routes are good from rootns and cnetns0  because of which they are reachable but the pings from 
+    cnetns1 resulted in   100% packet loss!
     
 
 </pre>		
@@ -487,20 +495,25 @@
     172.20.0.0/16 dev veth1 proto kernel scope link src 172.20.0.6
     192.168.122.0/24 dev enp1s0 proto kernel scope link src 192.168.122.130 metric 100
     
-    There are two static routes of interest here , this means any packet originating from the rootns heading toward the subnet 172.20.0.0/16 will be going out of veth0  interface with an IP address of 172.20.0.5.
+    There are two static routes of interest here , this means any packet originating from the rootns heading 
+    toward the subnet 172.20.0.0/16 will be going out of veth0  interface with an IP address of 172.20.0.5.
     
     172.20.0.0/16 dev veth0 proto kernel scope link src 172.20.0.5
     172.20.0.0/16 dev veth1 proto kernel scope link src 172.20.0.6
     
-    Since 172.20.0.6 falls within the subnet range of 172.20.0.0/16 , packet gets routed through this interface hitting the cnetns0 and will reach back to the cnetns1.
+    Since 172.20.0.6 falls within the subnet range of 172.20.0.0/16 , packet gets routed through this interface
+     hitting the cnetns0 and will reach back to the cnetns1.
     
-    Additional way to solidify the theory is to look at the routing cache, which indicates the same that in order to get to 172.20.0.60, the packet goes through the veth0.
+    Additional way to solidify the theory is to look at the routing cache, which indicates the same that in 
+    order to get to 172.20.0.60, the packet goes through the veth0.
     
     [root@rhel8b ~]# ip route get 172.20.0.60
     172.20.0.60 dev veth0 src 172.20.0.5 uid 0
         cache
     
-    For additional reference, did tcpdumps on the cnetns0 interface while the ping was fired from the rootns and there was ARP calls indicating the packet reached this interface but unable to find out where to route the packets to.
+    For additional reference, did tcpdumps on the cnetns0 interface while the ping was fired from the rootns 
+    and there was ARP calls indicating the packet reached this interface but unable to find out where to route 
+    the packets to.
     
     
     [root@rhel8b-cnetns0 ~ # tcpdump -nni ceth0 -vvv
@@ -517,12 +530,17 @@
 <!-- container -->		
 <div class="screen-one-item-container">
 	<h3>  Configure the bridge. </h3>
-	<p> The static routes were added when the interface was brought up with valid ip’s. So if one of these routes were to be deleted, it will break the communication to the other network namespace!  It’s natural to have multiple network namespaces ( docker containers) running in one VM - so this is a valid use case that must work!
+	<p> The static routes were added when the interface was brought up with valid ip’s. So if one of these 
+        routes were to be deleted, it will break the communication to the other network namespace!  It’s natural
+         to have multiple network namespaces ( docker containers) running in one VM - so this is a valid use
+          case that must work!
 
         172.20.0.0/16 dev veth0 proto kernel scope link src 172.20.0.5
         172.20.0.0/16 dev veth1 proto kernel scope link src 172.20.0.6 
         
-        So the solution here is to create a bridge and attach the interfaces to it. Bridge acts on the L2 layer, this means it does the switching but not the routing but any interfaces using the bridge would have it’s MAC address added and on the L2 layer the packets can be 
+        So the solution here is to create a bridge and attach the interfaces to it. Bridge acts on the L2 layer,
+         this means it does the switching but not the routing but any interfaces using the bridge would have it’s 
+         MAC address added and on the L2 layer the packets can be 
         
         
          </p>
@@ -599,8 +617,11 @@
 <!-- container -->		
 <div class="screen-one-item-container">
 	<h3>  Ping tests failures between rootns/cnetns*  </h3>
-	<p> At this point  since we have the bridge configured and MAC”s for each of these cethX interfaces are learned by the bridge the L2 
-        Layer packet forwarding should work and rootns should be able to reach cnetns0 and cnetns1 and also between the centns* interfaces there should be reachability as well. On the contrary  - none of them are working.
+	<p> At this point  since we have the bridge configured and MAC”s for each of these cethX interfaces are 
+        learned by the bridge the L2 
+        Layer packet forwarding should work and rootns should be able to reach cnetns0 and cnetns1 and also
+         between the centns* interfaces there should be reachability as well. On the contrary  - none of them 
+         are working.
         
         So I want to break this down into two issues
         
@@ -619,9 +640,13 @@
 <!-- container -->		
 <div class="screen-one-item-container">
 	<h3>  Why IP’s within cnetns are not reachable from root namespace? </h3>
-	<p> Issue-1 : Root NS cannot to ceth0 and ceth1 on the child namespaces. Looking at the routes, any IP’s headed towards the subnet 172.17.0.0/16 will be going out of docker0 interface and any IP’s headed towards 192.168.122.0/24  will be going out of enp1s0 interface and rest all should go via enp1s0 as part of the default route “default via 192.168.122.1 dev enp1s0”.
+	<p> Issue-1 : Root NS cannot to ceth0 and ceth1 on the child namespaces. Looking at the routes, any IP’s
+         headed towards the subnet 172.17.0.0/16 will be going out of docker0 interface and any IP’s headed 
+         towards 192.168.122.0/24  will be going out of enp1s0 interface and rest all should go via enp1s0 as 
+         part of the default route “default via 192.168.122.1 dev enp1s0”.
 
-        So this means a ping to 172.20.0.50 will never reach veth0 since it will be routed through the enp1s0 unless there’s a static route added here bound to the veth0 interface.
+        So this means a ping to 172.20.0.50 will never reach veth0 since it will be routed through the enp1s0 
+        unless there’s a static route added here bound to the veth0 interface.
         </p>
 	<p> </p>
 
@@ -639,7 +664,8 @@
     172.17.0.0/16 dev docker0 proto kernel scope link src 172.17.0.1 linkdown
     192.168.122.0/24 dev enp1s0 proto kernel scope link src 192.168.122.130 metric 100
     
-    Let me try a tcpdump to validate the theory (before the static route is added to see if the packets are hitting the wire on the enp1s0 ).
+    Let me try a tcpdump to validate the theory (before the static route is added to see if the packets are 
+    hitting the wire on the enp1s0 ).
     
     
     [root@rhel8b ~]# tcpdump -nni enp1s0 net 172.20.0.0/16
@@ -648,7 +674,9 @@
     listening on enp1s0, link-type EN10MB (Ethernet), capture size 262144 bytes
     14:06:12.876136 IP 192.168.122.130 > 172.20.0.50: ICMP echo request, id 6820, seq 1, length 64
     
-    So by adding a gateway IP address to the bridge, it should also plug in a static route in the routing table to ensure anything that should be routed for this network 172.20.0.0/16 should be going via br00 bridge than the enp1s0. 
+    So by adding a gateway IP address to the bridge, it should also plug in a static route in the routing table
+     to ensure anything that should be routed for this network 172.20.0.0/16 should be going via br00 bridge 
+     than the enp1s0. 
     
     
     
@@ -685,8 +713,7 @@
     So with the route in place , the rootns now can reach to the cnetns0 and cnetns1
     
     Issue still exists where the cnetns namespaces can’t talk to each other still..
-    
-    
+     
     
 </pre>		
 
@@ -696,12 +723,15 @@
 
 <!-- container -->		
 <div class="screen-one-item-container">
-	<h3>  Why IP’s between cnetns are not reachable between each other?  </h3>
+	<h3>  Why the IP’s between cnetns are not reachable between each other?  </h3>
 	<p> This took me a while to figure out! So first the basics, whether the configuration is correct or not.
 
-        So gateway/br00 is reachable yet the IP on cnetns1 is not reachable (172.20.0.60). I can see the requests reaching the br00 (tcpdump) and also ceth1 (cnetns1) and it’s a ARP request and ARP response, yet it never reaches back.
+        So gateway/br00 is reachable yet the IP on cnetns1 is not reachable (172.20.0.60). I can see the 
+        requests reaching the br00 (tcpdump) and also ceth1 (cnetns1) and it’s a ARP request and ARP response,
+         yet it never reaches back.
         
-        IP neigh output also stresses the fact that there’s no issue on the L2 layer, MAC’s on  br00 and as well the respective interfaces - ceth0 and ceth1 are learned.
+        IP neigh output also stresses the fact that there’s no issue on the L2 layer, MAC’s on  br00 and as well 
+        the respective interfaces - ceth0 and ceth1 are learned.
         
         This means bridge/L2 layer is completely in tact, yet  on the L3 there’s some issue! 
         </p>
@@ -761,19 +791,29 @@ Everything seems to be perfectly file on the L2 layer, so focus the investigatio
 <div class="screen-one-item-container">
 	<h3>  Issue-2: What's happening on L3, where/how are packets being dropped?  </h3>
 	<p> This is the one where I spent most of the time. 
-        Based on the ARP reply/response and as well the L2 checks being done, it’s clear that there’s some issue on the L3 and that too on the rootns. One of the suspicion is the IPTABLE rules/Firewall though I haven’t injected any explicit rules - all the VM’s that I carved out for experiments had docker daemon pre-configured for experimentation.
+        Based on the ARP reply/response and as well the L2 checks being done, it’s clear that there’s some 
+        issue on the L3 and that too on the rootns. One of the suspicion  is the IPTABLE rules/Firewall though I haven’t injected any explicit rules - all
+         the VM’s that I carved out for experiments had docker daemon pre-configured for experimentation.
         
-        Docker injects lot of rules, but unsure if that’s the one playing a rule here - so to find out more I decided to review the rules.
+        Docker injects lot of rules, but unsure if that’s the one playing a rule here - so to find out more 
+        I decided to review the rules.
         
-        Lot’s of good articles on the IPTables, but need a recap of the same to understand how it’s working. I picked one of this blog here (https://www.teldat.com/blog/nftables-and-netfilter-hooks-via-linux-kernel/) 
-        “When a network packet is received on a network device, it first passes through the Prerouting hook. This is where the routing decision takes place. The kernel decides whether the packet is destined for a local process (e.g., a listening socket on a server in this system) or whether to forward it (system operates as a router). In the first case, the packet passes the Input hook and is then handed over to the local process.  If the packet is destined to be forwarded, it traverses the Forward hook and then a final Postrouting hook before being sent out on a network device. For packets that are generated locally (e.g., by a client or server process that likes sending things out), they must first pass the Output hook and then the  Postrouting hook before being sent out on a network device.”
+        Lot’s of good articles on the IPTables, but need a recap of the same to understand how it’s working. 
+        I picked one of this blog here (https://www.teldat.com/blog/nftables-and-netfilter-hooks-via-linux-kernel/) 
+        “When a network packet is received on a network device, it first passes through the Prerouting hook. 
+        This is where the routing decision takes place. The kernel decides whether the packet is destined for a local process (e.g., a listening socket on a server in this system) or whether to forward it (system operates as a router). In the first case, the packet passes the Input hook and is then handed over to the local process.  If the packet is destined to be forwarded, it traverses the Forward hook and then a final Postrouting hook before being sent out on a network device. For packets that are generated locally (e.g., by a client or server process that likes sending things out), they must first pass the Output hook and then the  Postrouting hook before being sent out on a network device.”
         
         
-        So this means, I should definitely check the “FORWARDING” rule of the iptables, and probably the “PRE-ROUTING” and “POST-ROUTING” as well! Later is not something I’m not too clear, but while doing the experiments I am hoping to get a better picture.
+        So this means, I should definitely check the “FORWARDING” rule of the iptables, and probably the 
+        “PRE-ROUTING” and “POST-ROUTING” as well! Later is not something I’m not too clear, but while doing
+         the experiments I am hoping to get a better picture.
         
-        The best of my understanding is I can focus only on the “FILTER” table, since I’m not using any natting , NAT table shouldn’t come into play. Same for “MANGLE” as there’s nothing involved in modifying IP headers. RAW is used for connection tracking as per the documentation and SECURITY is for security purposes. SO I can now focus on the “FILTER”
+        The best of my understanding is I can focus only on the “FILTER” table, since I’m not using any natting , 
+        NAT table shouldn’t come into play. Same for “MANGLE” as there’s nothing involved in modifying IP headers. RAW is used for connection tracking as per the documentation and SECURITY is for security purposes. SO I can now focus on the “FILTER”
         
-        Within the “FILTER”, since it’s a packet that must be forwarded on the bridge from cnetns0 to cnetns1 (a packet destined to another interface ) on a separate namespace and it’s likely that if any of the rules is affecting this it must be “FORWARD”.
+        Within the “FILTER”, since it’s a packet that must be forwarded on the bridge from cnetns0 to cnetns1 
+        (a packet destined to another interface ) on a separate namespace and it’s likely that if any of the 
+        rules is affecting this it must be “FORWARD”.
         
          </p>
 	<p> </p>
@@ -892,8 +932,8 @@ Everything seems to be perfectly file on the L2 layer, so focus the investigatio
 	<h3> IPTable Rules and Solution to packet drops! </h3>
 	<p> I want to inject some logging to see the packets that are getting dropped as part of these rules. 
         So take a backup of the iptables and then add some additional rules to log all the packets getting 
-        into this chain. So create a new chain called br00 and creating rules with a policy of "ACCEPT" for any packets
-        that are destined to 172.20.0.0/16.
+        into this chain. So create a new chain called br00 and creating rules with a policy of "ACCEPT" for
+         any packets that are destined to 172.20.0.0/16.
 
         So glad that I didn't delete/shutdown the docker daemon to have a cleaner system! This took me an entirely different
         and an interesting learning experience.
@@ -989,76 +1029,13 @@ Everything seems to be perfectly file on the L2 layer, so focus the investigatio
     Dec 22 17:17:21 rhel8b kernel: DEBUG: Packets on wire - br00IN=br00 OUT=br00 PHYSIN=veth0 PHYSOUT=veth1 MAC=f6:0e:f5:ee:d1:7e:3a:9c:07:b7:10:bd:08:00 SRC=172.20.0.50 DST=172.20.0.60 LEN=84 TOS=0x00 PREC=0x00 TTL=64 ID=12916 PROTO=ICMP TYPE=0 CODE=0 ID=7317 SEQ=1    
 
 
-    
+
 </pre>		
 
 </div>
 <!-- container -->		
-
-
-
-
-<!-- container -->		
-<div class="screen-one-item-container">
-	<h3>    </h3>
-	<p> </p>
-	<p> </p>
-
-<pre>
-CODE BLOCK
-</pre>		
-
-</div>
-<!-- container -->		
-
-
-
-
-
-<!-- container -->		
-<div class="screen-one-item-container">
-	<h3>  SUBTITLE </h3>
-	<p> </p>
-	<p> </p>
-
-<pre>
-CODE BLOCK
-</pre>		
-
-</div>
-<!-- container -->		
-
-
-
-
-<!-- container -->		
-<div class="screen-one-item-container">
-	<h3>  SUBTITLE </h3>
-	<p> </p>
-	<p> </p>
-
-<pre>
-CODE BLOCK
-</pre>		
-
-</div>
-<!-- container -->		
-
-
-
-
-<!-- container -->		
-<div class="screen-one-item-container">
-	<h3>  SUBTITLE </h3>
-	<p> </p>
-	<p> </p>
-
-<pre>
-CODE BLOCK
-</pre>		
-
-</div>
-<!-- container -->		
+ 
+  
 
 	
 
