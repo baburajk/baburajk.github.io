@@ -817,23 +817,31 @@
 
 <!-- container -->		
 <div class="screen-one-item-container">
-	<h3>  Issue-2: What's happening on L3, where/how are packets being dropped?  </h3>
-	<p> This is the one where I spent most of the time. 
+	<h3> L3/Routing issue! </h3>
+	<p> 
+        This is the one where I spent most of the time. 
+
         Based on the ARP reply/response and as well the L2 checks being done, it’s clear that there’s some 
-        issue on the L3 and that too on the rootns. One of the suspicion  is the IPTABLE rules/Firewall though I haven’t injected any explicit rules - all
-         the VM’s that I carved out for experiments had docker daemon pre-configured for experimentation.
+        issue on the L3 and that too on the rootns. I also see the routes are in place.
+        Only other suspicion is the IPTABLE/firewall rules though I haven't injected any rules.
+
+        I wanted to analyze it still, but there are rules that are pre-configured for docker daemon since I never
+        un-installed that from the VM. As noted previously, I kept it use it as a reference and also to see if that
+        would introduce any challenges and indeed! It did :-( 
         
-        Docker injects lot of rules, but unsure if that’s the one playing a rule here - so to find out more 
-        I decided to review the rules.
-        
-        Lot’s of good articles on the IPTables, but need a recap of the same to understand how it’s working. 
-        I picked one of this blog here (https://www.teldat.com/blog/nftables-and-netfilter-hooks-via-linux-kernel/) 
+        Meanwhile a quick re-cap on the iptable rules!
+        Lot’s of good articles on the IPTables, here's one I used for reference amongst many (https://www.teldat.com/blog/nftables-and-netfilter-hooks-via-linux-kernel/) 
         “When a network packet is received on a network device, it first passes through the Prerouting hook. 
-        This is where the routing decision takes place. The kernel decides whether the packet is destined for a local process (e.g., a listening socket on a server in this system) or whether to forward it (system operates as a router). In the first case, the packet passes the Input hook and is then handed over to the local process.  If the packet is destined to be forwarded, it traverses the Forward hook and then a final Postrouting hook before being sent out on a network device. For packets that are generated locally (e.g., by a client or server process that likes sending things out), they must first pass the Output hook and then the  Postrouting hook before being sent out on a network device.”
+        This is where the routing decision takes place. The kernel decides whether the packet is destined for a 
+        local process (e.g., a listening socket on a server in this system) or whether to forward it 
+        (system operates as a router). In the first case, the packet passes the Input hook and is then
+        handed over to the local process.  If the packet is destined to be forwarded, it traverses 
+        the Forward hook and then a final Postrouting hook before being sent out on a network device. 
+        For packets that are generated locally (e.g., by a client or server process that likes sending things out),
+        they must first pass the Output hook and then the  Postrouting hook before being sent out on a network device.”
         
-        
-        So this means, I should definitely check the “FORWARDING” rule of the iptables, and probably the 
-        “PRE-ROUTING” and “POST-ROUTING” as well! Later is not something I’m not too clear, but while doing
+        So this means, I should definitely check the “FORWARDING” rule of the iptables and probably the 
+        “PRE-ROUTING” and “POST-ROUTING” as well eventually! Later is not something I’m not too clear, but while doing
          the experiments I am hoping to get a better picture.
         
         The best of my understanding is I can focus only on the “FILTER” table, since I’m not using any natting , 
@@ -842,11 +850,18 @@
         Within the “FILTER”, since it’s a packet that must be forwarded on the bridge from cnetns0 to cnetns1 
         (a packet destined to another interface ) on a separate namespace and it’s likely that if any of the 
         rules is affecting this it must be “FORWARD”.
+
+        A quick dump on the iptable rules indicates two things
+
+            a) There are some packets that are dropped already "DROP 15", I don't know for sure if these are my pings.
+            b) Default policy is "DROP" and so if none of these rules matches then packets will be dropped. 
         
          </p>
+
 	<p> </p>
 
 <pre>
+
     [root@rhel8b ~]#  iptables -t filter -L -n -v
     Chain INPUT (policy ACCEPT 32352 packets, 27M bytes)
      pkts bytes target     prot opt in     out     source               destination
@@ -880,8 +895,7 @@
      pkts bytes target     prot opt in     out     source               destination
        15  1260 RETURN     all  --  *      *       0.0.0.0/0            0.0.0.0/0
     
-    
-    If my interpretation is right, the default policy is “DROP”, drop any packets if no RULES are matched as listed! 
+     
 </pre>		
 
 </div>
@@ -891,9 +905,17 @@
 
 <!-- container -->		
 <div class="screen-one-item-container">
-    <h3> Are packets getting dropped by iptables? Contd.   </h3>
-    <p> So in-order for me to evaluate whether these rules are really affecting the packets, thought of taking 
-        a diff before and after the ping.
+    <h3> Debug packet drops by analyzing IPTABLE rules! </h3>
+    <p> 
+        
+       I want to see if the packet drop counter on any of these rules has a change before and after a ping and based
+       on the output there’s a packet that’s DROPPED in the “FORWARD” policy.
+    
+       < Chain FORWARD (policy DROP 16 packets, 1344 bytes)
+       ---
+       > Chain FORWARD (policy DROP 17 packets, 1428 bytes)
+    
+       
     </p>
    		
 	<p> </p>
@@ -941,13 +963,6 @@
     >    17  1428 RETURN     all  --  *      *       0.0.0.0/0            0.0.0.0/0
     
     
-    What’s interesting here is there’s a packet that’s DROPPED in the “FORWARD” policy.
-    
-    < Chain FORWARD (policy DROP 16 packets, 1344 bytes)
-    ---
-    > Chain FORWARD (policy DROP 17 packets, 1428 bytes)
-    
-    
 </pre>		
 
 </div>
@@ -957,74 +972,104 @@
 
 <!-- container -->		
 <div class="screen-one-item-container">
-	<h3> IPTable Rules and Solution to packet drops! </h3>
-	<p> I want to inject some logging to see the packets that are getting dropped as part of these rules. 
-        So take a backup of the iptables and then add some additional rules to log all the packets getting 
-        into this chain. So create a new chain called br00 and creating rules with a policy of "ACCEPT" for
-         any packets that are destined to 172.20.0.0/16.
+	<h3> Injecting IPTABLE rules to resolve the packet drops! </h3>
+	<p> 
+        
+        Since I'm sure now, it's the FORWARDING chain dropping my ICMP packets - need to look deeper into two 
+        things.
+           
+        a) What's exact chain rule resulting in this drop and why?
+        b) How to fix it.
 
-        So glad that I didn't delete/shutdown the docker daemon to have a cleaner system! This took me an entirely different
-        and an interesting learning experience.
+        Had I shutdown my docker daemon, this experiment would've been much more straight forward but I'm really glad
+        that I didn't. Helped me to venture into something more challenging and thus fun and obviously more learning
+        here.
+     
+        Coming back..
+        a) What's exact chain rule resulting in this drop and why?
+        FORWARDING chain sequentially goes through 3 different custom chains created by DOCKER and if none of these
+        rules are applicable the DEFAULT policy kicks in which is to "DROP"
+    
+        So to check if my theory is right, created a new chain called br00 and  created rules with a policy of "ACCEPT" 
+        for any packets that are destined to 172.20.0.0/16 coming in/out of br00 interface to be handed over to the 
+        new "br00" chain I created. 
+
     </p>
 	<p> </p>
 
 <pre>
+
+    # Take a backup of the existing rules.
 
     iptables-save > /root/iptables.original
 
     iptables -N br00
     iptables -A br00 -m limit --limit 2/min -j LOG --log-prefix "DEBUG: Packets on wire - br00 " --log-level 4
     iptables -A br00  -j ACCEPT
-    iptables -I FORWARD 1 -s 172.20.0.0/16 -o br00 -j br00
-    iptables -I FORWARD 2 -s 172.20.0.0/16 -i br00 -j br00
+    iptables -A FORWARD -s 172.20.0.0/16 -o br00 -j br00
+    iptables -A FORWARD -s 172.20.0.0/16 -i br00 -j br00
 
-    
     And let’s check if the LOGGING chain has been added
     
-    
-    [root@rhel8b ~]# iptables -L -v -n --line-numbers
-    Chain INPUT (policy ACCEPT 68 packets, 5164 bytes)
-    num   pkts bytes target     prot opt in     out     source               destination
+    [root@rhel8b ~]# iptables -t filter -L --line-numbers -n
+    Chain INPUT (policy ACCEPT)
+    num  target     prot opt source               destination
 
-    Chain FORWARD (policy DROP 1 packets, 84 bytes)
-    num   pkts bytes target     prot opt in     out     source               destination
-    1        0     0 br00       all  --  *      br00    172.20.0.0/16        0.0.0.0/0
-    2        0     0 br00       all  --  br00   *       172.20.0.0/16        0.0.0.0/0
-    3        1    84 DOCKER-USER  all  --  *      *       0.0.0.0/0            0.0.0.0/0
-    4        1    84 DOCKER-ISOLATION-STAGE-1  all  --  *      *       0.0.0.0/0            0.0.0.0/0
-    5        0     0 ACCEPT     all  --  *      docker0  0.0.0.0/0            0.0.0.0/0            ctstate RELATED,ESTABLISHED
-    6        0     0 DOCKER     all  --  *      docker0  0.0.0.0/0            0.0.0.0/0
-    7        0     0 ACCEPT     all  --  docker0 !docker0  0.0.0.0/0            0.0.0.0/0
-    8        0     0 ACCEPT     all  --  docker0 docker0  0.0.0.0/0            0.0.0.0/0
+    Chain FORWARD (policy DROP)
+    num  target     prot opt source               destination
+    1    DOCKER-USER  all  --  0.0.0.0/0            0.0.0.0/0
+    2    DOCKER-ISOLATION-STAGE-1  all  --  0.0.0.0/0            0.0.0.0/0
+    3    ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0            ctstate RELATED,ESTABLISHED
+    4    DOCKER     all  --  0.0.0.0/0            0.0.0.0/0
+    5    ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0
+    6    ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0
+    7    br00       all  --  172.20.0.0/16        0.0.0.0/0
+    8    br00       all  --  172.20.0.0/16        0.0.0.0/0
 
-    Chain OUTPUT (policy ACCEPT 47 packets, 8140 bytes)
-    num   pkts bytes target     prot opt in     out     source               destination
+    Chain OUTPUT (policy ACCEPT)
+    num  target     prot opt source               destination
 
     Chain DOCKER (1 references)
-    num   pkts bytes target     prot opt in     out     source               destination
+    num  target     prot opt source               destination
 
     Chain DOCKER-ISOLATION-STAGE-1 (1 references)
-    num   pkts bytes target     prot opt in     out     source               destination
-    1        0     0 DOCKER-ISOLATION-STAGE-2  all  --  docker0 !docker0  0.0.0.0/0            0.0.0.0/0
-    2        1    84 RETURN     all  --  *      *       0.0.0.0/0            0.0.0.0/0
+    num  target     prot opt source               destination
+    1    DOCKER-ISOLATION-STAGE-2  all  --  0.0.0.0/0            0.0.0.0/0
+    2    RETURN     all  --  0.0.0.0/0            0.0.0.0/0
 
     Chain DOCKER-ISOLATION-STAGE-2 (1 references)
-    num   pkts bytes target     prot opt in     out     source               destination
-    1        0     0 DROP       all  --  *      docker0  0.0.0.0/0            0.0.0.0/0
-    2        0     0 RETURN     all  --  *      *       0.0.0.0/0            0.0.0.0/0
+    num  target     prot opt source               destination
+    1    DROP       all  --  0.0.0.0/0            0.0.0.0/0
+    2    RETURN     all  --  0.0.0.0/0            0.0.0.0/0
 
     Chain DOCKER-USER (1 references)
-    num   pkts bytes target     prot opt in     out     source               destination
-    1        1    84 RETURN     all  --  *      *       0.0.0.0/0            0.0.0.0/0
+    num  target     prot opt source               destination
+    1    RETURN     all  --  0.0.0.0/0            0.0.0.0/0
 
-    Chain br00 (2 references)
-    num   pkts bytes target     prot opt in     out     source               destination
-    1        0     0 LOG        all  --  *      *       0.0.0.0/0            0.0.0.0/0            limit: avg 2/min burst 5 LOG flags 0 level 4 prefix "DEBUG: Packets on wire - br00"
-    2        0     0 ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0
+    Chain br00 (3 references)
+    num  target     prot opt source               destination
+    1    LOG        all  --  0.0.0.0/0            0.0.0.0/0            limit: avg 2/min burst 5 LOG flags 0 level 4 prefix "DEBUG: Packets on wire - br00"
+    2    ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0
 
+</pre>		
 
-        # Do a ping to see and see what get’s into the /var/log/messages ( the rules pushed by IPTABLES ) logging chain.
+</div>
+<!-- container -->		
+ 
+
+<!-- container -->		
+<div class="screen-one-item-container">
+	<h3>  Redo the ICMP tests now with IPTABLE FORWARDING rules in place. Solved! </h3>
+	<p> 
         
+        Do a ping to see and see what get’s into the /var/log/messages ( the rules pushed by IPTABLES ) 
+        logging chain.
+   
+    </p>
+	<p> </p>
+
+<pre>
+         
     [root@rhel8b-cnetns0 ~ # ping -c1 172.20.0.60
     PING 172.20.0.60 (172.20.0.60) 56(84) bytes of data.
     64 bytes from 172.20.0.60: icmp_seq=1 ttl=64 time=0.094 ms
@@ -1033,10 +1078,8 @@
     1 packets transmitted, 1 received, 0% packet loss, time 0ms
     rtt min/avg/max/mdev = 0.094/0.094/0.094/0.000 ms
 
-
     [root@rhel8b ~]# tail -2f /var/log/messages
-    Dec 22 17:07:14 rhel8b systemd[1]: Started Network Manager Script Dispatcher Service.
-    Dec 22 17:07:25 rhel8b systemd[1]: NetworkManager-dispatcher.service: Succeeded.
+    ....
     Dec 22 17:16:10 rhel8b kernel: DEBUG: Packets on wire - br00IN=br00 OUT=br00 PHYSIN=veth0 PHYSOUT=veth1 MAC=f6:0e:f5:ee:d1:7e:3a:9c:07:b7:10:bd:08:00 SRC=172.20.0.50 DST=172.20.0.60 LEN=84 TOS=0x00 PREC=0x00 TTL=64 ID=35184 DF PROTO=ICMP TYPE=8 CODE=0 ID=7316 SEQ=1
     Dec 22 17:16:10 rhel8b kernel: DEBUG: Packets on wire - br00IN=br00 OUT=br00 PHYSIN=veth1 PHYSOUT=veth0 MAC=3a:9c:07:b7:10:bd:f6:0e:f5:ee:d1:7e:08:00 SRC=172.20.0.60 DST=172.20.0.50 LEN=84 TOS=0x00 PREC=0x00 TTL=64 ID=21476 PROTO=ICMP TYPE=0 CODE=0 ID=7316 SEQ=1
 
@@ -1056,42 +1099,35 @@
     Dec 22 17:17:21 rhel8b kernel: DEBUG: Packets on wire - br00IN=br00 OUT=br00 PHYSIN=veth1 PHYSOUT=veth0 MAC=3a:9c:07:b7:10:bd:f6:0e:f5:ee:d1:7e:08:00 SRC=172.20.0.60 DST=172.20.0.50 LEN=84 TOS=0x00 PREC=0x00 TTL=64 ID=24247 DF PROTO=ICMP TYPE=8 CODE=0 ID=7317 SEQ=1
     Dec 22 17:17:21 rhel8b kernel: DEBUG: Packets on wire - br00IN=br00 OUT=br00 PHYSIN=veth0 PHYSOUT=veth1 MAC=f6:0e:f5:ee:d1:7e:3a:9c:07:b7:10:bd:08:00 SRC=172.20.0.50 DST=172.20.0.60 LEN=84 TOS=0x00 PREC=0x00 TTL=64 ID=12916 PROTO=ICMP TYPE=0 CODE=0 ID=7317 SEQ=1    
 
-
-
 </pre>		
 
 </div>
 <!-- container -->		
- 
-  
-
 
 <!-- container -->		
 <div class="screen-one-item-container">
-	<h3>  Recap of the commands.. </h3>
-	<p> All the settings were ephemeral, it was all lost after the VM was shutdown so needed to consolidate all those commands to apply it easily and thus an easy way to pickup from where it’s left off.
-
-        So to summarize - it’s a set of commands across 3 namespaces - rootns, cnetns0 , cnetns1
+	<h3>  Summarizing </h3>
+	<p> 
         
-         </p>
+       Since the settings are all ephemeral, wanted to recap and consolidate it all so I can easily apply
+       after any VM shutdowns.
+
+    </p>
 	<p> </p>
 
 <pre>
 
-    # First Terminal (rootns) 
-
+# ROOTNS 
 export PS1="[\u@\h-$(ip netns identify $(echo $$)) \w # "
 
 # Create network namespaces
-
 ip netns add cnetns0
 ip netns add cnetns1
 
-
- # Configure veth pairs and bring those up.
+# Configure veth pairs and bring those up.
  
- ip link add veth0 type veth peer name ceth0
- ip link add veth1 type veth peer name ceth1
+ip link add veth0 type veth peer name ceth0
+ip link add veth1 type veth peer name ceth1
 
 ip link set dev ceth0 netns cnetns0
 ip link set dev ceth1 netns cnetns1
@@ -1105,13 +1141,12 @@ ip addr add 172.20.0.1/16 dev br00
 ip addr show br00
 ip link set br00 up
 
-
 # Set the bridge interface as master for the veth pairs. 
   
 ip link set veth0 master br00
 ip link set veth1 master br00
 
-# Second Terminal (cnetns0)
+# CNETNS0
 
 nsenter --net=/var/run/netns/cnetns0 bash
 export PS1="[\u@\h-$(ip netns identify $(echo $$)) \w # "
@@ -1121,7 +1156,8 @@ ip link set ceth0 up
 ip addr add 172.20.0.50/16 dev ceth0
 ip addr show
 ip route show
-# Third Terminal  (cnetns1)
+
+# CNETNS1
 
 export PS1="[\u@\h-$(ip netns identify $(echo $$)) \w # "
 nsenter --net=/var/run/netns/cnetns1 bash
@@ -1133,22 +1169,22 @@ ip addr show
 ip route show
 
 
-#  Add new chain to the update the FORWARDING rules on the filter table. 
+# IPTABLE UPDATE
 
- iptables -N br00
- iptables -A br00 -m limit --limit 2/min -j LOG --log-prefix "DEBUG: Packets on wire - br00 " --log-level 4
- iptables -A br00  -j ACCEPT
- iptables -I FORWARD 1 -s 172.20.0.0/16 -o br00 -j br00
- iptables -I FORWARD 2 -s 172.20.0.0/16 -i br00 -j br00
+iptables -N br00
+iptables -A br00 -m limit --limit 2/min -j LOG --log-prefix "DEBUG: Packets on wire - br00 " --log-level 4
+iptables -A br00  -j ACCEPT
+iptables -A FORWARD -s 172.20.0.0/16 -o br00 -j br00
+iptables -A FORWARD -s 172.20.0.0/16 -i br00 -j br00
 
-# Do ping validations.
+# ICMP TESTS. 
 
 ping -c1 172.20.0.60
 ping -c1 172.20.0.50
 ping -c1 172.20.0.1
 ping -c1 8.8.8.8
 
-Note:Last one ping to internet is expected to fail, since that’s the issue has not been solved yet.
+Note: This excludes all the tests carried out so far, one yet to be done is the internet reachability one.
  
 </pre>		
 
@@ -1157,10 +1193,18 @@ Note:Last one ping to internet is expected to fail, since that’s the issue has
 
 <!-- container -->		
 <div class="screen-one-item-container">
-	<h3>  Internet reachability from the child namespaces (cnetns0 & cnetns1)!    </h3>
-	<p> Root NS can talk to both the child namespaces and vice versa, but you still can’t reach the 
-        internet from the child namespaces. Since there's no default route defined, the first things to do 
-        is to define a default route. </p>
+	<h3>  Default Routes!   </h3>
+	<p> 
+        
+        One pending issue still is that cnetns0/cnetns1 can't talk to internet still. So the first thing to 
+        check is the default routes configured under these namespaces.
+
+        Ping output indciates network isn't reachabile, this means there are no routes defined to reach an 
+        IP in public space!
+
+        Adding default routes is the first step towards solving this issue.
+    
+    </p>
 	<p> </p>
 
 <pre>
@@ -1183,7 +1227,6 @@ default via 172.20.0.1 dev ceth0
 8.8.8.8 via 172.20.0.1 dev ceth0 src 172.20.0.50 uid 0
     cache
 
-
 # Trying the ping again, indicates the packets being transmitted but with no response!
 
 [root@rhel8b-cnetns0 ~ # ping -c1 8.8.8.8
@@ -1192,7 +1235,6 @@ PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.
 --- 8.8.8.8 ping statistics ---
 1 packets transmitted, 0 received, 100% packet loss, time 0ms
     
-
 </pre>		
 
 </div>
@@ -1201,25 +1243,28 @@ PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.
 
 <!-- container -->		
 <div class="screen-one-item-container">
-	<h3> Resolving Internet reachability from cnetns0. Contd. </h3>
-	<p> If the packets originating from the cnetns0 reaches the root NS ( default GTWY), there should 
-        be some data points that can be looked at to understand why/where the packets are getting dropped.
+	<h3> Internet reachability failure! </h3>
+	<p> 
+        
+        Since the IP's configured within the cnetns0/cnetns1 are private IP's (RFC1918) which essentially cannot 
+        talk to anything on the public IP space, it's essential that there should be some NAT'ing that must 
+        happen so the packets can go out to the internet and back.
 
-        When the ping was initiated , /var/log/messages was tailed along with a "conntrack' command which 
-        shows the live NAT connections , along with a tcpdump was also ran on the network interface on the 
-        root namespace with the default route defined ( enp1s0 ).
+        Once thing is clear that from rootns internet is reachable, so the issue is between cnetns0/1 and rootns.
 
-        The conntrack indicates no NAT'ing being done but without it a private IP cannot reach itself into the internet.
+        Need to look into some data available to see what's going on the rootns because of which the packets aren't 
+        going out when a ping -c1 8.8.8.8 is initiated within the child namespace.
 
-        So we need to add the masquerading rules for source natting. 
+        So we need to add the masquerading rules for source natting but prior to adding the masquerading, wanted
+        to capture the output of the "conntrack" tool output and as well a tcpdump for later review.
+
+        "conntrack" helps to track NAT connections and can be ran live.
+
     </p>
 	<p> </p>
 
 <pre>
-    [root@rhel8b ~]# ip route get 8.8.8.8
-    8.8.8.8 via 192.168.122.1 dev enp1s0 src 192.168.122.130 uid 0
-        cache
-    
+
     # Connection tracker indicates 
      watch conntrack -L -j
     
@@ -1242,10 +1287,37 @@ PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.
 
 <!-- container -->		
 <div class="screen-one-item-container">
-	<h3>  Masquerading </h3>
-	<p> As we know from the rootns 8.8.8.8 is reachable and in order for the container to send the packets 
+	<h3>  Masquerading and NAT! </h3>
+	<p> 
+        
+        As we know from the rootns 8.8.8.8 is reachable and in order for the container to send the packets 
         to the outside world, it should use the IP address of the hosts external interface which in this 
-        case 192.168.122.130 . 
+        case 192.168.122.130. So a masquerading rule is appended to the POSTROUTING table to enable so 
+        that any packets once it hits the wire, the NAT rule will kick in and swap the source IP from 172.20.0.50 to 
+        192.168.122.130.
+
+        Updating the masquerading rule and doing ping tests again shows a failure, but there's a difference 
+        in behavior which is visible from the outputs/logs captured prior to this rule was added and afterwards.
+
+        The output, though the ping tests failed indicates a key difference  
+
+        a) On the "conntrak" output, before the NAT the dst was showing as the interface IP of the cnetns0 which
+        is dst=172.20.0.50 and it's changed to dst=192.168.122.130. There's also "UNREPLIED" status indicating
+        no responses received prior to NAT'ing, this means this time around the response was received but never made
+        it to the cnetns0 interface! Packet capture validates this theory. 
+        
+        Before Masquerading:
+        src=172.20.0.50 dst=8.8.8.8 type=8 code=0 id=2833 [UNREPLIED] src=8.8.8.8 dst=172.20.0.50 
+
+        Afer Masquerading
+        src=172.20.0.50 dst=8.8.8.8 type=8 code=0 id=11842 src=8.8.8.8 dst=192.168.122.130
+
+        #Packet Capture 
+        14:38:41.566911 IP 192.168.122.130 > 8.8.8.8: ICMP echo request, id 11842, seq 1, length 64
+        14:38:41.588212 IP 8.8.8.8 > 192.168.122.130: ICMP echo reply, id 11842, seq 1, length 64
+
+        So packet reached enp1s0 but never made it to br00! Why?
+
     </p>
 	<p> </p>
 
@@ -1282,53 +1354,23 @@ PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.
 --- 8.8.8.8 ping statistics ---
 1 packets transmitted, 0 received, 100% packet loss, time 0ms
 
+[root@rhel8b ~]# tail -2f /var/log/messages
+...
+Jan  5 14:38:41 rhel8b kernel: DEBUG: Packets on wire - br00IN=br00 OUT=enp1s0 PHYSIN=veth0 MAC=3a:a5:be:b6:79:8b:7e:57:88:91:9b:2e:08:00 SRC=172.20.0.50 DST=8.8.8.8 LEN=84 TOS=0x00 PREC=0x00 TTL=63 ID=25311 DF PROTO=ICMP TYPE=8 CODE=0 ID=11842 SEQ=1
 
-</pre>		
-
-</div>
-<!-- container -->		
-
-<!-- container -->		
-<div class="screen-one-item-container">
-	<h3>  Is IPTABLE rules still dropping the packets? </h3>
-	<p> Ping isn’t successfully but there seems like a change in behavior based on the logs. 
-        
-        The connection tracker indicates the “dst” Ip to the interface IP and also we can see an ICMP reply from 
-        the 8.8.8.8 server received by the enp1s0. So until this interface the packets has reached the enp1s0 on the packet 
-        captures.
-
-        At this point what we know for sure is the NAT'ing is successfull and ICMP responses reached till enp1s0 but never reached
-        br00 or the cnetns0.
-
-        The only possibility here is IPTABLES and that should be a "FORWARDING" rule that must be looked at.
-
-        </p>
-	<p> </p>
-
-<pre>
-
-[root@rhel8b-cnetns0 ~ # ping -c1 8.8.8.8
-PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.
-
---- 8.8.8.8 ping statistics ---
-1 packets transmitted, 0 received, 100% packet loss, time 0ms
-
-tail -2f /var/log/messages
-
-Jan  3 20:00:45 rhel8b kernel: device enp1s0 entered promiscuous mode
-Jan  3 20:00:55 rhel8b kernel: DEBUG: Packets on wire - br00IN=br00 OUT=enp1s0 PHYSIN=veth0 MAC=3a:a5:be:b6:79:8b:7e:57:88:91:9b:2e:08:00 SRC=172.20.0.50 DST=8.8.8.8 LEN=84 TOS=0x00 PREC=0x00 TTL=63 ID=42478 DF PROTO=ICMP TYPE=8 CODE=0 ID=3709 SEQ=1
+Every 2.0s: conntrack -L -j                                              rhel8b: Wed Jan  5 14:38:51 2022
 
 conntrack v1.4.4 (conntrack-tools): 1 flow entries have been shown.
-icmp     1 5 src=172.20.0.50 dst=8.8.8.8 type=8 code=0 id=3709 src=8.8.8.8 dst=192.168.122.130 type=0 code=0 id=3709 mark=0 u
-se=1
+icmp     1 20 src=172.20.0.50 dst=8.8.8.8 type=8 code=0 id=11842 src=8.8.8.8 dst=192.168.122.130 type=0 c
+ode=0 id=11842 mark=0 use=1
 
 [root@rhel8b ~]# tcpdump -nni enp1s0 net 8.8.8.8/32
 dropped privs to tcpdump
 tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
 listening on enp1s0, link-type EN10MB (Ethernet), capture size 262144 bytes
-20:00:55.239906 IP 192.168.122.130 > 8.8.8.8: ICMP echo request, id 3709, seq 1, length 64
-20:00:55.262534 IP 8.8.8.8 > 192.168.122.130: ICMP echo reply, id 3709, seq 1, length 64
-
+14:38:41.566911 IP 192.168.122.130 > 8.8.8.8: ICMP echo request, id 11842, seq 1, length 64
+14:38:41.588212 IP 8.8.8.8 > 192.168.122.130: ICMP echo reply, id 11842, seq 1, length 64
+Shared connection to 192.168.3.2 closed.
 
 </pre>		
 
@@ -1336,17 +1378,22 @@ listening on enp1s0, link-type EN10MB (Ethernet), capture size 262144 bytes
 <!-- container -->		
 
 
-
 <!-- container -->		
 <div class="screen-one-item-container">
-	<h3>  FORWARDING Chain. </h3>
-	<p> Looking deeper into "FORWARD" rules/chain to see why the packets to 172.20.0.0/16 aren't reaching the destination</p>
-	<p> </p>
+	<h3>  Packet drops again at IPTABLES! </h3>
+	<p>
+        
+        Since I'm sure the packet reached the enp1s0/root namespace, if IPTABLE rules are playing a role that 
+        must be in the "FORWARDING" chain.
+
+        The only possibility here is IPTABLES and that should be a "FORWARDING" rule that must be looked at.
+
+        Before and after snap indicates there's a packet dropped by the forwarding rule, whose default policy is to
+        "DROP". 
+    
+    <p> </p>
 
 <pre>
-
-# To prove the theory, take a snap of the filter table before and after the ping.
-
 
 [root@rhel8b- ~ # iptables -t filter -L -v -n --line-numbers
 …
@@ -1388,8 +1435,6 @@ num   pkts bytes target     prot opt in     out     source               destina
 
 Between the two snaps the "FORWARDING" chain indicates "3" dropped packets, 1 more right after the ping!
 
-
-
 </pre>		
 
 </div>
@@ -1397,79 +1442,40 @@ Between the two snaps the "FORWARDING" chain indicates "3" dropped packets, 1 mo
 
 <!-- container -->		
 <div class="screen-one-item-container">
-	<h3>  Resolving packet drops on the "FORWARDING" chain. </h3>
-	<p> Having a cleaner look at the rules defined in the FORWARDING chain, it's clear that rule #1 and rule #2 aren't 
-        affecting the traffic as the source subnet itself isn’t matching for the packets routed from the internet. 
-        Referring to the packet capture - 20:00:55.262534 IP 8.8.8.8 > 192.168.122.130: ICMP echo reply, id 3709, seq 1, length 64
-        DOCKER-ISOLATION-STAGE-1 then links with DOCKER-ISOLATION-STAGE-2 which has a "DROP" rule so with that fair assumption
-        that default docker rules probably is the culprit here for the dropped packets, let me inject a rule before that
-        to allow any packets destined towards 172.20.0.0/0 coming from 0.0.0.0/0 to be ACCEPTED and provided to the br00 interface.
+	<h3>  Packet Drops for the inbound packets. Solved! </h3>
+	<p> 
+         
+        "conntrak" and "tcpdump" indicates a response from 8.8.8.8 to 192.168.122.130. Since we have the masquerading rule
+        these packets are NAT'd and therefore should ideally head towards 172.20.0.0/16.
+
+        So any IP's with a source IP 8.8.8.8 destined towards 172.20.0.0/16 which is nothing but the ICMP response
+        never makes it to the br00 and then to cnetns0 interface.
+
+        To test the theory, I inserted a rule in the FORWARDING chain, to satisfy the above criteria.
 
     </p>
 	<p> </p>
 
 <pre>
 
-#Dump the entire IP table rules for reference
 
-[root@rhel8b- ~ # iptables -t filter -L --line-numbers -n
+[root@rhel8b ~]# iptables -A FORWARD -s 0.0.0.0/0 -d 172.20.0.0/16   -j br00
+
+[root@rhel8b ~]# iptables -t filter -L --line-numbers -n
 Chain INPUT (policy ACCEPT)
 num  target     prot opt source               destination
 
 Chain FORWARD (policy DROP)
 num  target     prot opt source               destination
-1    br00       all  --  172.20.0.0/16        0.0.0.0/0
-2    br00       all  --  172.20.0.0/16        0.0.0.0/0
-3    DOCKER-USER  all  --  0.0.0.0/0            0.0.0.0/0
-4    DOCKER-ISOLATION-STAGE-1  all  --  0.0.0.0/0            0.0.0.0/0
-5    ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0            ctstate RELATED,ESTABLISHED
-6    DOCKER     all  --  0.0.0.0/0            0.0.0.0/0
-7    ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0
-8    ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0
-
-Chain OUTPUT (policy ACCEPT)
-num  target     prot opt source               destination
-
-Chain DOCKER (1 references)
-num  target     prot opt source               destination
-
-Chain DOCKER-ISOLATION-STAGE-1 (1 references)
-num  target     prot opt source               destination
-1    DOCKER-ISOLATION-STAGE-2  all  --  0.0.0.0/0            0.0.0.0/0
-2    RETURN     all  --  0.0.0.0/0            0.0.0.0/0
-
-Chain DOCKER-ISOLATION-STAGE-2 (1 references)
-num  target     prot opt source               destination
-1    DROP       all  --  0.0.0.0/0            0.0.0.0/0
-2    RETURN     all  --  0.0.0.0/0            0.0.0.0/0
-
-Chain DOCKER-USER (1 references)
-num  target     prot opt source               destination
-1    RETURN     all  --  0.0.0.0/0            0.0.0.0/0
-
-Chain br00 (2 references)
-num  target     prot opt source               destination
-1    LOG        all  --  0.0.0.0/0            0.0.0.0/0            limit: avg 2/min burst 5 LOG flags 0 level 4 prefix "DEBUG: Packets on wire - br00"
-2    ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0
-
-# Insert the FORWARD rule at SEQUENCE "4"
-
-[root@rhel8b ~]# iptables -I FORWARD 4 -s 0.0.0.0/0 -d 172.20.0.0/16   -j br00
-
-#List the rules again to validate (trimmed output)
-
-.....
-Chain FORWARD (policy DROP)
-num  target     prot opt source               destination
-1    br00       all  --  172.20.0.0/16        0.0.0.0/0
-2    br00       all  --  172.20.0.0/16        0.0.0.0/0
-3    DOCKER-USER  all  --  0.0.0.0/0            0.0.0.0/0
-4    br00       all  --  0.0.0.0/0            172.20.0.0/16
-5    DOCKER-ISOLATION-STAGE-1  all  --  0.0.0.0/0            0.0.0.0/0
-6    ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0            ctstate RELATED,ESTABLISHED
-7    DOCKER     all  --  0.0.0.0/0            0.0.0.0/0
-8    ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0
-9    ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0
+1    DOCKER-USER  all  --  0.0.0.0/0            0.0.0.0/0
+2    DOCKER-ISOLATION-STAGE-1  all  --  0.0.0.0/0            0.0.0.0/0
+3    ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0            ctstate RELATED,ESTABLISHED
+4    DOCKER     all  --  0.0.0.0/0            0.0.0.0/0
+5    ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0
+6    ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0
+7    br00       all  --  172.20.0.0/16        0.0.0.0/0
+8    br00       all  --  172.20.0.0/16        0.0.0.0/0
+9    br00       all  --  0.0.0.0/0            172.20.0.0/16
 ..
 ...
 
@@ -1483,8 +1489,6 @@ PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.
 1 packets transmitted, 1 received, 0% packet loss, time 0ms
 rtt min/avg/max/mdev = 19.456/19.456/19.456/0.000 ms
 
-
-
 </pre>		
 
 </div>
@@ -1493,13 +1497,19 @@ rtt min/avg/max/mdev = 19.456/19.456/19.456/0.000 ms
 
 <!-- container -->		
 <div class="screen-one-item-container">
-	<h3> Understading the behavior. </h3>
-	<p> Reviewing the logs from /var/log/messages before and after indicates the distinction between an ICMP request/response 
-        with the NAT'd IP.
+	<h3>  What does the logs say! </h3>
+	<p> 
+        
+        What to look for when things doesn't work and when things does work. For that, wanted to take another
+        look at these outputs. Looking at /var/log/messages there seems now an added log record indicating a packet
+        IN=enp1s0 OUT=br00 which wasn't there prior to the rule was appended. This indicates after the SNAT'ing 
+        for the inbound packets this rule helped to get the packet onto the wire towards the target br00.
+
     </p>
 	<p> </p>
 
 <pre>
+
 # Before the iptables edits.
 
 tail -2f /var/log/messages
@@ -1512,16 +1522,14 @@ Jan  3 20:00:55 rhel8b kernel: DEBUG: Packets on wire - br00IN=br00 OUT=enp1s0 P
 Jan  3 20:43:59 rhel8b kernel: DEBUG: Packets on wire - br00IN=br00 OUT=enp1s0 PHYSIN=veth0 MAC=3a:a5:be:b6:79:8b:7e:57:88:91:9b:2e:08:00 SRC=172.20.0.50 DST=8.8.8.8 LEN=84 TOS=0x00 PREC=0x00 TTL=63 ID=54088 DF PROTO=ICMP TYPE=8 CODE=0 ID=6403 SEQ=1
 Jan  3 20:43:59 rhel8b kernel: DEBUG: Packets on wire - br00IN=enp1s0 OUT=br00 MAC=52:54:00:01:1a:b3:52:54:00:a8:d1:80:08:00 SRC=8.8.8.8 DST=172.20.0.50 LEN=84 TOS=0x00 PREC=0x00 TTL=111 ID=0 PROTO=ICMP TYPE=0 CODE=0 ID=6403 SEQ=1
 
-#Summarizing additional iptables rules and routing steps injected.
+#Summarizing again on the additional changes that had to be added to make all this work.
 
-#On cnetns0 and cnetns1
-
+#On cnetns0 and cnetns1 a default route was added.
 ip route add default via 172.20.0.1
 
-#On rootns
-
+#On rootns a masquerading rule along with a FORWARDING rule was updated.
 iptables -t nat -I POSTROUTING -s 172.20.0.0/16 ! -o br00 -j MASQUERADE
-iptables -I FORWARD 4 -s 0.0.0.0/0 -d 172.20.0.0/16   -j br00
+iptables -A FORWARD -s 0.0.0.0/0 -d 172.20.0.0/16   -j br00
 
 </pre>		
 
@@ -1530,16 +1538,15 @@ iptables -I FORWARD 4 -s 0.0.0.0/0 -d 172.20.0.0/16   -j br00
 
 <!-- container -->		
 <div class="screen-one-item-container">
-	<h3> Summary/Re-cap </h3>
-	<p> This is just a small experiemnt to deep dive and understand the linux networking namespaces and how internal routing, switching, iptables and 
-        all the networking components works harmoniously before it starts talking to each other. Understand different mechanisms
-        with which these can be triaged/looked when things don't work etc. 
-
+	<h3> Recap. </h3>
+	<p> 
+        
+        These are notes scribbled for future references and github.pages seems like a good place to push the notes
+        and use it for future references, hence this page! 
 
     </p>
 	<p> </p>
 
- 		
 
 </div>
 <!-- container -->		
