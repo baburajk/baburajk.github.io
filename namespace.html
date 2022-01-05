@@ -99,21 +99,18 @@
 
 <!-- container -->		
 <div class="screen-one-item-container">
-	<h3> Simulate docker interpod communication using network namespaces. </h3>
+	<h3> Understanding more on the Network Namespaces. </h3>
 	<p> A quick recap from the web, a network namespace is logically another copy of the network stack, with its 
-         own routes, firewall rules, and network devices. 
-        There are lot of nice articles explaining how the Network Namespaces works and how Docker Containerization
-         makes use of the network namespaces  for inter pod communications. For the purpose of the experiment two 
-         network namespaces was created on a KVM Guest VM manually to understand  the routing aspects and as well
-          the IP Table rules required to enable the communication between the POD's, egress from POD to outside
-           world and also  ingress to the POD's.
+        own routes, firewall rules, and network devices. 
+        
+        A practical experiment will always helps you to get a better and deeper understanding and so the goal, as depicted
+        in the diagram is to setup two network namespaces and necessary routing to mainly understand how the Docker daemons
+        setup namespaces internally while running container namespaces.
         
     </p>
 	<p> </p>
 
-<pre>
-
-</pre>		
+    
 
 </div>
 <!-- container -->		
@@ -121,18 +118,22 @@
 
 <!-- container -->		
 <div class="screen-one-item-container">
-	<h3>  Default Configurations. </h3>
-	<p> What does the defaults looks like before any changes were made! The default route to 192.168.122.0/24 is 
-        the one for the Guest VM to communicate to the hypervisor network and 172.17.0.0/16  is the one
-         defined for docker daemon. Docker daemon , corresponding routes etc. was created for all the guest VM’s 
-         and for the purpose of this experiment , though I really don’t need them - decided to leave it out for 
-         two reasons. a) I can use the “iptable" rules created by docker itself as a reference b) If these rules 
-         by any reasons interfere that will result in more of a learning experience and go bit more deeper..
+	<h3> Default Configuration of the Infra. </h3>
+	<p>  
+
+        What does the current state of the system looks like before any changes were made?
+        
+        The default route to 192.168.122.0/24 is the one for the Guest VM to communicate to the hypervisor 
+        network.
+        
+        172.17.0.0/16 is the one defined for docker daemon this came in as default as part of docker configuration.
+        Leaving this may over complicate the experiment that I would want to ry, but more challenging would be more 
+        fun and learning experience.
+
     </p>
-	<p> </p>
-
+    <p> </p>
+    
 <pre>
-
 
     [root@rhel8b ~]# ip route show
     default via 192.168.122.1 dev enp1s0 proto dhcp metric 100
@@ -164,20 +165,22 @@
 </div>
 <!-- container -->		
 
-
-
 <!-- container -->		
 <div class="screen-one-item-container">
-	<h3>  Namespaces and VETH Pairs </h3>
-	<p> The veth pairs created would be in the root namespace by default and will not be visible on the 
-        cnetns0 and cnetns1 namespaces.
+	<h3> Setup Namespaces and VETH pairs  </h3>
+	<p> 
+        
+        Setup the basics first, from the root namespace create two network namespaces called as cnetns0 and cnetns1.
 
-        Once we have the veth pairs , move the peer end to the respective namespaces. An easy way to identify 
-        the peer name is by looking at the interface ID. 
+        Additionally two veth pairs would be created and peer end of each of these veth pairs would then be moved to 
+        these newly created namespaces.
 
-        How do we know the peer name for a veth network interface? 
-        The interface ID of veth0 is “5” and the peer name for that veth is ceth0@if5 . 
+        It's quite normal to have multiple containers on a docker system, so one of the challenges is to identify
+        the peer interface associated. One way to do so is by looking at the interface ID.
+        
+        For eg. The interface ID of veth0 is “5” and the peer name for that veth is ceth0@if5 . 
         So it’s veth&lt;Interface ID&gt; == ceth0@if&lt;Interface ID&gt;
+
     </p>
 	<p> </p>
 
@@ -186,13 +189,11 @@
     [root@rhel8b- ~ # ip netns add cnetns0
     [root@rhel8b- ~ # ip netns add cnetns1
 
-    
     [root@rhel8b- ~ #  ip link add veth0 type veth peer name ceth0
     [root@rhel8b- ~ #  ip link add veth1 type veth peer name ceth1
 
     [root@rhel8b netns]# ip link set dev ceth0 netns cnetns0
     [root@rhel8b netns]# ip link set dev ceth1 netns cnetns1
-    
     
     [root@rhel8b netns]#  ip netns exec cnetns0 ip link show
     1: lo: <LOOPBACK> mtu 65536 qdisc noop state DOWN mode DEFAULT group default qlen 1000
@@ -214,9 +215,14 @@
 
 <!-- container -->		
 <div class="screen-one-item-container">
-	<h3>  Routing and IP Address Configuration. </h3>
-	<p> At this point neither of these interfaces - ceth0 or ceth1 can communicate with each other since no 
-        IP addresses has been assigned, so login to each namespaces and assign the IP addresses. Since 172.16.0.0/16 is already assigned to the docker network and as I’ve not shutdown this network, decided to use a separate network space - 172.20.0.0/16  for this purpose. 
+	<h3>  Configure IP address. </h3>
+	<p> 
+        Once the network namespaces and veth pairs are in place, the basic setup is to configure the peer end
+        with it's own IP's. 
+        
+        Since 172.16.0.0/16 is already assigned to the docker network I chose to go with 172.20.0.0/16 and with the help
+        of "nsenter" command I can switch to the respective the namespaces and run standard linux stack commands to 
+        configure the ip addresses. 
 
     </p>
 	<p> </p>
@@ -258,13 +264,18 @@
 
 <!-- container -->		
 <div class="screen-one-item-container">
-	<h3>  Routing and IP Address Configuration - Contd. </h3>
-	<p> At this point IP address is added, but no routes has been set and this is because the physical links are down still and has not been brought up yet.
+	<h3>  Ensure we have routes. </h3>
+	<p> 
+        Though the IP's were added in the previous setup, physical links are down still and 
+        has not been brought up yet and due to this we have missing routes. Routing information
+        was automatically added by the Linux network stack one the IP address was configured and the
+        interfaces were brought up.
 
     </p>
 	<p> </p>
 
 <pre>
+
     [root@rhel8b netns]# ip link set ceth0 up
     [root@rhel8b netns]# ip link set lo up
     
@@ -286,10 +297,10 @@
         inet 172.20.0.50/16 scope global ceth0
            valid_lft forever preferred_lft forever
 
-           Note: The state of ceth0 is showing “LOWERLAYERDOWN”, though the interface itself is "<UP>" since the other end of the veth pair was only
-            added and has not been brought up. Also by bringing this up the routes are also plugged into the 
-            routing table which in the previous output was empty.
-
+        Note: 
+        The state of ceth0 is showing “LOWERLAYERDOWN”, though the interface itself is "<UP>" since 
+        the other end of the veth pair was only added and has not been brought up. Also by bringing this up 
+        the routes are also plugged into the routing table which in the previous output was empty.
 
     [root@rhel8b netns]# ip route show
     172.20.0.0/16 dev ceth0 proto kernel scope link src 172.20.0.50 linkdown
@@ -311,13 +322,18 @@
 
 <!-- container -->		
 <div class="screen-one-item-container">
-	<h3> Root Namespace - VETH setup.   </h3>
-	<p> The interface links on the root namespace is still down which needs to be brought up. 
+	<h3>  Setup veth pair on the root namespace.  </h3>
+	<p> 
+        Ensure the veth pair on the root namespace is configured and brought up. Also add the IP addresses 
+        for each of these VETH pairs to see if we can establish connectivity between all 3 namespaces without 
+        having to configure a bridge as pictured in the diagram.
+
     </p>
 	<p> </p>
 
 <pre>
 
+    #Before snap: state => "DOWN"
     [root@rhel8b ~]# ip link show veth0
     5: veth0@if4: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
         link/ether 32:e4:7c:d5:bd:8f brd ff:ff:ff:ff:ff:ff link-netns cnetns0
@@ -326,21 +342,22 @@
     7: veth1@if6: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
         link/ether ea:c9:3d:5b:64:59 brd ff:ff:ff:ff:ff:ff link-netns cnetns1 
     
+    [root@rhel8b ~]#ip link set dev veth0 up
+    [root@rhel8b ~]#ip link set dev veth1 up
     
-    ip link set dev veth0 up
-    ip link set dev veth1 up
-    
-    
+    #After snap: state => "UP"
+
     [root@rhel8b ~]# ip link show veth0
     5: veth0@if4: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP mode DEFAULT group default qlen 1000
         link/ether 32:e4:7c:d5:bd:8f brd ff:ff:ff:ff:ff:ff link-netns cnetns0
-    [root@rhel8b ~]#
+ 
     [root@rhel8b ~]# ip link show veth1
     7: veth1@if6: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP mode DEFAULT group default qlen 1000
         link/ether ea:c9:3d:5b:64:59 brd ff:ff:ff:ff:ff:ff link-netns cnetns1
     
+    Note: 
     After the peer has been brought up, the interface status of ceth0 and ceth1 within the network namespaces are 
-    changed from “LOWERLAYERDOWN” to  “LOWER_UP” as seen below.
+    changed from “LOWERLAYERDOWN” to  “UP” as seen below.
     
     [root@rhel8b-cnetns0 ~ # ip link show ceth0
     4: ceth0@if5: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP mode DEFAULT group default qlen 1000
@@ -350,15 +367,17 @@
     6: ceth1@if7: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP mode DEFAULT group default qlen 1000
         link/ether f6:0e:f5:ee:d1:7e brd ff:ff:ff:ff:ff:ff link-netnsid 0
     
-
+    #Before snap of routing 
     [root@rhel8b ~]# ip route show
     default via 192.168.122.1 dev enp1s0 proto dhcp metric 100
     172.17.0.0/16 dev docker0 proto kernel scope link src 172.17.0.1 linkdown
     192.168.122.0/24 dev enp1s0 proto kernel scope link src 192.168.122.130 metric 100
 
+    #Configure IP addresses for VETH pair.
     [root@rhel8b ~]# ip addr add 172.20.0.5/16 dev veth0
     [root@rhel8b ~]# ip addr add 172.20.0.6/16 dev veth1
 
+    #After snap of routing 
     [root@rhel8b ~]# ip route show
     default via 192.168.122.1 dev enp1s0 proto dhcp metric 100
     172.17.0.0/16 dev docker0 proto kernel scope link src 172.17.0.1 linkdown
@@ -366,7 +385,6 @@
     172.20.0.0/16 dev veth1 proto kernel scope link src 172.20.0.6
     192.168.122.0/24 dev enp1s0 proto kernel scope link src 192.168.122.130 metric 100
  
-
 </pre>		
 
 </div>
@@ -376,36 +394,30 @@
 
 <!-- container -->		
 <div class="screen-one-item-container">
-	<h3> Reachability Tests. </h3>
-	<p> The basic setups are done, it's about time to do the simple reachability tests. </p>
+	<h3> Reachability tests. </h3>
 	<p> 
-     
+        
+        Basic setups are done, with the biggest difference being it's not what we originally intended. There's no 
+        physical bridge configured, rather two VETH's with it's own IP addresses. 
+
+        This is to understand the limitations to this approach and how bridge can help solve for this limitation.
+    
     </p>
+	<p>  </p>
 
 <pre>
 
-    # Provides the inode number associated with the process.
-    [root@rhel8b ~]# lsns -o NS,PATH,USER,NETNSID | grep $(echo $$)
-    4026532414 /proc/2093/ns/net root   unassigned
-    
     The basic 3 use-cases that I want to test it out are as follows.
  
-    a) Can one cnetns0/IP reach the IP defined on cnetns1
-    b) Can any of these IP’s reach internet.
-    c) Can the VM reach the IP’s defined on these NS - cnetns0/1
-
+    a) Can cnetns0/cnetns1 can talk to each other - are the IP's for each reachable?
+    b) Can the VM/root namespace reach the IP’s defined on cnetns0/cnetns1?
+    c) Lastly - If above all are working, can we reach internet from cnetns0/cnetns1?
+   
     #Additional notes
     Since there are two terminals/sessions opened to two different network NS, to identify the sessions, change
     the PS1 (prompt) so it's easier.
 
-    [root@rhel8b ~]# ip netns identify $(echo $$)
-    cnetns0
-    
-    Some additional commands for reference.
-    
-    # Sets the bash prompt
     export PS1="[\u@\h-$(ip netns identify $(echo $$)) \w # "
-
 
 </pre>		
 
@@ -416,13 +428,19 @@
 <!-- container -->		
 <div class="screen-one-item-container">
 	<h3> Reachability Tests - Contd. </h3>
-	<p> </p>
+	<p> 
+
+        Based on the ping results, the communication to cnetns1 is completely broken between 
+        the tests carried out to validate use-case #a and use-case #b.
+
+        Why would that be?
+
+    </p>
 	<p> </p>
 
 <pre>
  
-
-    From rootns to cnetns0 and cnetns1
+    #From rootns to cnetns0 and cnetns1
 
     [root@rhel8b ~]# ping -c 1 172.20.0.50
     PING 172.20.0.50 (172.20.0.50) 56(84) bytes of data.
@@ -439,7 +457,7 @@
     --- 172.20.0.60 ping statistics ---
     1 packets transmitted, 0 received, +1 errors, 100% packet loss, time 0ms
     
-    From cnetns0 to rootns and cnetns1
+    #From cnetns0 to rootns and cnetns1
     
     [root@rhel8b-cnetns0 ~ # ping -c 1 172.20.0.5
     PING 172.20.0.5 (172.20.0.5) 56(84) bytes of data.
@@ -456,7 +474,7 @@
     --- 172.20.0.60 ping statistics ---
     1 packets transmitted, 0 received, +1 errors, 100% packet loss, time 0ms
     
-    From cnetns1 to rootns and cnetns0 
+    #From cnetns1 to rootns and cnetns0 
     
     [root@rhel8b-cnetns1 ~ # ping -c 1 172.20.0.6
     PING 172.20.0.6 (172.20.0.6) 56(84) bytes of data.
@@ -474,7 +492,6 @@
     
     So the routes are good from rootns and cnetns0  because of which they are reachable but the pings from 
     cnetns1 resulted in   100% packet loss!
-    
 
 </pre>		
 
@@ -484,14 +501,33 @@
 
 <!-- container -->		
 <div class="screen-one-item-container">
-	<h3>  Static routes and precedence! </h3>
-	<p> Why would centns0 fail to communicate between either of these namespaces and what are the things
-        that can be looked at? So if we learn the routes that got configured on the rootns - they have two 
-        static routes. </p>
+	<h3>  Static routes! </h3>
+	<p> 
+        
+        The culprit is the static route. There are two static routes which was autopopulated by the network stack.
+        
+        172.20.0.0/16 dev veth0 proto kernel scope link src 172.20.0.5
+        172.20.0.0/16 dev veth1 proto kernel scope link src 172.20.0.6
+
+        As it get's resolved in the order of precedence, any packet destined towards the subnet 172.20.0.0/16 
+        will be going out of veth0 interface with an IP address of 172.20.0.5 as that being the first per precedence.
+
+        Additional way to solidify the theory is to look at the routing cache, which indicates the same that in 
+        order to get to 172.20.0.60, the packet goes through the veth0.
+        
+        [root@rhel8b ~]# ip route get 172.20.0.60
+        172.20.0.60 dev veth0 src 172.20.0.5 uid 0
+            cache
+
+        So if we move the order of these routes, by bringing the route to 172.20.0.6 up - then that will break
+        the communication to cnetns0. 
+
+        This is where the bridges would come into help!
+
+    </p>
 	<p> </p>
 
 <pre>
-
 
     [root@rhel8b ~]# ip route show
     default via 192.168.122.1 dev enp1s0 proto dhcp metric 100
@@ -499,32 +535,6 @@
     172.20.0.0/16 dev veth0 proto kernel scope link src 172.20.0.5
     172.20.0.0/16 dev veth1 proto kernel scope link src 172.20.0.6
     192.168.122.0/24 dev enp1s0 proto kernel scope link src 192.168.122.130 metric 100
-    
-    There are two static routes of interest here , this means any packet originating from the rootns heading 
-    toward the subnet 172.20.0.0/16 will be going out of veth0  interface with an IP address of 172.20.0.5.
-    
-    172.20.0.0/16 dev veth0 proto kernel scope link src 172.20.0.5
-    172.20.0.0/16 dev veth1 proto kernel scope link src 172.20.0.6
-    
-    Since 172.20.0.6 falls within the subnet range of 172.20.0.0/16 , packet gets routed through this interface
-     hitting the cnetns0 and will reach back to the cnetns1.
-    
-    Additional way to solidify the theory is to look at the routing cache, which indicates the same that in 
-    order to get to 172.20.0.60, the packet goes through the veth0.
-    
-    [root@rhel8b ~]# ip route get 172.20.0.60
-    172.20.0.60 dev veth0 src 172.20.0.5 uid 0
-        cache
-    
-    For additional reference, did tcpdumps on the cnetns0 interface while the ping was fired from the rootns 
-    and there was ARP calls indicating the packet reached this interface but unable to find out where to route 
-    the packets to.
-    
-    
-    [root@rhel8b-cnetns0 ~ # tcpdump -nni ceth0 -vvv
-    dropped privs to tcpdump
-    tcpdump: listening on ceth0, link-type EN10MB (Ethernet), capture size 262144 bytes
-    21:09:53.808981 ARP, Ethernet (len 6), IPv4 (len 4), Request who-has 172.20.0.60 tell 172.20.0.5, length 28
     
     </pre>		
 
@@ -534,39 +544,32 @@
 
 <!-- container -->		
 <div class="screen-one-item-container">
-	<h3>  Configure the bridge. </h3>
-	<p> The static routes were added when the interface was brought up with valid ip’s. So if one of these 
-        routes were to be deleted, it will break the communication to the other network namespace!  It’s natural
-         to have multiple network namespaces ( docker containers) running in one VM - so this is a valid use
-          case that must work!
+	<h3>  Network Bridge! </h3>
+	<p> 
+        
+        A network bridge acts on the L2 layer, this means no routing but only switching and all it knows is
+        MAC addresses associated with each interface.
 
-        172.20.0.0/16 dev veth0 proto kernel scope link src 172.20.0.5
-        172.20.0.0/16 dev veth1 proto kernel scope link src 172.20.0.6 
-        
-        So the solution here is to create a bridge and attach the interfaces to it. Bridge acts on the L2 layer,
-         this means it does the switching but not the routing but any interfaces using the bridge would have it’s 
-         MAC address added and on the L2 layer the packets can be 
-        
-        
-         </p>
+        Firt thing to do is to delete the IP addresses defined for the veth pairs on the root namespace and 
+        create a new bridge and make this is a master for the veth pairs.
+
+    </p>
 	<p> </p>
 
 <pre>
-
-     
+ 
     Delete the IP addresses associated with the veth0 and veth1
     
     [root@rhel8b ~]# ip addr delete 172.20.0.5/16 dev veth0
     [root@rhel8b ~]# ip addr delete 172.20.0.6/16 dev veth1
     
-    Flusing these out will also remove the routes that were added.
+    #Flusing these out will also remove the routes that were added.
     
     [root@rhel8b ~]# ip route show
     default via 192.168.122.1 dev enp1s0 proto dhcp metric 100
     172.17.0.0/16 dev docker0 proto kernel scope link src 172.17.0.1 linkdown
     192.168.122.0/24 dev enp1s0 proto kernel scope link src 192.168.122.130 metric 100
     
-
     [root@rhel8b ~]# ip link add br00 type bridge
     [root@rhel8b ~]# ip link set br00 up
   
@@ -577,7 +580,6 @@
     8: br00: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
         link/ether 82:5c:78:97:0b:f4 brd ff:ff:ff:ff:ff:ff
     
-
     [root@rhel8b ~]# ip link show
     1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
         link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
@@ -592,7 +594,7 @@
     8: br00: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP mode DEFAULT group default qlen 1000
         link/ether 32:e4:7c:d5:bd:8f brd ff:ff:ff:ff:ff:ff
     
-    Checking the connectivity on the bridge level, the Mac addresses of both the interfaces are learned in each of these namespaces. 
+    #Mac addresses of both the interfaces are learned in each of these namespaces. 
     
     [root@rhel8b-cnetns0 ~ # ip neigh
     172.20.0.60 dev ceth0 lladdr f6:0e:f5:ee:d1:7e STALE
@@ -621,22 +623,23 @@
 
 <!-- container -->		
 <div class="screen-one-item-container">
-	<h3>  Ping tests failures between rootns/cnetns*  </h3>
-	<p> At this point  since we have the bridge configured and MAC”s for each of these cethX interfaces are 
-        learned by the bridge the L2 
-        Layer packet forwarding should work and rootns should be able to reach cnetns0 and cnetns1 and also
-         between the centns* interfaces there should be reachability as well. On the contrary  - none of them 
-         are working.
+	<h3>  Re-do the reachability tests!  </h3>
+	<p> 
         
-        So I want to break this down into three issues.
+        Let's re-do the tests, the assumption is with bridge in place it should all work but while reviewing 
+        the output we can see it's not working.
         
-        a) Root NS cannot talk to cnetns*.
-        b) cnetns cannot talk to each other.
-        c) Internet reachability from cnetns* namespaces.
     </p>
 	<p> </p>
 
 <pre>
+    
+    So we have two issues now with the bridge in place.  
+        
+    a) Root NS cannot talk to cnetns0/cnetns1.
+    b) cnetns cannot talk to each other.
+    c) Internet reachability from cnetns* namespaces. (Still open/haven't tested yet)
+    
 </pre>		
 
 </div>
@@ -645,14 +648,19 @@
 
 <!-- container -->		
 <div class="screen-one-item-container">
-	<h3>  Why IP’s within cnetns are not reachable from root namespace? </h3>
-	<p> Issue-1 : Root NS cannot to ceth0 and ceth1 on the child namespaces. Looking at the routes, any IP’s
-         headed towards the subnet 172.17.0.0/16 will be going out of docker0 interface and any IP’s headed 
-         towards 192.168.122.0/24  will be going out of enp1s0 interface and rest all should go via enp1s0 as 
-         part of the default route “default via 192.168.122.1 dev enp1s0”.
+	<h3>  Resolving rootns reachability! </h3>
+	<p> 
+        
+        Root NS cannot to ceth0 and ceth1 on the child namespaces. 
+        
+        Looking at the routes, any IP’s destined to subnet 172.17.0.0/16 will be going out of docker0 interface 
+        and any destined to 192.168.122.0/24  will be going out of enp1s0 interface. 
+        
+        Everything else rest will be routed via default route - which is  "default via 192.168.122.1 dev enp1s0" 
 
-        So this means a ping to 172.20.0.50 will never reach veth0 since it will be routed through the enp1s0 
-        unless there’s a static route added here bound to the veth0 interface.
+        So this means a ping to 172.20.0.50 will be picked by the default route and a quick packet capture proves 
+        this theory.
+
         </p>
 	<p> </p>
 
@@ -678,16 +686,34 @@
     listening on enp1s0, link-type EN10MB (Ethernet), capture size 262144 bytes
     14:06:12.876136 IP 192.168.122.130 > 172.20.0.50: ICMP echo request, id 6820, seq 1, length 64
     
-    So by adding a gateway IP address to the bridge, it should also plug in a static route in the routing table
-     to ensure anything that should be routed for this network 172.20.0.0/16 should be going via br00 bridge 
-     than the enp1s0. 
     
-    [root@rhel8b ~]# ip addr show br00
-    8: br00: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default qlen 1000
-        link/ether 32:e4:7c:d5:bd:8f brd ff:ff:ff:ff:ff:ff
-        inet6 fe80::30e4:7cff:fed5:bd8f/64 scope link
-           valid_lft forever preferred_lft forever
+</pre>		
+
+</div>
+<!-- container -->		
+
+
+<!-- container -->		
+<div class="screen-one-item-container">
+	<h3>  Configure the L2 Switch/Bridge to be L3 aware/compatible! </h3>
+	<p> 
+
+        Since the bridge we configured is only L2 aware, there's no routing or rather routes configured by
+        the network stack. So what we need is to make this bridge L3 compatible by providing it an IP address.
+
+        br00 is essentially a gateway for the entire subnet, if we had multiple namespaces all of these would be 
+        going via bridge.
+
+        So let's assign the GTWY ip to br00 and we can see below that once IP has been added a new route has 
+        been configured automatically by the network stack "172.20.0.0/16 dev br00 "
+
+    </p>
+	<p> </p>
+
+<pre>
+
     [root@rhel8b ~]# ip addr add 172.20.0.1/16 dev br00
+   
     [root@rhel8b ~]# ip addr show br00
     8: br00: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default qlen 1000
         link/ether 32:e4:7c:d5:bd:8f brd ff:ff:ff:ff:ff:ff
@@ -695,14 +721,14 @@
            valid_lft forever preferred_lft forever
         inet6 fe80::30e4:7cff:fed5:bd8f/64 scope link
            valid_lft forever preferred_lft forever
+   
     [root@rhel8b ~]# ip route show
     default via 192.168.122.1 dev enp1s0 proto dhcp metric 100
     172.17.0.0/16 dev docker0 proto kernel scope link src 172.17.0.1 linkdown
     172.20.0.0/16 dev br00 proto kernel scope link src 172.20.0.1
     192.168.122.0/24 dev enp1s0 proto kernel scope link src 192.168.122.130 metric 100
     
-    
-    Let’s try the pings again…
+    #RootNS now can talk to both cnetns0/cnetns1.
     
     [root@rhel8b ~]# ping -c1 172.20.0.50
     PING 172.20.0.50 (172.20.0.50) 56(84) bytes of data.
@@ -716,7 +742,6 @@
     
     Issue still exists where the cnetns namespaces can’t talk to each other still..
      
-    
 </pre>		
 
 </div>
@@ -725,18 +750,20 @@
 
 <!-- container -->		
 <div class="screen-one-item-container">
-	<h3>  Why the IP’s between cnetns are not reachable between each other?  </h3>
-	<p> This took me a while to figure out! So first the basics, whether the configuration is correct or not.
-
-        So gateway/br00 is reachable yet the IP on cnetns1 is not reachable (172.20.0.60). I can see the 
-        requests reaching the br00 (tcpdump) and also ceth1 (cnetns1) and it’s a ARP request and ARP response,
-         yet it never reaches back.
+	<h3>  Reachability issue between the child network namespaces!  </h3>
+	<p> 
         
+        It took me a while to figure this out, so breaking down the issue/triaging experiment for future reference.
+
+        From the cnetns0/cnetns1 , the gateway IP/br00 is reachable but neither of these IP's (172.20.0.60/172.20.0.50) 
+        defined can talk to each other!.
+
         IP neigh output also stresses the fact that there’s no issue on the L2 layer, MAC’s on  br00 and as well 
         the respective interfaces - ceth0 and ceth1 are learned.
         
-        This means bridge/L2 layer is completely in tact, yet  on the L3 there’s some issue! 
-        </p>
+        This means bridge/L2 layer is completely in tact, yet on the L3 there’s some issue! 
+    
+    </p>
 	<p> </p>
 
 <pre>
@@ -770,7 +797,6 @@
     14:53:38.758447 ARP, Request who-has 172.20.0.60 tell 172.20.0.50, length 28
     14:53:38.758477 ARP, Reply 172.20.0.60 is-at f6:0e:f5:ee:d1:7e, length 28
     
-    
     MAC Address’s learned by ceth0 and ceth1 
     
     [root@rhel8b-cnetns0 ~ # ip neigh
@@ -781,13 +807,13 @@
     172.20.0.1 dev ceth1 lladdr 32:e4:7c:d5:bd:8f STALE
     172.20.0.50 dev ceth1 lladdr 3a:9c:07:b7:10:bd STALE
     
-Everything seems to be perfectly file on the L2 layer, so focus the investigation on the L3 layer!    
+    Conclusion:
+    Everything seems to be perfectly file on the L2 layer, so focus the investigation on the L3 layer!    
+
 </pre>		
 
 </div>
 <!-- container -->		
-
-
 
 <!-- container -->		
 <div class="screen-one-item-container">
@@ -1509,7 +1535,7 @@ iptables -I FORWARD 4 -s 0.0.0.0/0 -d 172.20.0.0/16   -j br00
         all the networking components works harmoniously before it starts talking to each other. Understand different mechanisms
         with which these can be triaged/looked when things don't work etc. 
 
-        
+
     </p>
 	<p> </p>
 
