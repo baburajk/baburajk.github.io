@@ -1538,11 +1538,15 @@ iptables -A FORWARD -s 0.0.0.0/0 -d 172.20.0.0/16   -j br00
 
 <!-- container -->		
 <div class="screen-one-item-container">
-	<h3> Recap. </h3>
+	<h3> Conclusion. </h3>
 	<p> 
-        
-        These are notes scribbled for future references and github.pages seems like a good place to push the notes
-        and use it for future references, hence this page! 
+
+        Since I had decided to keep the iptable and rules created by docker, the steps turned out not to be
+        straight forward, but in the containerized world all these must work harmoniously and the docker daemon
+        is responsible for managing all the rules required for these communications to work.
+
+        I want to take a deeper look now to understand how cgroups works and how the docker containers interact
+        over multiple types of namespaces. 
 
     </p>
 	<p> </p>
