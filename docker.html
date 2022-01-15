@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>  
+	<meta charset="utf-8">
+	<title>Docker Internals</title>
+ 
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<meta property="og:image" content="path/to/image.jpg">
+ 
+<!-- build:css -->
+<link rel="stylesheet" href="css/libs/bootstrap.min.css">
+<link rel="stylesheet" href="css/libs/font-awesome.min.css">
+<link rel="stylesheet" href="css/libs/animate.min.css">
+<link rel="stylesheet" href="css/libs/slick.css">
+<link rel="stylesheet" href="css/libs/magnific-popup.css">
+
+<link rel="stylesheet" href="css/main.css">
+<link rel="stylesheet" href="css/media.css">
+<!-- endbuild -->
+	<!-- Chrome, Firefox OS and Opera -->
+	<meta name="theme-color" content="#000">
+	<!-- Windows Phone -->
+	<meta name="msapplication-navbutton-color" content="#000">
+	<!-- iOS Safari -->
+	<meta name="apple-mobile-web-app-status-bar-style" content="#000">
+	<!-- <style>body { opacity:s 0; overflow-x: hidden; } html { background-color: #fff; }</style> -->
+</head>
+<body data-spy="scroll" data-target=".navbar" data-offset="50" class="loaded" link="blue">
+
+	
+<div class="site-content">
+	<!-- Naviigation -->
+	<div class="navbar-wrap">
+		<div class="navbar">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-12">
+						<nav class="navbar-menu">
+							<div class="navbar-header">
+								<button class="collapsed navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-example-js-navbar-scrollspy">
+									<span class="icon-bar"></span>
+									<span class="icon-bar"></span>
+									<span class="icon-bar"></span>
+								</button>
+							</div>
+							 
+							<div class="navbar-full">
+								<div class="collapse bs-example-js-navbar-scrollspy">
+									<ul class="nav navbar-nav">
+										<li style="display: none;"><a></a></li>
+										<li><a href="http://www.linkedin.com/in/baburajkallarakkal">About Me</a></li>
+										<li><a href="http://padmavyuha.blogspot.com/">Blog</a></li>
+										<li><a href="https://sourceforge.net/projects/oraclerman/">Projects</a></li>
+										<li><a href="https://hub.docker.com/u/baburaj/">Docker</a></li>
+										<li><a href="mailto:raj.anju@gmail.com">Contact Me</a></li>
+										<li>
+										</li>
+									</ul>
+							
+								</div>
+							</div>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Naviigation -->
+	
+
+<!-- Header -->
+	<div class="menu-sticky"></div>
+ 
+	<!-- Screen-one -->
+	<div class="screen-one">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="screen-one-title">
+
+						<h2> Docker Internals - tips and techniques to troubleshoot issues.  </h2>
+					</div>
+				</div>
+			</div>
+		</div>
+	 
+		<div class="container">
+ 
+<!-- container -->		
+		<div class="screen-one-item-container">
+							<h3>  Docker Namespaces (NSENTER) </h3>
+							<p> Identify different ways to identify the docker namespaces </p>
+							<p> </p>
+
+<pre>
+
+# Prep the system.
+
+Image Reference:
+https://github.com/baburajk/docker/blob/master/netops/Dockerfile 
+https://hub.docker.com/repository/docker/baburaj/netops
+
+
+[root@netlab1 ~]# docker run -p 80:80 -p 443:443 -d  --cpu-shares 256 --memory 100m --name netops  baburaj/netops
+5f18edb5621ab4a6652d85b1e93a28f1c766184c4b39787744c0a76a965b039a
+
+Check if the container is responding.
+
+[root@netlab1 ~]# curl -ks http://localhost:80
+Container/HostName : 5f18edb5621a
+
+ - Interfaces -
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+34: eth0@if35: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default
+    link/ether 02:42:ac:11:00:02 brd ff:ff:ff:ff:ff:ff link-netnsid 0
+    inet 172.17.0.2/16 brd 172.17.255.255 scope global eth0
+       valid_lft forever preferred_lft forever
+
+[root@netlab1 ~]# curl -ks https://localhost:443
+Container/HostName : 5f18edb5621a
+
+ - Interfaces -
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+34: eth0@if35: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default
+    link/ether 02:42:ac:11:00:02 brd ff:ff:ff:ff:ff:ff link-netnsid 0
+    inet 172.17.0.2/16 brd 172.17.255.255 scope global eth0
+       valid_lft forever preferred_lft forever
+
+
+
+</pre>		
+
+		</div>
+<!-- container -->		
+
+
+<!-- container -->		
+<div class="screen-one-item-container">
+	<h3>  SUBTITLE </h3>
+	<p> </p>
+	<p> </p>
+
+<pre>
+CODE BLOCK
+</pre>		
+
+</div>
+<!-- container -->		
+
+
+<!-- container -->		
+<div class="screen-one-item-container">
+	<h3>  SUBTITLE </h3>
+	<p> </p>
+	<p> </p>
+
+<pre>
+CODE BLOCK
+</pre>		
+
+</div>
+<!-- container -->		
+
+
+
+<!-- container -->		
+<div class="screen-one-item-container">
+	<h3>  SUBTITLE </h3>
+	<p> </p>
+	<p> </p>
+
+<pre>
+CODE BLOCK
+</pre>		
+
+</div>
+<!-- container -->		
+
+
+<!-- container -->		
+<div class="screen-one-item-container">
+	<h3>  SUBTITLE </h3>
+	<p> </p>
+	<p> </p>
+
+<pre>
+CODE BLOCK
+</pre>		
+
+</div>
+<!-- container -->		
+
+
+
+
+	
+
+</body>
+</html>
