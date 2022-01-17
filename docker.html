@@ -88,8 +88,8 @@
  
 <!-- container -->		
 		<div class="screen-one-item-container">
-							<h3>  Docker Namespaces (NSENTER) </h3>
-							<p>  Managing namespaces for a docker container. </p>
+							<h3>  Details on Container Namespaces </h3>
+							<p>   </p>
 							<p> </p>
 
 <pre>
@@ -132,7 +132,7 @@ Container/HostName : 5f18edb5621a
     inet 172.17.0.2/16 brd 172.17.255.255 scope global eth0
        valid_lft forever preferred_lft forever
 
-# Refresher - man namespaces
+# Refresher on namespaces (Run man namespaces )
 
 Linux provides the following namespaces:
 
@@ -145,7 +145,7 @@ PID         CLONE_NEWPID      Process IDs
 User        CLONE_NEWUSER     User and group IDs
 UTS         CLONE_NEWUTS      Hostname and NIS domain name
 
-# How do we know what namespaces are associated for each of these types for the above container?
+# How do we know what namespaces are associated for the container we brought up.
 
 [root@netlab1 ~]# lsns -p $(docker inspect netops | jq '.[].State.Pid')
         NS TYPE   NPROCS   PID USER COMMAND
@@ -157,7 +157,20 @@ UTS         CLONE_NEWUTS      Hostname and NIS domain name
 4026532418 pid         4  6556 root /bin/bash /usr/bin/nginx-start.sh
 4026532420 net         4  6556 root /bin/bash /usr/bin/nginx-start.sh
 
-# How can we inspect each of these namespaces? * Using nsenter 
+</pre>		
+
+</div>
+<!-- container -->		
+
+
+<!-- container -->		
+<div class="screen-one-item-container">
+	<h3>  NSENTER </h3>
+	<p> How to enter each namespaces associated with the container? </p>
+	<p> </p>
+
+<pre>
+    # How can we inspect each of these namespaces? * Using nsenter 
 
     i) -n option to enter network namespace and show ip of the container.
 
@@ -181,66 +194,104 @@ UTS         CLONE_NEWUTS      Hostname and NIS domain name
         nsenter -t $(docker inspect netops | jq '.[].State.Pid') -p -r top
 
 
-        How to identify a veth pair for the container?
+       
+</pre>		
 
-        Docker stores it’s network name spaces under /var/run/docker/netns but ip netns command looks for namespaces under /var/run/netns. In order to have ip netns scan and list the docker network namespace create a symlink.
-        
-        [root@netlab1 run]# cd /var/run
-        [root@netlab1 run]# ln -s /var/run/docker/netns netns
-        
-        [root@netlab1 run]# ip netns list
-        ac645516b0ce (id: 0)
-        
-        # How to identify which container is associated with this namespace?
-        
-        [root@netlab1 ~]# ip netns identify $(docker inspect netops | jq '.[].State.Pid')
-        ac645516b0ce
-        
-        This means the container with name netops is associated with the network NS : ac645516b0ce
-        
-        Another option is inspect the SandboxKey
-        
-        [root@netlab1 ~]# docker inspect netops | jq -r '.[].NetworkSettings.SandboxKey'
-        /var/run/docker/netns/ac645516b0ce
-        
-        # How to identify which veth ID is associated with teh container?
-        
-        [root@netlab1 ~]# ip link show
-        1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
-            link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
-        2: enp1s0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
-            link/ether 52:54:00:56:0b:aa brd ff:ff:ff:ff:ff:ff
-        3: docker0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP mode DEFAULT group default
-            link/ether 02:42:17:61:53:2b brd ff:ff:ff:ff:ff:ff
-        35: veth09a45c1@if34: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master docker0 state UP mode DEFAULT group default
-            link/ether 1a:bb:7b:b0:c1:ac brd ff:ff:ff:ff:ff:ff link-netns ac645516b0ce
-        
-        One way is by looking at the  link-netns shows the network namespace we identified earlier -  ac645516b0ce
-        
-        ID of the 35: veth09a45c1 pair is 35. While looking inside the container, 35 is associated with eth0@if35. This is one other option to map it..
-        
-        [root@5f18edb5621a /]# ip addr show
-        1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
-            link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
-            inet 127.0.0.1/8 scope host lo
-               valid_lft forever preferred_lft forever
-        34: eth0@if35: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default
-            link/ether 02:42:ac:11:00:02 brd ff:ff:ff:ff:ff:ff link-netnsid 0
-            inet 172.17.0.2/16 brd 172.17.255.255 scope global eth0
-               valid_lft forever preferred_lft forever
-        
-        
-        # Quick dirty script to map the VETH pairs (!Need to script for a real life scenario with numerous containers)
+</div>
+<!-- container -->		
 
-        [root@netlab1 ~]# ip -j addr show  | jq -cr '.[] | select (.link_index != null) | { ifindex: .ifindex, link_index: .link_index, ifname: .ifname}'
-        {"ifindex":35,"link_index":34,"ifname":"veth09a45c1"}
 
-        [root@netlab1 ~]# docker exec -it $(docker ps -aq) bash -c 'ip -j addr show ' | jq -cr '.[] | select (.link_index != null) | { ifindex: .ifindex, link_index: .link_index, ifname: .ifname}' | jq -rc
-        {"ifindex":34,"link_index":35,"ifname":"eth0"}
+
+<!-- container -->		
+<div class="screen-one-item-container">
+	<h3>  VETH </h3>
+	<p> How to identify a veth pair for the container? </p>
+	<p> </p>
+
+<pre>
+
+
+    Note:
+    Docker stores it’s network name spaces under /var/run/docker/netns but ip netns command looks for 
+    namespaces under /var/run/netns. In order to have ip netns scan and list the docker network namespace 
+    create a symlink.
+    
+    [root@netlab1 run]# cd /var/run
+    [root@netlab1 run]# ln -s /var/run/docker/netns netns
+    
+    [root@netlab1 run]# ip netns list
+    ac645516b0ce (id: 0)
+    
+    # How to identify which container is associated with this namespace?
+    
+    [root@netlab1 ~]# ip netns identify $(docker inspect netops | jq '.[].State.Pid')
+    ac645516b0ce
+    
+    This means the container with name netops is associated with the network NS : ac645516b0ce
+    
+    # Another option is inspect the SandboxKey
+    
+    [root@netlab1 ~]# docker inspect netops | jq -r '.[].NetworkSettings.SandboxKey'
+    /var/run/docker/netns/ac645516b0ce
+    
+    # How to identify which veth ID is associated with teh container?
+    
+    [root@netlab1 ~]# ip link show
+    1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
+        link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    2: enp1s0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+        link/ether 52:54:00:56:0b:aa brd ff:ff:ff:ff:ff:ff
+    3: docker0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP mode DEFAULT group default
+        link/ether 02:42:17:61:53:2b brd ff:ff:ff:ff:ff:ff
+    35: veth09a45c1@if34: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master docker0 state UP mode DEFAULT group default
+        link/ether 1a:bb:7b:b0:c1:ac brd ff:ff:ff:ff:ff:ff link-netns ac645516b0ce
+    
+    One way is by looking at the  link-netns shows the network namespace we identified earlier -  ac645516b0ce
+    
+    ID of the 35: veth09a45c1 pair is 35. While looking inside the container, 35 is associated with eth0@if35. This is one other option to map it..
+    
+    [root@5f18edb5621a /]# ip addr show
+    1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+        link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+        inet 127.0.0.1/8 scope host lo
+           valid_lft forever preferred_lft forever
+    34: eth0@if35: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default
+        link/ether 02:42:ac:11:00:02 brd ff:ff:ff:ff:ff:ff link-netnsid 0
+        inet 172.17.0.2/16 brd 172.17.255.255 scope global eth0
+           valid_lft forever preferred_lft forever
+    
+    
+    # Quick dirty script to map the VETH pairs (!Need to script for a real life scenario with numerous containers)
+
+    [root@netlab1 ~]# ip -j addr show  | jq -cr '.[] | select (.link_index != null) | { ifindex: .ifindex, link_index: .link_index, ifname: .ifname}'
+    {"ifindex":35,"link_index":34,"ifname":"veth09a45c1"}
+
+    [root@netlab1 ~]# docker exec -it $(docker ps -aq) bash -c 'ip -j addr show ' | jq -cr '.[] | select (.link_index != null) | { ifindex: .ifindex, link_index: .link_index, ifname: .ifname}' | jq -rc
+    {"ifindex":34,"link_index":35,"ifname":"eth0"}
+    
+    # Sample output when multiple containers are running
+    [root@netlab1 ~]# ip -j addr show  | jq -cr '.[] | select (.link_index != null) | { ifindex: .ifindex, link_index: .link_index, ifname: .ifname}'
+    {"ifindex":7,"link_index":6,"ifname":"veth5aa7cf1"}
+    {"ifindex":9,"link_index":8,"ifname":"veth71c5ad5"}
+    {"ifindex":11,"link_index":10,"ifname":"veth01db782"}
+    {"ifindex":13,"link_index":12,"ifname":"vethfeaaec6"}
+    {"ifindex":17,"link_index":16,"ifname":"vethc231522"}
+    {"ifindex":19,"link_index":18,"ifname":"vetha8f5171"}
+
+    [root@netlab1 ~]# for container in $(docker ps -aq) ;do echo -n [ $container ]: ; docker exec -it $container bash -c 'ip -j addr show ' | jq -cr '.[] | select (.link_index != null) | { ifindex: .ifindex, link_index: .link_index, ifname: .ifname}' | jq -rc; done
+    [ ae20cefc3ba9 ]:{"ifindex":16,"link_index":17,"ifname":"eth0"}
+    [ e8824d71df2e ]:{"ifindex":12,"link_index":13,"ifname":"eth0"}
+    [ 89f74f998006 ]:{"ifindex":10,"link_index":11,"ifname":"eth0"}
+    [ 413112b311da ]:{"ifindex":8,"link_index":9,"ifname":"eth0"}
+    [ 70570098d8d0 ]:{"ifindex":6,"link_index":7,"ifname":"eth0"}
+    [ 28fe6d72a213 ]:{"ifindex":18,"link_index":19,"ifname":"eth0"}
+
+    So for     [ ae20cefc3ba9 ]:{"ifindex":16,"link_index":17,"ifname":"eth0"}, the link_index 17 indicates it's tied to
+    vethc231522. Reference - {"ifindex":17,"link_index":16,"ifname":"vethc231522"}
 
 </pre>		
 
-		</div>
+</div>
 <!-- container -->		
 
 
@@ -333,34 +384,6 @@ UTS         CLONE_NEWUTS      Hostname and NIS domain name
 </div>
 <!-- container -->		
 
-
-<!-- container -->		
-<div class="screen-one-item-container">
-	<h3>  SUBTITLE </h3>
-	<p> </p>
-	<p> </p>
-
-<pre>
-CODE BLOCK
-</pre>		
-
-</div>
-<!-- container -->		
-
-
-
-<!-- container -->		
-<div class="screen-one-item-container">
-	<h3>  SUBTITLE </h3>
-	<p> </p>
-	<p> </p>
-
-<pre>
-CODE BLOCK
-</pre>		
-
-</div>
-<!-- container -->		
 
 
 <!-- container -->		
