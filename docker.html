@@ -78,7 +78,7 @@
 				<div class="col-md-12">
 					<div class="screen-one-title">
 
-						<h2> Docker Internals - tips and techniques to troubleshoot issues.  </h2>
+						<h2> Docker Internals  </h2>
 					</div>
 				</div>
 			</div>
@@ -89,7 +89,7 @@
 <!-- container -->		
 		<div class="screen-one-item-container">
 							<h3>  Docker Namespaces (NSENTER) </h3>
-							<p> Identify different ways to identify the docker namespaces </p>
+							<p>  Managing namespaces for a docker container. </p>
 							<p> </p>
 
 <pre>
@@ -132,7 +132,111 @@ Container/HostName : 5f18edb5621a
     inet 172.17.0.2/16 brd 172.17.255.255 scope global eth0
        valid_lft forever preferred_lft forever
 
+# Refresher - man namespaces
 
+Linux provides the following namespaces:
+
+Namespace   Constant          Isolates
+Cgroup      CLONE_NEWCGROUP   Cgroup root directory
+IPC         CLONE_NEWIPC      System V IPC, POSIX message queues
+Network     CLONE_NEWNET      Network devices, stacks, ports, etc.
+Mount       CLONE_NEWNS       Mount points
+PID         CLONE_NEWPID      Process IDs
+User        CLONE_NEWUSER     User and group IDs
+UTS         CLONE_NEWUTS      Hostname and NIS domain name
+
+# How do we know what namespaces are associated for each of these types for the above container?
+
+[root@netlab1 ~]# lsns -p $(docker inspect netops | jq '.[].State.Pid')
+        NS TYPE   NPROCS   PID USER COMMAND
+4026531835 cgroup    153     1 root /usr/lib/systemd/systemd --switched-root --system --deserialize 18
+4026531837 user      153     1 root /usr/lib/systemd/systemd --switched-root --system --deserialize 18
+4026532415 mnt         4  6556 root /bin/bash /usr/bin/nginx-start.sh
+4026532416 uts         4  6556 root /bin/bash /usr/bin/nginx-start.sh
+4026532417 ipc         4  6556 root /bin/bash /usr/bin/nginx-start.sh
+4026532418 pid         4  6556 root /bin/bash /usr/bin/nginx-start.sh
+4026532420 net         4  6556 root /bin/bash /usr/bin/nginx-start.sh
+
+# How can we inspect each of these namespaces? * Using nsenter 
+
+    i) -n option to enter network namespace and show ip of the container.
+
+    [root@netlab1 ~]# nsenter -t $(docker inspect netops | jq '.[].State.Pid') -n ip addr show
+    1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+        link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+        inet 127.0.0.1/8 scope host lo
+        valid_lft forever preferred_lft forever
+    34: eth0@if35: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default
+        link/ether 02:42:ac:11:00:02 brd ff:ff:ff:ff:ff:ff link-netnsid 0
+        inet 172.17.0.2/16 brd 172.17.255.255 scope global eth0
+        valid_lft forever preferred_lft forever
+
+    ii) -u for UTC namespace
+
+        [root@netlab1 ~]# nsenter -t $(docker inspect netops | jq '.[].State.Pid') -u hostname
+        5f18edb5621a
+
+    iii) -p  for Process Namespace ( -r is to set the rool level directory)
+
+        nsenter -t $(docker inspect netops | jq '.[].State.Pid') -p -r top
+
+
+        How to identify a veth pair for the container?
+
+        Docker stores it’s network name spaces under /var/run/docker/netns but ip netns command looks for namespaces under /var/run/netns. In order to have ip netns scan and list the docker network namespace create a symlink.
+        
+        [root@netlab1 run]# cd /var/run
+        [root@netlab1 run]# ln -s /var/run/docker/netns netns
+        
+        [root@netlab1 run]# ip netns list
+        ac645516b0ce (id: 0)
+        
+        # How to identify which container is associated with this namespace?
+        
+        [root@netlab1 ~]# ip netns identify $(docker inspect netops | jq '.[].State.Pid')
+        ac645516b0ce
+        
+        This means the container with name netops is associated with the network NS : ac645516b0ce
+        
+        Another option is inspect the SandboxKey
+        
+        [root@netlab1 ~]# docker inspect netops | jq -r '.[].NetworkSettings.SandboxKey'
+        /var/run/docker/netns/ac645516b0ce
+        
+        # How to identify which veth ID is associated with teh container?
+        
+        [root@netlab1 ~]# ip link show
+        1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
+            link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+        2: enp1s0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+            link/ether 52:54:00:56:0b:aa brd ff:ff:ff:ff:ff:ff
+        3: docker0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP mode DEFAULT group default
+            link/ether 02:42:17:61:53:2b brd ff:ff:ff:ff:ff:ff
+        35: veth09a45c1@if34: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master docker0 state UP mode DEFAULT group default
+            link/ether 1a:bb:7b:b0:c1:ac brd ff:ff:ff:ff:ff:ff link-netns ac645516b0ce
+        
+        One way is by looking at the  link-netns shows the network namespace we identified earlier -  ac645516b0ce
+        
+        ID of the 35: veth09a45c1 pair is 35. While looking inside the container, 35 is associated with eth0@if35. This is one other option to map it..
+        
+        [root@5f18edb5621a /]# ip addr show
+        1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+            link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+            inet 127.0.0.1/8 scope host lo
+               valid_lft forever preferred_lft forever
+        34: eth0@if35: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default
+            link/ether 02:42:ac:11:00:02 brd ff:ff:ff:ff:ff:ff link-netnsid 0
+            inet 172.17.0.2/16 brd 172.17.255.255 scope global eth0
+               valid_lft forever preferred_lft forever
+        
+        
+        # Quick dirty script to map the VETH pairs (!Need to script for a real life scenario with numerous containers)
+
+        [root@netlab1 ~]# ip -j addr show  | jq -cr '.[] | select (.link_index != null) | { ifindex: .ifindex, link_index: .link_index, ifname: .ifname}'
+        {"ifindex":35,"link_index":34,"ifname":"veth09a45c1"}
+
+        [root@netlab1 ~]# docker exec -it $(docker ps -aq) bash -c 'ip -j addr show ' | jq -cr '.[] | select (.link_index != null) | { ifindex: .ifindex, link_index: .link_index, ifname: .ifname}' | jq -rc
+        {"ifindex":34,"link_index":35,"ifname":"eth0"}
 
 </pre>		
 
@@ -142,12 +246,88 @@ Container/HostName : 5f18edb5621a
 
 <!-- container -->		
 <div class="screen-one-item-container">
-	<h3>  SUBTITLE </h3>
+	<h3>  Docker containers + Linux CGROUPS </h3>
 	<p> </p>
 	<p> </p>
 
 <pre>
-CODE BLOCK
+
+
+    # Example of how to control resources with CGROUPS
+
+    [root@a3783e032188 /]# cat test.sh
+    #!/bin/sh
+
+    while [ 1 ]; do
+            echo "hello world"
+            sleep 60
+    done
+
+    [root@netlab1 a3783e0321885ef4c97b0132f2199774e503fded2270ec782f19a42f5432ca8e]# echo 10 > pids.max
+    
+
+    [root@a3783e032188 /]# sh test.sh &
+    [3] 118
+    [root@a3783e032188 /]# hello world
+    test.sh: fork: retry: Resource temporarily unavailable
+    test.sh: fork: retry: Resource temporarily unavailable
+
+    
+    [root@netlab1 a3783e0321885ef4c97b0132f2199774e503fded2270ec782f19a42f5432ca8e]# pwd
+    /sys/fs/cgroup/pids/docker/a3783e0321885ef4c97b0132f2199774e503fded2270ec782f19a42f5432ca8e
+
+    [root@netlab1 a3783e0321885ef4c97b0132f2199774e503fded2270ec782f19a42f5432ca8e]# cat pids.max
+    10
+    [root@netlab1 a3783e0321885ef4c97b0132f2199774e503fded2270ec782f19a42f5432ca8e]# cat pids.current
+    9
+
+    [206067.567038] cgroup: fork rejected by pids controller in /docker/a3783e0321885ef4c97b0132f2199774e503fded2270ec782f19a42f5432ca8e
+
+    # Identify the container using too much memory and re-adjust the allocation via CGROUP.
+
+    i) Spin a bunch of containers.
+
+    [root@netlab1 ~]# for i in `seq 1 5`; do docker run -p ${i}80:80 -p ${i}443:443 -d  --cpu-shares 256 --memory 100m --name netops-${i}  baburaj/netops; done
+    70570098d8d0e455703e04f0bb78386caea239e06a9d34d68fdd63b358aaa9d7
+    413112b311da20e57fb92cdd20cd8a4164ce1ed8ff27f55f56ea5e3e6db4f99f
+    89f74f99800613f8db06aa200c73a03b3d364936bafc0f3f8f4777762f040ce0
+    e8824d71df2eddc28f49aa22d583d644b08e70fe85706f5f5073d6e74e5c0fe1
+    ae20cefc3ba98142f1228166db927dc41874a0a1b2a2f2128e8bcf7de2a6b314
+
+    ii) Login to container and initiate stress on the memory.
+
+    [root@netlab1 ~]# docker exec -it netops-5  /bin/bash
+    [root@ae20cefc3ba9 /]# stress-ng -m 1
+    stress-ng: info:  [29] defaulting to a 86400 second (1 day, 0.00 secs) run per stressor
+    stress-ng: info:  [29] dispatching hogs: 1 vm
+
+    systemd-cgtop indicates 
+    Control Group                                            Tasks   %CPU   Memory  Input/s Output/s
+    /                                                          407   85.1     1.2G        -        -
+    /docker                                                     24   73.0   145.2M        -        -
+    /docker/ae20cefc3…7dc41874a0a1b2a2f2128e8bcf7de2a6b314       8   73.0    96.4M        -        -
+    /system.slice                                              265    1.6   753.3M        -        -
+    /system.slice/systemd-journald.service                       1    0.7    34.3M        -        -
+    ^C
+
+    [root@netlab1 ae20cefc3ba98142f1228166db927dc41874a0a1b2a2f2128e8bcf7de2a6b314]# cd /sys/fs/cgroup/memory/docker/ae20cefc3ba98142f1228166db927dc41874a0a1b2a2f2128e8bcf7de2a6b314
+
+    [root@netlab1 ae20cefc3ba98142f1228166db927dc41874a0a1b2a2f2128e8bcf7de2a6b314]# pwd
+    /sys/fs/cgroup/memory/docker/ae20cefc3ba98142f1228166db927dc41874a0a1b2a2f2128e8bcf7de2a6b314
+
+    [root@netlab1 ae20cefc3ba98142f1228166db927dc41874a0a1b2a2f2128e8bcf7de2a6b314]# echo 6291456 > memory.limit_in_bytes
+
+    [root@netlab1 ae20cefc3ba98142f1228166db927dc41874a0a1b2a2f2128e8bcf7de2a6b314]# cat memory.limit_in_bytes
+    6291456
+
+    # Run dmesg to see the Output
+    ...
+    [ 1387.130181] oom-kill:constraint=CONSTRAINT_MEMCG,nodemask=(null),cpuset=ae20cefc3ba98142f1228166db927dc41874a0a1b2a2f2128e8bcf7de2a6b314,mems_allowed=0,oom_memcg=/docker/ae20cefc3ba98142f1228166db927dc41874a0a1b2a2f2128e8bcf7de2a6b314,task_memcg=/docker/ae20cefc3ba98142f1228166db927dc41874a0a1b2a2f2128e8bcf7de2a6b314,task=stress-ng,pid=5076,uid=0
+    [ 1387.130189] Memory cgroup out of memory: Killed process 5076 (stress-ng) total-vm:60692kB, anon-rss:0kB, file-rss:0kB, shmem-rss:0kB, UID:0
+
+    [root@netlab1 ~]# docker exec -it netops-5  /bin/bash
+    Error response from daemon: Container ae20cefc3ba98142f1228166db927dc41874a0a1b2a2f2128e8bcf7de2a6b314 is not running
+
 </pre>		
 
 </div>
