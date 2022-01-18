@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>  
+	<meta charset="utf-8">
+	<title>ERRORS</title>
+ 
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<meta property="og:image" content="path/to/image.jpg">
+ 
+<!-- build:css -->
+<link rel="stylesheet" href="css/libs/bootstrap.min.css">
+<link rel="stylesheet" href="css/libs/font-awesome.min.css">
+<link rel="stylesheet" href="css/libs/animate.min.css">
+<link rel="stylesheet" href="css/libs/slick.css">
+<link rel="stylesheet" href="css/libs/magnific-popup.css">
+
+<link rel="stylesheet" href="css/main.css">
+<link rel="stylesheet" href="css/media.css">
+<!-- endbuild -->
+	<!-- Chrome, Firefox OS and Opera -->
+	<meta name="theme-color" content="#000">
+	<!-- Windows Phone -->
+	<meta name="msapplication-navbutton-color" content="#000">
+	<!-- iOS Safari -->
+	<meta name="apple-mobile-web-app-status-bar-style" content="#000">
+	<!-- <style>body { opacity:s 0; overflow-x: hidden; } html { background-color: #fff; }</style> -->
+</head>
+<body data-spy="scroll" data-target=".navbar" data-offset="50" class="loaded" link="blue">
+
+	
+<div class="site-content">
+	<!-- Naviigation -->
+	<div class="navbar-wrap">
+		<div class="navbar">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-12">
+						<nav class="navbar-menu">
+							<div class="navbar-header">
+								<button class="collapsed navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-example-js-navbar-scrollspy">
+									<span class="icon-bar"></span>
+									<span class="icon-bar"></span>
+									<span class="icon-bar"></span>
+								</button>
+							</div>
+							 
+							<div class="navbar-full">
+								<div class="collapse bs-example-js-navbar-scrollspy">
+									<ul class="nav navbar-nav">
+										<li style="display: none;"><a></a></li>
+										<li><a href="http://www.linkedin.com/in/baburajkallarakkal">About Me</a></li>
+										<li><a href="http://padmavyuha.blogspot.com/">Blog</a></li>
+										<li><a href="https://sourceforge.net/projects/oraclerman/">Projects</a></li>
+										<li><a href="https://hub.docker.com/u/baburaj/">Docker</a></li>
+										<li><a href="mailto:raj.anju@gmail.com">Contact Me</a></li>
+										<li>
+										</li>
+									</ul>
+							
+								</div>
+							</div>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Naviigation -->
+	
+
+<!-- Header -->
+	<div class="menu-sticky"></div>
+ 
+	<!-- Screen-one -->
+	<div class="screen-one">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="screen-one-title">
+
+						<h2> Errors + Resolutions   </h2>
+					</div>
+				</div>
+			</div>
+		</div>
+	 
+		<div class="container">
+ 
+<!-- container -->		
+		<div class="screen-one-item-container">
+							<h3> K8S/Docker Error: No space left on device on /overlay </h3>
+							<p> 
+                                Space ran out on the /overlay mount and steps taken to mitigate the error "failed to register layer: 
+                                Error processing tar file(exit status 1)" 
+                                
+                                Resolution    
+                                    a) Expand disk size using qemu-img (KVM Guest VM).
+                                    b) Resize partition using parted.
+                                    c) Resize PVM - Physical Volume.
+                                    d) Extend LVM. 
+                                    e) Resize XFS file system.
+                                
+                            </p>
+							<p> </p>
+
+<pre>
+
+    #Guest VM had a disk image of 11GB out of which 8GB was allocated as below which was in-sufficient!
+
+    [root@netlab8 ~]# lsblk
+    NAME        MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+    sr0          11:0    1 1024M  0 rom
+    vda         252:0    0   10G  0 disk
+    ├─vda1      252:1    0    1G  0 part /boot
+    └─vda2      252:2    0    9G  0 part
+    ├─cl-root 253:0    0    8G  0 lvm  /
+    └─cl-swap 253:1    0    1G  0 lvm
+    
+    #Original State
+
+    [root@netlab8 ~]# df -h /dev/mapper/cl-root
+    Filesystem           Size  Used Avail Use% Mounted on
+    /dev/mapper/cl-root  8.0G  6.6G  1.5G  82% /
+
+    [root@netlab8 ~]# lvremove /dev/cl/swap
+    Do you really want to remove active logical volume cl/swap? [y/n]: y
+      Logical volume "swap" successfully removed.
+    
+    [root@netlab8 ~]# lvs
+    LV   VG Attr       LSize Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
+    root cl -wi-ao---- 7.99g
+    swap cl -wi-a----- 1.00g
+
+    #Shutdown VM and resize image
+    [root@panchajanya sdd03]# qemu-img resize netlab7.img +5G
+    WARNING: Image format was not specified for 'netlab7.img' and probing guessed raw.
+         Automatically detecting the format is dangerous for raw images, write operations on block 0 will be restricted.
+         Specify the 'raw' format explicitly to remove the restrictions.
+    Image resized.
+
+    [root@panchajanya sdd03]# ls -lhr
+    total 31G
+    -rw------- 1 root root 16G Jan 17 19:43 netlab8.img
+    -rw------- 1 root root 16G Jan 17 19:43 netlab7.img
+    -rw------- 1 qemu qemu 16G Jan 17 19:43 netlab6.img
+
+    # Start the VM and resize the partition within
+
+    [root@netlab8 ~]# parted /dev/vda
+    GNU Parted 3.2
+    Using /dev/vda
+    Welcome to GNU Parted! Type 'help' to view a list of commands.
+    (parted) p
+    Model: Virtio Block Device (virtblk)
+    Disk /dev/vda: 16.1GB
+    Sector size (logical/physical): 512B/512B
+    Partition Table: msdos
+    Disk Flags:
+
+    Number  Start   End     Size    Type     File system  Flags
+    1      1049kB  1075MB  1074MB  primary  ext4         boot
+    2      1075MB  10.7GB  9663MB  primary               lvm
+
+    (parted) resizepart 2 100%
+    (parted) p
+    Model: Virtio Block Device (virtblk)
+    Disk /dev/vda: 16.1GB
+    Sector size (logical/physical): 512B/512B
+    Partition Table: msdos
+    Disk Flags:
+
+    Number  Start   End     Size    Type     File system  Flags
+    1      1049kB  1075MB  1074MB  primary  ext4         boot
+    2      1075MB  16.1GB  15.0GB  primary               lvm
+
+
+    # Resize the PVM
+   
+    [root@netlab8 ~]# pvresize /dev/vda2
+    Physical volume "/dev/vda2" changed
+    1 physical volume(s) resized or updated / 0 physical volume(s) not resized
+
+    # Extend the lvm
+
+    [root@netlab8 ~]# lvextend -l +100%FREE /dev/cl/root
+    Size of logical volume cl/root changed from <9.00 GiB (2303 extents) to <14.00 GiB (3583 extents).
+    Logical volume cl/root successfully resized.
+
+    [root@netlab8 ~]# lvs
+    LV   VG Attr       LSize   Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
+    root cl -wi-ao---- <14.00g
+
+    # Resize the XFS file system.
+
+    [root@netlab8 ~]# xfs_growfs /dev/cl/root
+    meta-data=/dev/mapper/cl-root    isize=512    agcount=5, agsize=523776 blks
+        =                       sectsz=512   attr=2, projid32bit=1
+        =                       crc=1        finobt=1, sparse=1, rmapbt=0
+        =                       reflink=1
+    data     =                       bsize=4096   blocks=2358272, imaxpct=25
+        =                       sunit=0      swidth=0 blks
+    naming   =version 2              bsize=4096   ascii-ci=0, ftype=1
+    log      =internal log           bsize=4096   blocks=2560, version=2
+        =                       sectsz=512   sunit=0 blks, lazy-count=1
+    realtime =none                   extsz=4096   blocks=0, rtextents=0
+    data blocks changed from 2358272 to 3668992
+
+    [root@netlab8 ~]# lsblk
+    NAME        MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+    sr0          11:0    1 1024M  0 rom
+    vda         252:0    0   15G  0 disk
+    ├─vda1      252:1    0    1G  0 part /boot
+    └─vda2      252:2    0   14G  0 part
+    └─cl-root 253:0    0   14G  0 lvm  /
+    
+</pre>		
+
+		</div>
+<!-- container -->		
+
+
+<!-- container -->		
+<div class="screen-one-item-container">
+	<h3>  SUBTITLE </h3>
+	<p> </p>
+	<p> </p>
+
+<pre>
+CODE BLOCK
+</pre>		
+
+</div>
+<!-- container -->		
+
+
+<!-- container -->		
+<div class="screen-one-item-container">
+	<h3>  SUBTITLE </h3>
+	<p> </p>
+	<p> </p>
+
+<pre>
+CODE BLOCK
+</pre>		
+
+</div>
+<!-- container -->		
+
+
+
+<!-- container -->		
+<div class="screen-one-item-container">
+	<h3>  SUBTITLE </h3>
+	<p> </p>
+	<p> </p>
+
+<pre>
+CODE BLOCK
+</pre>		
+
+</div>
+<!-- container -->		
+
+
+<!-- container -->		
+<div class="screen-one-item-container">
+	<h3>  SUBTITLE </h3>
+	<p> </p>
+	<p> </p>
+
+<pre>
+CODE BLOCK
+</pre>		
+
+</div>
+<!-- container -->		
+
+
+
+
+	
+
+</body>
+</html>
