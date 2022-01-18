@@ -221,12 +221,67 @@
 
 <!-- container -->		
 <div class="screen-one-item-container">
-	<h3>  SUBTITLE </h3>
-	<p> </p>
+	<h3>  K8S - Kubelet error. </h3>
+	<p> Docker using CGROUPFS error resulting in the error. This required the docker startup options to be edited
+        to change from cgroupfs to systemd. systemctl status kubelet followed by jouralctl -xe would indicate the following error
+        "Failed to run kubelet" err="failed to run Kubelet: misconfiguration: kubelet cgroup driver: \"systemd\" is 
+        different from docker cgroup driver: \"cgroupfs\""
+
+
+    </p>
 	<p> </p>
 
 <pre>
-CODE BLOCK
+
+    [root@netlab6 ~]# systemctl status kubelet
+    ● kubelet.service - kubelet: The Kubernetes Node Agent
+    Loaded: loaded (/usr/lib/systemd/system/kubelet.service; enabled; vendor preset: disabled)
+    Drop-In: /usr/lib/systemd/system/kubelet.service.d
+            └─10-kubeadm.conf
+    Active: activating (auto-restart) (Result: exit-code) since Fri 2022-01-14 09:43:16 CST; 976ms ago
+        Docs: https://kubernetes.io/docs/
+    Process: 442917 ExecStart=/usr/bin/kubelet $KUBELET_KUBECONFIG_ARGS $KUBELET_CONFIG_ARGS $KUBELET_KUBEADM_ARGS $KUBELET_EXTRA_ARGS (cod>
+    Main PID: 442917 (code=exited, status=1/FAILURE)
+    ...skipping...
+    ● kubelet.service - kubelet: The Kubernetes Node Agent
+    Loaded: loaded (/usr/lib/systemd/system/kubelet.service; enabled; vendor preset: disabled)
+    Drop-In: /usr/lib/systemd/system/kubelet.service.d
+            └─10-kubeadm.conf
+    Active: activating (auto-restart) (Result: exit-code) since Fri 2022-01-14 09:43:16 CST; 976ms ago
+        Docs: https://kubernetes.io/docs/
+    Process: 442917 ExecStart=/usr/bin/kubelet $KUBELET_KUBECONFIG_ARGS $KUBELET_CONFIG_ARGS $KUBELET_KUBEADM_ARGS $KUBELET_EXTRA_ARGS (cod>
+    Main PID: 442917 (code=exited, status=1/FAILURE)
+
+    [root@netlab6 ~]# journalctl -xn --no-pager
+
+    g52b36a2} InitCommit:{ID:de40ad0 Expected:de40ad0} SecurityOptions:[name=seccomp,profile=default] ProductLicense: DefaultAddressPools:[] Warnings:[]}
+    Jan 13 21:51:16 netlab6 kubelet[129598]: E0113 21:51:16.944789  129598 server.go:302] "Failed to run kubelet" err="failed to run Kubelet: misconfiguration: kubelet cgroup driver: \"systemd\" is different from docker cgroup driver: \"cgroupfs\""
+    Jan 13 21:51:16 netlab6 systemd[1]: kubelet.service: Main process exited, code=exited, status=1/FAILURE
+    Jan 13 21:51:16 netlab6 systemd[1]: kubelet.service: Failed with result 'exit-code'.
+    -- Subject: Unit failed
+    -- Defined-By: systemd
+
+    #Resolution 
+
+    a) Update docker.service to include - --exec-opt native.cgroupdriver=systemd
+    ExecReload=/bin/kill -s HUP $MAINPID
+
+    b) Reload daemon, followed by docker and kubelet service restarts.
+
+    [root@netlab7 ~]# cd /etc/
+    [root@netlab7 etc]# grep Exec ./systemd/system/multi-user.target.wants/docker.service
+    ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock  --exec-opt native.cgroupdriver=systemd
+    ExecReload=/bin/kill -s HUP $MAINPID
+
+    systemctl daemon-reload
+    systemctl restart docker
+    systemct restart kubelet
+
+    [root@netlab7 etc]# docker info |grep Cg
+    Cgroup Driver: systemd
+    Cgroup Version: 1
+
+
 </pre>		
 
 </div>
@@ -235,12 +290,36 @@ CODE BLOCK
 
 <!-- container -->		
 <div class="screen-one-item-container">
-	<h3>  SUBTITLE </h3>
-	<p> </p>
+	<h3>  Dracut boot error due to swap volume. </h3>
+	<p> Swap was turned off and volume deleted prior to the installation of the kubernetes as part of pre-reqs but upon
+        reboot host failed to come up. 
+        
+        Console logs indicated dracut error indicating that it cannot find the cl/swap volume which was already deleted.
+
+        Resolution steps:
+
+        a) Login via virsh Console and type exit
+        b) edit /etc/default/grup and remove references of all swap volumnes from GRUB_CMDLINE_LINUX
+        c) Regenerate the grub config 
+        d) Reboot
+    </p>
 	<p> </p>
 
 <pre>
-CODE BLOCK
+
+    [root@netlab6 ~]# vi /etc/default/grub
+
+    [root@netlab6 ~]# grep CMD /etc/default/grub
+    GRUB_CMDLINE_LINUX="crashkernel=auto rd.lvm.lv=cl/root rhgb quiet"
+
+    [root@netlab6 ~]# grub2-mkconfig -o /boot/grub2/grub.cfg
+    Generating grub configuration file ...
+    done
+
+    #Optional
+    dracut --force --regenerate-all
+
+
 </pre>		
 
 </div>
