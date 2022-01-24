@@ -65,6 +65,32 @@ systemd:
 Python
 ----------------
 
+#LEADING UNDERSCORE_ ( To avoid conflicts with Python Keywords)
+
+class_, def_ are variables that can be defined with leading underscores
+
+
+#_TRAILING UNDERSCORE ( Private Variables )
+
+class Test:
+
+    def _private_function():
+        pass
+
+Even if the class Test is imported in another class, the _private_function will not be visible since it's
+scoped within the "Test" being private with a leading _underscore.
+
+Although if this function is defined in __all__ , it will be visble and hence it's called "Weak Private"
+
+
+#LEADING DOUBLE UNDERSCORES__ (MANGLING)
+
+Leading double underscore tell python interpreter to rewrite name in order to avoid conflict in subclass
+
+#__UNDERSCORES_TRAILING_AND_LEADING__
+
+ Python provide this methods to use it as the operator overloading depending
+
 #List Comprehension 
 
 i)   list = [ "value" if condition else "value" for item in list ] 
@@ -117,7 +143,8 @@ iii) list = [ expression for member in iterable ]
 >>> filename='/tmp/data.json'
 >>> with open(filename,'r') as fileptr:
 ...     data=json.load(fileptr)
-
+>>> print(data[0].get('Id'))
+aeaf9e38be570b2575960ce66ad057f1bf44aa83d56f1a0869fc7c0d276b7951
 
 #MAP - map (function,list_of_inputs)
 
@@ -146,34 +173,129 @@ Ignore a value during unpacking
 >>> x
 1
 
-#LEADING UNDERSCORE_ ( To avoid conflicts with Python Keywords)
+>>> pyjq.first('.[] | { id: .Id} ',data)
+{'id': 'aeaf9e38be570b2575960ce66ad057f1bf44aa83d56f1a0869fc7c0d276b7951'}
 
-class_, def_ are variables that can be defined with leading underscores
-
-
-#_TRAILING UNDERSCORE ( Private Variables )
-
-class Test:
-
-    def _private_function():
-        pass
-
-Even if the class Test is imported in another class, the _private_function will not be visible since it's
-scoped within the "Test" being private with a leading _underscore.
-
-Although if this function is defined in __all__ , it will be visble and hence it's called "Weak Private"
-
-
-#LEADING DOUBLE UNDERSCORES__ (MANGLING)
-
-Leading double underscore tell python interpreter to rewrite name in order to avoid conflict in subclass
-
-#__UNDERSCORES_TRAILING_AND_LEADING__
-
- Python provide this methods to use it as the operator overloading depending
-
-
-
-REFEENCES
+#REFEENCES
 
 1. https://stackoverflow.com/questions/7948494/whats-the-difference-between-a-python-module-and-a-python-package
+
+#OPTIMISTIC CONCURRENCY CONTROL
+
+About optimistic concurrency control
+Optimistic concurrency control (sometimes referred to as optimistic locking) is a
+method where instead of locking a piece of data and preventing it from being read or
+updated while the lock is in place, the piece of data includes a version number. Every
+time the data is updated, the version number increases. When updating the data, the
+version number is checked to see if it has increased between the time the client read
+the data and the time it submits the update. If this happens, the update is rejected
+and the client must re-read the new data and try to update it again.
+The result is that when two clients try to update the same data entry, only the first
+one succeeds.
+All Kubernetes resources include a metadata.resourceVersion field, which clients
+need to pass back to the API server when updating an object. If the version doesn’t
+match the one stored in etcd, the API server rejects the update.
+
+
+#CAP THEOREM
+
+CAP Theorem (CAP = You can have only two of these three - if DB is configured as Consistent, Available then it’s not Partition Tolerant ).
+
+1. Consistent => All the nodes see same data at same time, reader always get’s When you read something
+   that’s the most recent thing that I’ve written
+2. Available => Every request will receive a response whether data is correct or wrong.
+3. Partition Tolerance = Sometimes parts of the systems cannot to talk to each other but everything
+   function as normal.
+
+Strongly Consistent : 
+
+R + W > N. ( R=1, W=1 and N of Replicas=3 that’s eventual consistent , R=2,W=2 and N=3 that’s strongly consistent )
+
+REDIS - In memory K,V Store . Often used to implement rate-limiting.
+ETCD - Strongly Consistent and Highly Available 
+Zookeeper - Strongly Consistent and Highly Available.
+
+#ACID 
+Atomicity - Operations that constitute a transaction will all fail or all succeed.
+Consistency - 	No stale state. Anything I wrote is what I will get if I do read
+Isolation - Execution of multiple transactions concurrently will have same effect as if they had been executed sequentially.
+Durability - Data stored is durable -, any committed transaction will be written to non-volatile storage.
+
+#STORAGE
+Blob - S3, GCS
+TSDB - Prometheus, Graphite, InfluxDB
+Graph - Uses graph data model - uses graph structure to efficiently perform complex queries. (Eg Social Networks)
+Spatial Database - 	Type of DB to store spatial information. Find all locations in the vicinity of a region
+
+#ETCDv3 - CP (Consistent, Partition Tolerant)
+
+1. Introduced transactions 
+2. Replaced TTL’s with Lease 
+    1. TTL - Leader election happens but if it doesn’t go through the TTL expires and key expires as well
+    2. Lease - The key is renewed if new leader is elected..
+3. Streaming - High Efficiency and enables cross data center replications. Gives a full view of entire thing happenin
+
+V2 is used for machine/co-ordination - O(10K) vs V3 is used for app/containerization - O(1M)
+ 
+#CONTAINERS
+
+All the containers in a pod also see the same system hostname, because they share the UTS
+namespace, and can communicate through the usual IPC mechanisms because they share the IPC
+namespace. A pod can also be configured to use a single PID namespace for all its containers,
+which makes them share a single process tree, but you must explicitly enable this for each pod
+individually.
+
+#CRASHLOOP BACKOFF
+
+The first time a container terminates, it is restarted immediately. The next time, however, Kubernetes 
+waits ten seconds before restarting it again. This delay is then doubled to 20, 40, 80 and then to 160 
+seconds after each subsequent termination. From then on, the delay is kept at five minutes. 
+This delay that doubles between attempts is called exponential back-off.
+
+
+NOTE Exit code 128+n indicates that the process exited due to external signal n. Exit code 137 is 128+9, where 9
+represents the KILL signal. You’ll see this exit code whenever the container is killed. Exit code 143 is 128+15,
+where 15 is the TERM signal. You’ll typically see this exit code when the container runs a shell that has terminated
+gracefully.
+
+#TRAP COMMAND
+
+The "SIGINT" signal is perhaps the only one that might be of interest in a script. 
+SIGINT is generated when you type Ctrl-C at the keyboard to interrupt a running script. 
+If you don't want your script to be stopped like this, you can trap the signal 
+
+[root@netlab6 pyscripts]# cat test.sh
+#!/bin/sh
+
+trap ctrl_c SIGINT
+
+function ctrl_c(){
+	echo "Trapped CTRL+C"
+	rm /tmp/afile
+	exit
+}
+while true; do
+	touch /tmp/afile
+	ls -l /tmp/afile
+done
+
+#READ KERNEL RING BUFFER MESSAGES
+
+dmesg -Hx --color
+
+#CHECK LISTENING PORTS (Options)
+
+lsof -l -iTCP:2379
+ss -ltn '( sport = 2379 )'
+ss -t4 state time-wait
+
+#NAT - Simple example
+
+ip route add nat 192.203.80.192/26 via 193.233.7.64
+
+This command will map a block of 63 addresses 192.203.80.192-255 to 193.233.7.64-127.
+
+When an internal host (193.233.7.83 in the example above) sends something to
+the outer world and these packets are forwarded by our router, it should translate
+the source address 193.233.7.83 into 192.203.80.144. This task is solved by setting a
+special policy rule (sec.8.1, p.37):

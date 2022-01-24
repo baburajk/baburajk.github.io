@@ -1,0 +1,225 @@
+
+
+K8s on CENTOS ( Refer medium draft notes )
+
+
+https://upcloud.com/community/tutorials/install-kubernetes-cluster-centos-8/
+
+
+
+
+SERVER MINIMAL
+
+dnf groupremove 'X Window System' 'GNOME' -y
+systemctl set-default multi-user.target
+dnf groupremove "Graphical Administration Tools" --skip-broken --nobest -y
+dnf grouplist
+
+yum groupinfo "Minimal Install" > /tmp/miniman-packages.out
+yum groupinfo "Core" > /tmp/core-packages.out
+
+
+INSTALL DOCKER & K8S REPOS ( Common )
+
+#dnf upgrade -y
+yum remove -y docker docker-client docker-client-latest docker-common docker-latest docker-latest-logrotate docker-logrotate docker-engine
+dnf config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo
+dnf list docker-ce
+dnf install docker-ce --nobest --allowerasing -y
+systemctl enable --now docker
+usermod -aG docker root
+docker run hello-world
+curl -L "https://github.com/docker/compose/releases/download/1.25.0/docker-compose-Linux-x86_64" -o /usr/local/bin/docker-compose
+chmod +x /usr/local/bin/docker-compose
+
+
+
+ # UPdate hosts based on the VM’s..content will be different. 
+cat <<EOF>> /etc/hosts
+192.168.122.60 rhel8p master-node
+192.168.122.70 rhel8q node1 worker-node-1
+192.168.122.80 rhel8r node2 worker-node-2
+EOF
+
+
+getenforce
+setenforce 0
+sed -i --follow-symlinks 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/sysconfig/selinux
+sed -i 's/SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config ; grep -w ^SELINUX /etc/selinux/config
+
+
+swapoff -a
+edit /etc/fstab
+
+
+dnf upgrade -y
+dnf install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
+systemctl enable kubelet
+systemctl start kubelet
+
+
+modprobe br_netfilter
+
+
+cat <<EOF | sudo tee /etc/modules-load.d/k8s.conf
+br_netfilter
+EOF
+
+cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+EOF
+
+ 
+systemctl reboot
+
+ 
+cat <<EOF > /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-\$basearch
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+exclude=kubelet kubeadm kubectl
+EOF
+
+dnf -y module disable container-tools
+dnf upgrade -y
+
+
+dnf install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
+systemctl enable kubelet
+systemctl start kubelet
+
+
+MASTER NODE ONLY
+
+firewall-cmd --permanent --add-port=6443/tcp
+firewall-cmd --permanent --add-port=2379-2380/tcp
+firewall-cmd --permanent --add-port=10250/tcp
+firewall-cmd --permanent --add-port=10251/tcp
+firewall-cmd --permanent --add-port=10252/tcp
+firewall-cmd --permanent --add-port=10255/tcp
+firewall-cmd --add-masquerade --permanent
+firewall-cmd --reload
+
+  
+
+
+kubeadm config images pull
+firewall-cmd --zone=public --permanent --add-port={6443,2379,2380,10250,10251,10252}/tcp
+
+firewall-cmd --zone=public --permanent --add-rich-rule 'rule family=ipv4 source address=192.168.122.70/32 accept'
+firewall-cmd --zone=public --permanent --add-rich-rule 'rule family=ipv4 source address=192.168.122.80/32 accept'
+firewall-cmd --zone=public --permanent --add-rich-rule 'rule family=ipv4 source address=172.17.0.0/16 accept'
+firewall-cmd --reload
+
+kubeadm init --pod-network-cidr 192.168.0.0/16
+
+Refer ERROR-1 (Resolution)
+
+
+kubeadm reset and run kubeadm init command again
+
+[root@netlab6 etc]# kubeadm init --pod-network-cidr 192.168.0.0/16
+
+[init] Using Kubernetes version: v1.23.1
+[preflight] Running pre-flight checks
+	[WARNING Firewalld]: firewalld is active, please ensure ports [6443 10250] are open or your cluster may not function correctly
+	[WARNING FileExisting-tc]: tc not found in system path
+..
+..
+…
+
+kubeadm join 192.168.122.6:6443 --token oneqgq.xw2q1d0dkkoxbktr \
+	--discovery-token-ca-cert-hash sha256:b5b0d0477b53e97b9950496c023389fe969ab135cff063cfe5c21e1b13a4522d
+
+
+export KUBECONFIG=/etc/kubernetes/admin.conf
+
+
+kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+
+[root@netlab6 etc]# kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+configmap/calico-config created
+customresourcedefinition.apiextensions.k8s.io/bgpconfigurations.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/bgppeers.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/blockaffinities.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/caliconodestatuses.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/clusterinformations.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/felixconfigurations.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/globalnetworkpolicies.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/globalnetworksets.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/hostendpoints.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/ipamblocks.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/ipamconfigs.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/ipamhandles.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/ippools.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/ipreservations.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/kubecontrollersconfigurations.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/networkpolicies.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/networksets.crd.projectcalico.org created
+clusterrole.rbac.authorization.k8s.io/calico-kube-controllers created
+clusterrolebinding.rbac.authorization.k8s.io/calico-kube-controllers created
+clusterrole.rbac.authorization.k8s.io/calico-node created
+clusterrolebinding.rbac.authorization.k8s.io/calico-node created
+daemonset.apps/calico-node created
+serviceaccount/calico-node created
+deployment.apps/calico-kube-controllers created
+serviceaccount/calico-kube-controllers created
+Warning: policy/v1beta1 PodDisruptionBudget is deprecated in v1.21+, unavailable in v1.25+; use policy/v1 PodDisruptionBudget
+poddisruptionbudget.policy/calico-kube-controllers created
+[root@netlab6 etc]#
+
+(Non-Production Systems): Enable Master node also to run the PODS
+kubectl taint nodes --all node-role.kubernetes.io/master-
+
+ [root@netlab6 etc]# kubectl get nodes
+NAME      STATUS   ROLES                  AGE   VERSION
+netlab6   Ready    control-plane,master   18m   v1.23.1
+
+WORKER NODES
+
+firewall-cmd --zone=public --permanent --add-port={10250,30000-32767}/tcp
+firewall-cmd --reload
+
+
+
+kubeadm join 192.168.122.6:6443 --token oneqgq.xw2q1d0dkkoxbktr \
+	--discovery-token-ca-cert-hash sha256:b5b0d0477b53e97b9950496c023389fe969ab135cff063cfe5c21e1b13a4522d
+
+
+[root@netlab6 etc]# kubectl get nodes
+NAME      STATUS   ROLES                  AGE   VERSION
+netlab6   Ready    control-plane,master   32m   v1.23.1
+netlab7   Ready    <none>                 58s   v1.23.1
+[root@netlab6 etc]#  kubectl label nodes netlab7 kubernetes.io/role=worker-node-1
+node/netlab7 labeled
+[root@netlab6 etc]# kubectl get nodes
+NAME      STATUS   ROLES                  AGE   VERSION
+netlab6   Ready    control-plane,master   32m   v1.23.1
+netlab7   Ready    worker-node-1          91s   v1.23.1
+
+
+ kubectl label nodes netlab8 kubernetes.io/role=worker-node-2
+
+[root@netlab6 etc]# kubectl get nodes
+NAME      STATUS     ROLES                  AGE    VERSION
+netlab6   Ready      control-plane,master   33m    v1.23.1
+netlab7   Ready      worker-node-1          2m1s   v1.23.1
+netlab8   NotReady   <none>                 5s     v1.23.1
+
+[root@netlab6 etc]#  kubectl label nodes netlab8 kubernetes.io/role=worker-node-2
+node/netlab8 labeled
+
+[root@netlab6 etc]# kubectl get nodes
+NAME      STATUS     ROLES                  AGE     VERSION
+netlab6   Ready      control-plane,master   33m     v1.23.1
+netlab7   Ready      worker-node-1          2m13s   v1.23.1
+netlab8   NotReady   worker-node-2          17s     v1.23.1
+
+
+
+
