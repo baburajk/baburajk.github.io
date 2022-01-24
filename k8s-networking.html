@@ -234,6 +234,142 @@
 </div>
 <!-- container -->		
  
+
+<!-- container -->		
+<div class="screen-one-item-container">
+	<h3>  Calico - Networking (Details of POD/Interfaces) </h3>
+	<p> </p>
+	<p> </p>
+
+<pre>
+    [root@netlab6 ~]# kubectl -n demo create deployment netops-a --image=baburaj/netops
+    deployment.apps/netops-a created
+    [root@netlab6 ~]# kubectl -n demo create deployment netops-b --image=baburaj/netops
+    deployment.apps/netops-b created
+    [root@netlab6 ~]# kubectl -n demo scale deployment.apps/netops-a --replicas=2
+    deployment.apps/netops-a scaled
+    [root@netlab6 ~]# kubectl -n demo scale deployment.apps/netops-b --replicas=2
+    deployment.apps/netops-b scaled
+
+    Reference Notes*
+    kubeadm init --pod-network-cidr 192.168.0.0/16
+
+    [root@netlab6 ~]# calicoctl get wep --allow-version-mismatch -n demo -o wide
+    NAMESPACE   NAME                                            WORKLOAD                    NODE      NETWORKS            INTERFACE         PROFILES                    NATS
+    demo        netlab7-k8s-netops--a--9f477c8df--22zjj-eth0    netops-a-9f477c8df-22zjj    netlab7   192.168.197.69/32   calibefa1121658   kns.demo,ksa.demo.default
+    demo        netlab8-k8s-netops--a--9f477c8df--hnj9v-eth0    netops-a-9f477c8df-hnj9v    netlab8   192.168.191.68/32   cali15d36023299   kns.demo,ksa.demo.default
+    demo        netlab8-k8s-netops--b--78475694bb--nvf6s-eth0   netops-b-78475694bb-nvf6s   netlab8   192.168.191.69/32   cali3cd86690e6f   kns.demo,ksa.demo.default
+    demo        netlab7-k8s-netops--b--78475694bb--xbl7m-eth0   netops-b-78475694bb-xbl7m   netlab7   192.168.197.68/32   cali6e6629da0f5   kns.demo,ksa.demo.default    
+
+    [root@netlab7 run]# ip route show
+    default via 192.168.122.1 dev enp1s0 proto dhcp metric 100
+    172.17.0.0/16 dev docker0 proto kernel scope link src 172.17.0.1 linkdown
+    192.168.122.0/24 dev enp1s0 proto kernel scope link src 192.168.122.7 metric 100
+    192.168.158.0/26 via 192.168.122.6 dev tunl0 proto bird onlink
+    blackhole 192.168.197.64/26 proto bird
+    192.168.197.68 dev cali6e6629da0f5 scope link
+    192.168.197.69 dev calibefa1121658 scope link
+
+    [root@netlab7 run]# ip addr show
+    1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+        link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+        inet 127.0.0.1/8 scope host lo
+        valid_lft forever preferred_lft forever
+        inet6 ::1/128 scope host
+        valid_lft forever preferred_lft forever
+    2: enp1s0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+        link/ether 52:54:00:70:00:00 brd ff:ff:ff:ff:ff:ff
+        inet 192.168.122.7/24 brd 192.168.122.255 scope global dynamic noprefixroute enp1s0
+        valid_lft 3315sec preferred_lft 3315sec
+        inet6 2001:db8:ca2:2:1::7a/128 scope global dynamic noprefixroute
+        valid_lft 3140sec preferred_lft 3140sec
+        inet6 fe80::5fda:323d:d2d6:6bfe/64 scope link noprefixroute
+        valid_lft forever preferred_lft forever
+    3: docker0: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc noqueue state DOWN group default
+        link/ether 02:42:b0:de:42:69 brd ff:ff:ff:ff:ff:ff
+        inet 172.17.0.1/16 brd 172.17.255.255 scope global docker0
+        valid_lft forever preferred_lft forever
+    4: tunl0@NONE: <NOARP,UP,LOWER_UP> mtu 1480 qdisc noqueue state UNKNOWN group default qlen 1000
+        link/ipip 0.0.0.0 brd 0.0.0.0
+        inet 192.168.197.64/32 scope global tunl0
+        valid_lft forever preferred_lft forever
+    10: cali6e6629da0f5@if4: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1480 qdisc noqueue state UP group default
+        link/ether ee:ee:ee:ee:ee:ee brd ff:ff:ff:ff:ff:ff link-netns aae2b88920f5
+        inet6 fe80::ecee:eeff:feee:eeee/64 scope link
+        valid_lft forever preferred_lft forever
+    11: calibefa1121658@if4: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1480 qdisc noqueue state UP group default
+        link/ether ee:ee:ee:ee:ee:ee brd ff:ff:ff:ff:ff:ff link-netns aadfc8999004
+        inet6 fe80::ecee:eeff:feee:eeee/64 scope link
+        valid_lft forever preferred_lft forever
+
+    Note:
+    Seems tunl0 is a IP-IP tunnel but the route has a blackhole to this route.
+
+
+</pre>		
+
+</div>
+<!-- container -->		
+
+
+<!-- container -->		
+<div class="screen-one-item-container">
+	<h3>  NAT/Routing from K8S VMs/Hosts </h3>
+	<p>  Why is dst=10.0.1.11 in conntrack output  when a ping originated from 192.168.122.6 ?  </p>
+	<p> </p>
+
+<pre>
+
+    [root@panchajanya ~]# virsh domifaddr netlab6 |grep vnet
+    vnet0      52:54:00:60:00:00    ipv4         192.168.122.6/24
+    
+    [root@netlab6 ~]# ping -c1 baburaj.github.io
+    PING baburaj.github.io (185.199.110.153) 56(84) bytes of data.
+    64 bytes from cdn-185-199-110-153.github.com (185.199.110.153): icmp_seq=1 ttl=51 time=28.4 ms
+
+    --- baburaj.github.io ping statistics ---
+    1 packets transmitted, 1 received, 0% packet loss, time 0ms
+    rtt min/avg/max/mdev = 28.377/28.377/28.377/0.000 ms
+    
+    [root@panchajanya ~]# conntrack -L  -j
+    icmp     1 25 src=192.168.122.6 dst=185.199.110.153 type=8 code=0 id=61885 src=185.199.110.153 dst=10.0.1.11 type=0 code=0 id=61885 mark=0 use=1
+    conntrack v1.4.4 (conntrack-tools): 1 flow entries have been shown.
+
+    [root@panchajanya ~]# ip route show
+    default via 10.0.1.1 dev enp7s0 proto static metric 100
+    default via 192.168.2.1 dev enp8s0 proto static metric 101
+    10.0.1.0/24 dev enp7s0 proto kernel scope link src 10.0.1.11 metric 100
+    192.168.2.0/24 dev enp8s0 proto kernel scope link src 192.168.2.11 metric 101
+    192.168.3.0/24 via 192.168.2.1 dev enp8s0 proto static metric 101
+    192.168.122.0/24 dev virbr0 proto kernel scope link src 192.168.122.1
+
+    There is a MASQUERADE rule for 192.168.122.0/24 and so the NAT'ing should 
+    happen for the outgoing interface. Per routing table the first default route is
+    via 10.0.1.1 ! So this must be the reason why the conntrack is showing dst=10.0.1.1
+    
+
+    [root@panchajanya ~]# iptables -t nat -L -n
+    Chain PREROUTING (policy ACCEPT)
+    target     prot opt source               destination
+
+    Chain INPUT (policy ACCEPT)
+    target     prot opt source               destination
+
+    Chain POSTROUTING (policy ACCEPT)
+    target     prot opt source               destination
+    RETURN     all  --  192.168.122.0/24     224.0.0.0/24
+    RETURN     all  --  192.168.122.0/24     255.255.255.255
+    MASQUERADE  tcp  --  192.168.122.0/24    !192.168.122.0/24     masq ports: 1024-65535
+    MASQUERADE  udp  --  192.168.122.0/24    !192.168.122.0/24     masq ports: 1024-65535
+    MASQUERADE  all  --  192.168.122.0/24    !192.168.122.0/24
+
+    Chain OUTPUT (policy ACCEPT)
+    target     prot opt source               destination
+
+</pre>		
+
+</div>
+<!-- container -->		
 	
 
 </body>

@@ -1,0 +1,179 @@
+*Notes compiled from external references like stackoverflow and other sites/books for quick reference *
+
+
+LINUX 
+--------------
+The difference between VIRT, RES and SHR:
+
+VIRT stands for the virtual size of a process, which is the sum of memory it is actually using, 
+memory it has mapped into itself (for instance the video card's RAM for the X server), 
+files on disk that have been mapped into it (most notably shared libraries), and memory 
+shared with other processes. VIRT represents how much memory the program is able to access at the present moment.
+
+RES stands for the resident size, which is an accurate representation of how much actual physical memory 
+a process is consuming. (This also corresponds directly to the %MEM column)
+
+SHR indicates how much of the VIRT size is actually sharable memory or libraries. 
+In the case of libraries, it does not necessarily mean that the entire library is resident. 
+For example, if a program only uses a few functions in a library, the whole library is mapped and
+ will be counted in VIRT and SHR, but only the parts of the library file containing the functions 
+ being used will actually be loaded in and be counted under RES.
+
+
+#Linux Boot Process
+    Firmware Phase (Scans for all the storage for 512 bytes of image where 446 bytes for GRUB2 bootloader code 
+    + 64 bytes of Partition Table + 2 bytes of boot signature). Once the boot loader is identified, it's loaded to
+    memory and control is handed over to GRUB2. 
+
+    Grub phase searches for /boot file system and extracts kernel code (vmlinuz-*) from /boot into memory, decompresses it 
+    based on what's defined in /boot/grub2/grub.cfg . Once kernel is loaded control is handed over to  Kernel Phase
+    where RAM disk is loaded (initrd). Kernel mounts this as a read-only file system, loads the necessary modules to 
+    access the file systems and once done initrd is unmounted and actual file systems are mounted.
+
+    THe initialization phase is where the systemd is going to take control over to start all the services defined.
+
+    systemd has emergency and rescue targets
+
+    Boot grub, press e (edit mode ), append systemd.unit=emergency.target in linux16 line followed by ctrl+x
+
+
+systemd:
+
+    systemd support socket-based activation instantaneously at teh very beginning of initialization process, passes
+    them to daemon process which allows the services to daemons which can then communicate over these sockets 
+    if there are inter-dependencies which helps to start the services much faster in parallel.
+
+    Units: Used for organizing boot, main tasks like hardware initialization, socket creation, fs mounts etc.
+    Has got name and a type and file names are in the form unitname.type
+
+    There are three types 
+        system unit files under /usr/lib/systemd/system
+        user unit files under /etc/systemd/user 
+        run time files under /run/systemd/system
+
+        Order of priority is runtime,user, system 
+
+    Unit types are automount, device, path, scope, service, slice , socket etc. 
+
+    Targets are logical collection of units.
+
+    Check performance
+    systemd-analyze blame
+
+
+
+Python
+----------------
+
+#List Comprehension 
+
+i)   list = [ "value" if condition else "value" for item in list ] 
+
+>>> l=["even" if x % 2 == 0 else "odd" for x in range(10)]
+>>> l
+['even', 'odd', 'even', 'odd', 'even', 'odd', 'even', 'odd', 'even', 'odd']
+
+
+ii)  list = [ expression for item in list if conditional ]
+
+>>> l=[x for x in range(10) if x % 2 == 0 ]
+>>> l
+[0, 2, 4, 6, 8]
+
+>>> l=[x for x in range(10) if x % 2 == 0 if x // 2 == 1 ]
+>>> l
+[2]
+
+iii) list = [ expression for member in iterable ]
+
+>>> l=[ x*x for x in range(10)]
+>>> l
+[0, 1, 4, 9, 16, 25, 36, 49, 64, 81]
+
+#Lambda
+
+>>> y=lambda x:x*x
+>>> y(10)
+100
+
+#Regex
+
+>>> pattern=re.compile(r'\d+.\d+.\d+.\d+')
+>>> data="This is the IP address : 192.168.20.10"
+>>> data="These are the IP addresses : 192.168.20.10,200.10.11.20"
+>>> pattern.findall(data)
+['192.168.20.10', '200.10.11.20']
+
+# SUBPROCESS (Recommended way is to use 'run')
+
+>>> result = subprocess.run( ['docker','container','ls'], capture_output=True, text=True)
+>>> print(type(result.stdout))
+<class 'str'>
+
+
+# JSON data
+
+>>> import json
+>>> filename='/tmp/data.json'
+>>> with open(filename,'r') as fileptr:
+...     data=json.load(fileptr)
+
+
+#MAP - map (function,list_of_inputs)
+
+>>> l=[1,2,3,4]
+>>> y=lambda x:x*x
+>>> r=[x for x in map(y,l)]
+>>> r
+[1, 4, 9, 16]
+
+#FILTER - filter (function, list_of_inputs) Return an iterator yielding those items of iterable for which function(item)
+>>> y=lambda x:x % 2 == 0
+>>> r=[x for x in filter(y,l)]
+>>> r
+[2, 4]
+ 
+#LAMBDA
+>>> l=[[9, 9, 2], [9, 9, 3], [9, 9, 8], [9, 9, 4], [9, 9, 1], [9, 9, 5]]
+>>> sl=sorted(l,key=lambda x:li[2])
+>>> sl
+[[9, 9, 2], [9, 9, 3], [9, 9, 8], [9, 9, 4], [9, 9, 1], [9, 9, 5]]
+
+#SINGLE UNDERSCORE
+
+Ignore a value during unpacking 
+>>> x,_=[1,2]
+>>> x
+1
+
+#LEADING UNDERSCORE_ ( To avoid conflicts with Python Keywords)
+
+class_, def_ are variables that can be defined with leading underscores
+
+
+#_TRAILING UNDERSCORE ( Private Variables )
+
+class Test:
+
+    def _private_function():
+        pass
+
+Even if the class Test is imported in another class, the _private_function will not be visible since it's
+scoped within the "Test" being private with a leading _underscore.
+
+Although if this function is defined in __all__ , it will be visble and hence it's called "Weak Private"
+
+
+#LEADING DOUBLE UNDERSCORES__ (MANGLING)
+
+Leading double underscore tell python interpreter to rewrite name in order to avoid conflict in subclass
+
+#__UNDERSCORES_TRAILING_AND_LEADING__
+
+ Python provide this methods to use it as the operator overloading depending
+
+
+
+REFEENCES
+
+1. https://stackoverflow.com/questions/7948494/whats-the-difference-between-a-python-module-and-a-python-package

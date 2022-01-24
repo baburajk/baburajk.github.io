@@ -165,8 +165,8 @@ UTS         CLONE_NEWUTS      Hostname and NIS domain name
 
 <!-- container -->		
 <div class="screen-one-item-container">
-	<h3>  NSENTER </h3>
-	<p> How to enter each namespaces associated with the container? </p>
+	<h3>  NSENTER - How to enter each namespaces associated with the container? </h3>
+	<p>  </p>
 	<p> </p>
 
 <pre>
@@ -194,7 +194,6 @@ UTS         CLONE_NEWUTS      Hostname and NIS domain name
         nsenter -t $(docker inspect netops | jq '.[].State.Pid') -p -r top
 
 
-       
 </pre>		
 
 </div>
@@ -204,8 +203,8 @@ UTS         CLONE_NEWUTS      Hostname and NIS domain name
 
 <!-- container -->		
 <div class="screen-one-item-container">
-	<h3>  VETH </h3>
-	<p> How to identify a veth pair for the container? </p>
+	<h3>  VETH - How to identify a veth pair for the container? </h3>
+	<p>  </p>
 	<p> </p>
 
 <pre>
@@ -297,14 +296,11 @@ UTS         CLONE_NEWUTS      Hostname and NIS domain name
 
 <!-- container -->		
 <div class="screen-one-item-container">
-	<h3>  CGROUPS </h3>
+	<h3>  CGROUPS - How to control resources with CGROUPS </h3>
 	<p> </p>
 	<p> </p>
 
 <pre>
-
-
-    # Example of how to control resources with CGROUPS
 
     [root@a3783e032188 /]# cat test.sh
     #!/bin/sh
@@ -316,14 +312,12 @@ UTS         CLONE_NEWUTS      Hostname and NIS domain name
 
     [root@netlab1 a3783e0321885ef4c97b0132f2199774e503fded2270ec782f19a42f5432ca8e]# echo 10 > pids.max
     
-
     [root@a3783e032188 /]# sh test.sh &
     [3] 118
     [root@a3783e032188 /]# hello world
     test.sh: fork: retry: Resource temporarily unavailable
     test.sh: fork: retry: Resource temporarily unavailable
 
-    
     [root@netlab1 a3783e0321885ef4c97b0132f2199774e503fded2270ec782f19a42f5432ca8e]# pwd
     /sys/fs/cgroup/pids/docker/a3783e0321885ef4c97b0132f2199774e503fded2270ec782f19a42f5432ca8e
 
@@ -385,9 +379,6 @@ UTS         CLONE_NEWUTS      Hostname and NIS domain name
 <!-- container -->		
 
 
-
-
-	
 
 </body>
 </html>
